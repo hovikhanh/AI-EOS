@@ -1,0 +1,40 @@
+# Secret và cấu hình môi trường (Implementation_Plan §7) — chỉ giữ file mẫu không chứa giá trị
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.vite/
+.eslintcache
+
+# Dữ liệu cục bộ (storage adapter, ADR-004) và log
+/data/
+*.log
+
+# Editor / hệ điều hành
+.idea/
+.DS_Store
+Thumbs.db
