@@ -47,7 +47,10 @@ Xung đột: không tự chọn; ghi vào Decision_Log (CON/Q mới) và báo CD
 - Frontend: React + Vite + TypeScript strict, Tailwind + shadcn/ui, TanStack Query; không lưu token ở `localStorage`; render nội dung AI/tài liệu dạng văn bản (ADR-003).
 - Mọi route khai báo permission; kiểm tra bằng `access.policy.authorize()`; mặc định deny; object-level (ADR-007).
 - Tiền: `NUMERIC`/chuỗi thập phân, không `float`.
-- Lệnh lint/type/test cụ thể được định nghĩa ở T-001/T-002; cập nhật mục này khi có.
+- Runtime: Python 3.12.x (uv, `backend/uv.lock`), Node.js 22 LTS ≥ 22.22.2 (npm, `frontend/package-lock.json`).
+- Kiểm tra trước khi kết thúc thay đổi code: `scripts/ci.sh` (runtime, docs, ruff, mypy `--strict`, import-contract, pytest, ESLint, Prettier, tsc, Vitest, build, pip-audit, npm audit). GitHub Actions gọi đúng script này.
+- Ranh giới module: contract C1–C3 trong `backend/pyproject.toml` (import-linter) và C4 trong `backend/tests/test_module_boundaries.py`; không nới contract khi chưa có quyết định CDA (Q-43).
+- Test PostgreSQL: marker `db`, cần `AIEOS_TEST_DATABASE_URL`; `AIEOS_REQUIRE_DB=1` mà thiếu URL thì thất bại.
 
 ## 6. Bảo mật, secret, log
 

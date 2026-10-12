@@ -1,8 +1,8 @@
 # AI-EOS — Ma trận truy vết yêu cầu (Requirements Traceability)
 
 > Phiên bản: 0.6 (Stage 2D) · Ngày: 12/10/2026 · Trạng thái: **Chờ chủ dự án duyệt**
-> Quyết định áp dụng: xem [Decision_Log.md](Decision_Log.md). Lịch sử thay đổi: mục 7 (0.2), mục 8 (0.3), mục 9 (0.4), mục 10 (0.5), mục 11 (0.6).
-> AI-EOS là dự án mới, độc lập, **chưa có code** (D-04, D-05). Ma trận này không liên kết tới bất kỳ implementation nào.
+> Quyết định áp dụng: xem [Decision_Log.md](Decision_Log.md). Lịch sử thay đổi: mục 7 (0.2), mục 8 (0.3), mục 9 (0.4), mục 10 (0.5), mục 11 (0.6), mục 12 (0.6.1).
+> AI-EOS là dự án mới, độc lập (D-04, D-05). Code hiện có: khung repo T-001 (mục 12), chưa hiện thực requirement nào.
 > Phân tích, mâu thuẫn (CON), khoảng trống (GAP), giả định (ASM), câu hỏi (Q): xem [Source_Analysis.md](Source_Analysis.md).
 > Các cột **PRD · SRS · API · Task · Test**: từ 0.4 cột API được điền theo [API_Specification.md](../03-architecture/API_Specification.md) (endpoint ở trạng thái DESIGNED, chưa triển khai) hoặc `N/A — <lý do/ADR>`; từ 0.5 cột PRD/SRS điền theo [PRD](../02-requirements/PRD.md) và [SRS](../02-requirements/SRS.md) (§17 của SRS cho ánh xạ gián tiếp); từ 0.6 cột Task/Test điền theo [Implementation_Plan](../04-delivery/Implementation_Plan.md) và [TEST_Plan](../04-delivery/TEST_Plan.md) (task bị chặn ghi `(BLOCKED)`; test ở trạng thái `NOT RUN`).
 
@@ -498,3 +498,9 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - Requirement có SRS nhưng chưa có task/test: FR-HM-04 (test), F5 (test).
 - Cột API được cập nhật cộng dồn theo API_Specification 1.2 (endpoint mới của 2B/2D: API-GOAL, API-WORK, API-INS, API-CAP…); giữ nguyên giá trị `N/A` và phần sửa tay cho F1–F5.
 - Quyết định Stage 2D ảnh hưởng ma trận: D-37 (AMD-01), D-38 (AMD-02), D-39, D-40 — chỉ đổi thiết kế/kế hoạch, không đổi trạng thái requirement. SC-05 giữ `NEEDS_CONFIRMATION`; triển khai bị chặn (T-901).
+
+## 12. Cập nhật 0.6.1 (T-001)
+
+- T-001 (khung repo) `IN_REVIEW` — Implementation_Plan §10. T-001 chỉ truy vết tới ADR-001, ADR-002, ADR-003; không dòng nào trong ma trận có cột Task chứa T-001, nên không có trạng thái requirement nào thay đổi.
+- Không requirement nào `IMPLEMENTED`/`VERIFIED`; không test case nào trong TEST_Plan được chạy (test cấu trúc của T-001 không thuộc TEST_Plan).
+- T-002 (toolchain + CI) `IN_REVIEW` — Implementation_Plan §10. T-002 không có dòng trong ma trận và không có TC trong TEST_Plan; không trạng thái requirement nào thay đổi; mọi TC vẫn `NOT RUN`.

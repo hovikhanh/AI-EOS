@@ -1,0 +1,102 @@
+[project]
+name = "aieos"
+version = "0.0.0"
+description = "AI-EOS backend (modular monolith, ADR-001)"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+# Thư viện của ADR-002 (FastAPI, SQLAlchemy 2, Alembic, Pydantic v2) được thêm ở task đầu tiên dùng tới chúng.
+dependencies = []
+
+[dependency-groups]
+# Toolchain T-002 (Implementation_Plan §11.1, D-41). psycopg chỉ dùng cho test kết nối PostgreSQL.
+dev = [
+    "import-linter==2.15",
+    "mypy==2.4.0",
+    "psycopg[binary]==3.3.6",
+    "pytest==9.1.1",
+    "ruff==0.17.0",
+]
+audit = ["pip-audit==2.10.1"]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv]
+default-groups = ["dev", "audit"]
+
+[tool.uv.build-backend]
+module-name = "aieos"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]
+markers = ["db: cần PostgreSQL thật qua AIEOS_TEST_DATABASE_URL (ADR-013)"]
+
+# Import-contract theo Architecture §3 (Implementation_Plan §11.4). C4 (chỉ import `<module>.api`) là
+# test AST tests/test_module_boundaries.py.
+[tool.importlinter]
+root_package = "aieos"
+
+[[tool.importlinter.contracts]]
+# Quy tắc 6; diễn giải chặt (cấm cả audit, storage) là [CẦN XÁC NHẬN].
+name = "C1 providers khong import module aieos khac"
+type = "forbidden"
+source_modules = ["aieos.providers"]
+forbidden_modules = [
+    "aieos.identity",
+    "aieos.access",
+    "aieos.org",
+    "aieos.capture",
+    "aieos.goals",
+    "aieos.work",
+    "aieos.knowledge",
+    "aieos.finance",
+    "aieos.sales",
+    "aieos.insights",
+    "aieos.ai",
+    "aieos.gateway",
+    "aieos.jobs",
+    "aieos.audit",
+    "aieos.notify",
+    "aieos.storage",
+]
+
+[[tool.importlinter.contracts]]
+# Quy tắc 2; cấm cả API đọc (Q-43, D-41 bổ sung 0.9).
+name = "C2 ai-jobs-capture khong import domain"
+type = "forbidden"
+source_modules = ["aieos.ai", "aieos.jobs", "aieos.capture"]
+forbidden_modules = [
+    "aieos.goals",
+    "aieos.work",
+    "aieos.org",
+    "aieos.knowledge",
+    "aieos.finance",
+]
+
+[[tool.importlinter.contracts]]
+# Quy tắc 3.
+name = "C3 domain khong import gateway"
+type = "forbidden"
+source_modules = [
+    "aieos.goals",
+    "aieos.work",
+    "aieos.org",
+    "aieos.knowledge",
+    "aieos.finance",
+    "aieos.sales",
+]
+forbidden_modules = ["aieos.gateway"]

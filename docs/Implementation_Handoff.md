@@ -1,7 +1,7 @@
 # AI-EOS — Implementation Handoff (checkpoint trước triển khai)
 
 > Ngày: 12/10/2026 · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
-> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành; **chưa có code**; **chưa có test nào được chạy**; triển khai chờ CDA duyệt (mục 9).
+> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) và T-002 (toolchain + CI) `IN_REVIEW`, chưa commit — xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
 ## 1. Đọc trước
 
@@ -24,7 +24,7 @@
 | 2B | Hoàn thành, CDA duyệt có điều kiện | PRD, SRS, UX_Flows 1.1; Personas, User_Journeys, Product_Vision, Business_OKRs 1.0. M3/M4/M5 đặc tả một phần; Sales Lite chưa đặc tả |
 | 2C | Hoàn thành | 13 ADR (ADR-005, ADR-008, ADR-009 có Amendment 1); API ở `DESIGNED`, Sales `SKELETON` |
 | 2D | Hoàn thành tài liệu, **chờ CDA duyệt** | Implementation_Plan, TEST_Plan, CLAUDE.md, Documentation_Review |
-| Triển khai | Chưa bắt đầu | Mọi task thực thi `TODO`; mọi test `NOT RUN`; không requirement nào `IMPLEMENTED`/`VERIFIED` |
+| Triển khai | Bắt đầu | T-001, T-002 `IN_REVIEW` (Implementation_Plan §10); task khác `TODO`; mọi TC trong TEST_Plan `NOT RUN`; không requirement nào `IMPLEMENTED`/`VERIFIED` |
 
 ## 3. Kiến trúc và tech stack (đã chốt)
 
@@ -65,7 +65,7 @@
 
 ## 5. Task
 
-Tổng **79 task**: **55 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai"), **13 PARTIAL**, **11 BLOCKED**. Mọi task thực thi `TODO`. Test case: **199**, tất cả `NOT RUN`.
+Tổng **80 task**: **56 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai" và T-012 thêm ngày 12/10/2026), **13 PARTIAL**, **11 BLOCKED**. Thực thi: T-001, T-002 `IN_REVIEW`, các task khác `TODO` (Implementation_Plan §10). `READY` chỉ nghĩa là đủ căn cứ; task chỉ được bắt đầu khi mọi dependency `DONE`. Ngoại lệ duy nhất: T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026; Implementation_Plan §1, "Điều kiện bắt đầu"). Test case: **199**, tất cả `NOT RUN`.
 Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD riêng của task + các test case dưới đây xanh. Cột "Test case" gồm TC ghi trong DoD của task và TC phủ các SRS của task (TEST_Plan).
 
 | ID | Giai đoạn | Sẵn sàng | Phụ thuộc | Requirement (SRS) | Test case | Ghi chú |
@@ -81,6 +81,7 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-009 | P0 | READY | T-005, T-008 | SRS-JOB-01, SRS-JOB-02, SRS-JOB-03, SRS-AIC-06 | TC-JOB-01…06, TC-KS-07…09 |  |
 | T-010 | P0 | READY | T-005 | SRS-NTF-01, SRS-NTF-02 | TC-NTF-01 |  |
 | T-011 | P0 | READY | T-004 | SRS-CAP-03 | TC-FILE-03 |  |
+| T-012 | P0 | READY | T-001, T-002 | ADR-003 | — (TC dự kiến: Implementation_Plan §12) | Nền tảng frontend: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh). **Chưa bắt đầu được:** T-001 `IN_REVIEW`, T-002 `TODO`. Q-45, D-41 |
 | T-101 | P1 | READY | T-005 | SRS-IAM-06 | TC-IAM-02, TC-IAM-05 |  |
 | T-102 | P1 | READY | T-101, T-007 | SRS-IAM-04, SRS-IAM-06, SRS-IAM-07, SRS-GEN-01 | TC-GEN-06, TC-IAM-01…05 |  |
 | T-103 | P1 | READY | T-102 | SRS-IAM-05 | TC-IAM-06…07 |  |
@@ -91,7 +92,7 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-108 | P1 | PARTIAL | T-107 | SRS-ACC-01, SRS-ACC-02, SRS-ACC-03, SRS-ACC-09, SRS-ACC-11 | TC-ACC-01…03, TC-ACC-09 | SRS-ACC-04 (định nghĩa "team") dùng mặc định PROPOSED |
 | T-109 | P1 | READY | T-108, T-104 | SRS-ACC-05, SRS-ACC-06, SRS-ACC-07, SRS-ACC-08, SRS-IAM-11 | TC-ACC-04…08, TC-IAM-08 |  |
 | T-110 | P1 | READY | T-109, T-009 | SRS-AUD-04, SRS-FIN-12 | TC-AUD-04, TC-FIN-12…15 |  |
-| T-111 | P1 | READY | T-102…T-109 | SRS-ACC-09, SRS-GEN-06 | TC-ACC-02, TC-E2E-01, TC-GEN-07 |  |
+| T-111 | P1 | READY | T-102…T-109, T-012 | SRS-ACC-09, SRS-GEN-06 | TC-ACC-02, TC-E2E-01, TC-GEN-07 |  |
 | T-112 | P1 | PARTIAL | T-108 | SRS-ACC-10, SRS-PRV-02 | TC-PRV-01…04, TC-SEC-06 | người giữ `hr.profile.read`, `hr.salary.read`, `hr.export`, `pii.unmask` chờ R6; không ai giữ |
 | T-201 | P2 | READY | T-108 | SRS-ACC-11 | TC-ACC-09 |  |
 | T-202 | P2 | READY | T-005, T-201 | SRS-CAP-13, SRS-REV-07, SRS-REV-09 | TC-CAP-02, TC-REV-04 |  |
@@ -99,12 +100,12 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-204 | P2 | READY | T-004, T-009 | SRS-PRV-01, SRS-PRV-02, SRS-PRV-03, SRS-PRV-04, SRS-NFR-07 | TC-NFR-04, TC-PRV-04…07, TC-SEC-06 |  |
 | T-205 | P2 | BLOCKED | T-204, T-606 | SRS-PRV-01 | TC-PRV-07 | D-08 |
 | T-206 | P2 | PARTIAL | T-203, T-204, T-302 | SRS-CAP-08, SRS-CAP-10, SRS-CAP-11, SRS-CAP-12, SRS-CAP-14, SRS-CAP-15, SRS-CAP-16, SRS-CAP-17, SRS-CAP-18, SRS-CAP-20, SRS-CAP-21, SRS-CAP-22 | TC-CAP-01…08, TC-CAP-14…16 | danh mục đơn vị hành chính (GAP-13), danh sách trường trọng yếu (D-16), ngưỡng (D-29) dùng mặc định an toàn |
-| T-207 | P2 | PARTIAL | T-206, T-108 | SRS-REV-01, SRS-REV-02, SRS-REV-03, SRS-REV-04, SRS-REV-05, SRS-REV-06, SRS-REV-07, SRS-REV-08, SRS-REV-09, SRS-NFR-10 | TC-NFR-07, TC-REV-01…07 | SLA (GAP-18) là cấu hình trống |
+| T-207 | P2 | PARTIAL | T-206, T-108, T-012 | SRS-REV-01, SRS-REV-02, SRS-REV-03, SRS-REV-04, SRS-REV-05, SRS-REV-06, SRS-REV-07, SRS-REV-08, SRS-REV-09, SRS-NFR-10 | TC-NFR-07, TC-REV-01…07 | SLA (GAP-18) là cấu hình trống |
 | T-208 | P2 | READY | T-206 | SRS-CAP-15, SRS-CAP-16, SRS-CAP-17 | TC-CAP-04…06, TC-CAP-15 |  |
 | T-209 | P2 | READY | T-206, T-204 | SRS-CAP-30, SRS-CAP-31, SRS-CAP-32, SRS-CAP-33, SRS-CAP-34 | TC-CAP-09…11 |  |
 | T-210 | P2 | READY | T-206, T-302 | SRS-IMP-01, SRS-IMP-02, SRS-IMP-03 | TC-IMP-01…04 |  |
 | T-211 | P2 | READY | T-206 | SRS-CAP-19, SRS-BRF-04 | TC-CAP-12 |  |
-| T-212 | P2 | READY | T-203, T-210 | SRS-CAP-09 | TC-CAP-17, TC-E2E-02 |  |
+| T-212 | P2 | READY | T-203, T-210, T-012 | SRS-CAP-09 | TC-CAP-17, TC-E2E-02 |  |
 | T-301 | P3 | READY | T-005, T-107 | SRS-AIC-02, SRS-AIC-03 | TC-AIC-02…03 |  |
 | T-302 | P3 | READY | T-301, T-108, T-008 | SRS-AIC-01, SRS-AIC-02, SRS-AIC-05, SRS-AIC-09, SRS-CAP-18 | TC-AIC-01…06, TC-CAP-08, TC-KS-03…06, TC-KS-10 |  |
 | T-303 | P3 | READY | T-302, T-009 | SRS-AIC-04, SRS-AIC-05, SRS-AIC-06 | TC-JOB-06, TC-KS-01…10 |  |
@@ -120,16 +121,16 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-406 | P4 | READY | T-404 | SRS-FIN-14 | TC-FIN-29 |  |
 | T-407 | P4 | BLOCKED | T-406 | SRS-FIN-15 | TC-FIN-31 | Q-39 (định nghĩa burn ròng) |
 | T-408 | P4 | READY | T-302, T-403 | SRS-FIN-03, SRS-REV-08 | TC-FIN-30, TC-REV-05 |  |
-| T-409 | P4 | READY | T-403…T-406 | SRS-FIN-12 | TC-E2E-03, TC-FIN-12…15 |  |
+| T-409 | P4 | READY | T-403…T-406, T-012 | SRS-FIN-12 | TC-E2E-03, TC-FIN-12…15 |  |
 | T-501 | P5 | PARTIAL | T-108, T-201 | SRS-GOAL-01, SRS-GOAL-02, SRS-GOAL-05, SRS-GOAL-06, SRS-GOAL-07, SRS-GOAL-09, SRS-GOAL-11 | TC-GOAL-01…06 | thang độ tự tin (Q-30) là cấu hình PROPOSED |
 | T-502 | P5 | PARTIAL | T-501, T-109 | SRS-GOAL-03, SRS-GOAL-04 | TC-GOAL-07…09 | ai được giao: Q-28 |
 | T-503 | P5 | READY | T-206, T-302, T-501 | SRS-GOAL-03, SRS-GOAL-06, SRS-GOAL-10 | TC-GOAL-03, TC-GOAL-08…09 |  |
-| T-504 | P5 | PARTIAL | T-501, T-502 | SRS-GOAL-08 | TC-E2E-04, TC-GOAL-10 | điền sẵn check-in = giá trị đo gần nhất (PROPOSED); điền từ task bị chặn (Q-29) |
+| T-504 | P5 | PARTIAL | T-501, T-502, T-012 | SRS-GOAL-08 | TC-E2E-04, TC-GOAL-10 | điền sẵn check-in = giá trị đo gần nhất (PROPOSED); điền từ task bị chặn (Q-29) |
 | T-505 | P5 | PARTIAL | T-108, T-201 | SRS-WRK-01, SRS-WRK-02, SRS-WRK-03, SRS-WRK-04, SRS-WRK-10 | TC-WRK-01…05 | mở lại bởi người giao, EMPLOYEE tự giao (PROPOSED); trạng thái mở rộng chờ Q-33 |
 | T-506 | P5 | READY | T-206, T-302, T-505 | SRS-WRK-05, SRS-WRK-06, SRS-WRK-07, SRS-WRK-11 | TC-WRK-06…08 |  |
 | T-507 | P5 | READY | T-009, T-505 | SRS-WRK-09 | TC-WRK-09 |  |
 | T-508 | P5 | READY | T-304, T-505 | SRS-WRK-08 | TC-WRK-10 |  |
-| T-509 | P5 | READY | T-505, T-506 | SRS-WRK-10 | TC-E2E-05, TC-WRK-05 |  |
+| T-509 | P5 | READY | T-505, T-506, T-012 | SRS-WRK-10 | TC-E2E-05, TC-WRK-05 |  |
 | T-510 | P5 | PARTIAL | T-406, T-501, T-505, T-304 | SRS-BRF-01, SRS-BRF-02, SRS-BRF-03, SRS-BRF-04, SRS-BRF-05, SRS-BRF-06, SRS-BRF-07, SRS-BRF-08, SRS-BRF-09, SRS-BRF-12, SRS-SLS-03 | TC-BRF-01…07, TC-CAP-12, TC-SLS-01 | công thức ô PROPOSED (Q-37, D-39); ngưỡng "dữ liệu cũ" là cấu hình trống |
 | T-511 | P5 | PARTIAL | T-510, T-303, T-204 | SRS-BRF-10, SRS-BRF-11, SRS-BRF-13 | TC-BRF-08…11, TC-KS-08…09 | giờ/tần suất PROPOSED (Q-36); chất lượng tóm tắt chờ D-08 |
 | T-512 | P5 | READY | T-206, T-302 | FR-DCS-02 | TC-CAP-13 |  |
@@ -203,12 +204,14 @@ Q-40 đã được trả lời qua D-37.
 **T-001 — Khung repo** (P0, READY, không phụ thuộc): `backend/` (package theo module ADR-001), `frontend/` (React + Vite + TS strict), `infra/` (Compose), giữ `docs/`.
 
 Thứ tự tiếp theo (suy ra từ cột "Phụ thuộc" ở mục 5 / Implementation_Plan mục 4; `{…}` = cần tất cả, chạy song song được):
-- **P0:** T-001 → {T-002, T-003} → T-005 → T-008 → T-009. Nhánh song song: T-004 và T-006 chỉ cần T-001; T-007 và T-010 cần T-005; T-011 cần T-004.
+- **P0:** T-001 → {T-002, T-003} → T-005 → T-008 → T-009. Nhánh song song: T-004 và T-006 chỉ cần T-001; T-007 và T-010 cần T-005; T-011 cần T-004; T-012 (nền tảng frontend) cần T-001 và T-002 — là dependency của T-111, T-207, T-212, T-409, T-504, T-509. T-012 không thuộc ngoại lệ bắt đầu: chờ T-001 và T-002 `DONE`.
 - **Chuỗi dài nhất tính theo số task** (khớp Implementation_Plan dòng "Đường găng"): T-001 → {T-002, T-003} → T-005 → T-101 → T-102 → T-104 → T-402 → T-403 → T-404 → T-406 → T-510 → T-511. Đây **chưa phải** critical path theo thời lượng vì kế hoạch chưa có ước lượng.
 
 **Điều kiện để bắt đầu T-001:**
 1. CDA duyệt Implementation_Plan, TEST_Plan và CLAUDE.md (Documentation_Review §9).
 2. **Quyết định quản lý mã nguồn:** `AI-EOS/` hiện là thư mục **untracked** trong git repo `CyEyes` (branch `feature/hr-service-lab`, đang có hàng nghìn file `A-EMS/` bị xóa chưa stage — không liên quan AI-EOS). Cần CDA chọn: repo git riêng cho AI-EOS, hoặc branch riêng trong `CyEyes`; không commit lẫn với thay đổi A-EMS (liên quan D-36).
 3. Không cần provider AI, assignment tài chính hay câu trả lời Q-xx để làm T-001…T-011.
+
+**Điều kiện bắt đầu T-002:** đáp ứng theo ngoại lệ duy nhất ở Implementation_Plan §1 — T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026). T-001 vẫn `IN_REVIEW` đến khi đủ DoD.
 
 **Điều kiện cho các giai đoạn sau** (không chặn T-001): assignment vận hành (`finance.period.manage`, ≥ 2 người `finance.approve`, `goals.activate`, hàng chờ review) trước nghiệm thu P4/P5; duyệt dataset benchmark trước T-606; xác nhận diễn giải chat khi kill switch bật trước T-303.
