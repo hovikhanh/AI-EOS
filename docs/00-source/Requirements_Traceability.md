@@ -503,4 +503,4 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 
 - T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`) — Implementation_Plan §10. T-001 chỉ truy vết tới ADR-001, ADR-002, ADR-003; không dòng nào trong ma trận có cột Task chứa T-001, nên không có trạng thái requirement nào thay đổi.
 - Không requirement nào `IMPLEMENTED`/`VERIFIED`; không test case nào trong TEST_Plan được chạy (test cấu trúc của T-001 không thuộc TEST_Plan).
-- T-002 (toolchain + CI) `IN_REVIEW` — Implementation_Plan §10. T-002 không có dòng trong ma trận và không có TC trong TEST_Plan; không trạng thái requirement nào thay đổi; mọi TC vẫn `NOT RUN`.
+- T-002 (toolchain + CI) `DONE` (branch protection `main`, PR đỏ #2 bị chặn merge, GitHub Actions xanh) — Implementation_Plan §10. T-002 không có dòng trong ma trận và không có TC trong TEST_Plan; không trạng thái requirement nào thay đổi; mọi TC vẫn `NOT RUN`.
