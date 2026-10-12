@@ -1,0 +1,1 @@
+Tệp tạm để kiểm chứng branch protection của T-002 (PR xanh). PR này sẽ được đóng, không merge.
