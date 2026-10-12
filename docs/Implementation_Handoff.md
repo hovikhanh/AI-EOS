@@ -1,7 +1,7 @@
 # AI-EOS — Implementation Handoff (checkpoint trước triển khai)
 
 > Ngày: 12/10/2026 · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
-> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `IN_REVIEW` — thiếu branch protection `main` và bằng chứng PR bị chặn khi CI đỏ; xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
+> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
 ## 1. Đọc trước
 
@@ -24,7 +24,7 @@
 | 2B | Hoàn thành, CDA duyệt có điều kiện | PRD, SRS, UX_Flows 1.1; Personas, User_Journeys, Product_Vision, Business_OKRs 1.0. M3/M4/M5 đặc tả một phần; Sales Lite chưa đặc tả |
 | 2C | Hoàn thành | 13 ADR (ADR-005, ADR-008, ADR-009 có Amendment 1); API ở `DESIGNED`, Sales `SKELETON` |
 | 2D | Hoàn thành tài liệu, **chờ CDA duyệt** | Implementation_Plan, TEST_Plan, CLAUDE.md, Documentation_Review |
-| Triển khai | Bắt đầu | T-001 `DONE`, T-002 `IN_REVIEW` (Implementation_Plan §10); task khác `TODO`; mọi TC trong TEST_Plan `NOT RUN`; không requirement nào `IMPLEMENTED`/`VERIFIED` |
+| Triển khai | Bắt đầu | T-001 `DONE`, T-002 `DONE` (Implementation_Plan §10); task khác `TODO`; mọi TC trong TEST_Plan `NOT RUN`; không requirement nào `IMPLEMENTED`/`VERIFIED` |
 
 ## 3. Kiến trúc và tech stack (đã chốt)
 
@@ -65,7 +65,7 @@
 
 ## 5. Task
 
-Tổng **80 task**: **56 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai" và T-012 thêm ngày 12/10/2026), **13 PARTIAL**, **11 BLOCKED**. Thực thi: T-001 `DONE` (run `38257197546`), T-002 `IN_REVIEW`, các task khác `TODO` (Implementation_Plan §10). `READY` chỉ nghĩa là đủ căn cứ; task chỉ được bắt đầu khi mọi dependency `DONE`. Ngoại lệ duy nhất: T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026; Implementation_Plan §1, "Điều kiện bắt đầu"). Test case: **199**, tất cả `NOT RUN`.
+Tổng **80 task**: **56 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai" và T-012 thêm ngày 12/10/2026), **13 PARTIAL**, **11 BLOCKED**. Thực thi: T-001 `DONE` (run `38257197546`), T-002 `DONE` (branch protection + PR #2 bị chặn), các task khác `TODO` (Implementation_Plan §10). `READY` chỉ nghĩa là đủ căn cứ; task chỉ được bắt đầu khi mọi dependency `DONE`. Ngoại lệ duy nhất: T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026; Implementation_Plan §1, "Điều kiện bắt đầu"). Test case: **199**, tất cả `NOT RUN`.
 Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD riêng của task + các test case dưới đây xanh. Cột "Test case" gồm TC ghi trong DoD của task và TC phủ các SRS của task (TEST_Plan).
 
 | ID | Giai đoạn | Sẵn sàng | Phụ thuộc | Requirement (SRS) | Test case | Ghi chú |
@@ -81,7 +81,7 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-009 | P0 | READY | T-005, T-008 | SRS-JOB-01, SRS-JOB-02, SRS-JOB-03, SRS-AIC-06 | TC-JOB-01…06, TC-KS-07…09 |  |
 | T-010 | P0 | READY | T-005 | SRS-NTF-01, SRS-NTF-02 | TC-NTF-01 |  |
 | T-011 | P0 | READY | T-004 | SRS-CAP-03 | TC-FILE-03 |  |
-| T-012 | P0 | READY | T-001, T-002 | ADR-003 | — (TC dự kiến: Implementation_Plan §12) | Nền tảng frontend: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh). **Chưa bắt đầu được:** T-002 `IN_REVIEW` (chưa `DONE`). Q-45, D-41 |
+| T-012 | P0 | READY | T-001, T-002 | ADR-003 | — (TC dự kiến: Implementation_Plan §12) | Nền tảng frontend: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh). Dependency T-001, T-002 đã `DONE`; chưa bắt đầu. Q-45, D-41 |
 | T-101 | P1 | READY | T-005 | SRS-IAM-06 | TC-IAM-02, TC-IAM-05 |  |
 | T-102 | P1 | READY | T-101, T-007 | SRS-IAM-04, SRS-IAM-06, SRS-IAM-07, SRS-GEN-01 | TC-GEN-06, TC-IAM-01…05 |  |
 | T-103 | P1 | READY | T-102 | SRS-IAM-05 | TC-IAM-06…07 |  |
@@ -204,7 +204,7 @@ Q-40 đã được trả lời qua D-37.
 **T-001 — Khung repo** (P0, READY, không phụ thuộc): `backend/` (package theo module ADR-001), `frontend/` (React + Vite + TS strict), `infra/` (Compose), giữ `docs/`.
 
 Thứ tự tiếp theo (suy ra từ cột "Phụ thuộc" ở mục 5 / Implementation_Plan mục 4; `{…}` = cần tất cả, chạy song song được):
-- **P0:** T-001 → {T-002, T-003} → T-005 → T-008 → T-009. Nhánh song song: T-004 và T-006 chỉ cần T-001; T-007 và T-010 cần T-005; T-011 cần T-004; T-012 (nền tảng frontend) cần T-001 và T-002 — là dependency của T-111, T-207, T-212, T-409, T-504, T-509. T-012 không thuộc ngoại lệ bắt đầu: chờ T-001 và T-002 `DONE`.
+- **P0:** T-001 → {T-002, T-003} → T-005 → T-008 → T-009. Nhánh song song: T-004 và T-006 chỉ cần T-001; T-007 và T-010 cần T-005; T-011 cần T-004; T-012 (nền tảng frontend) cần T-001 và T-002 — là dependency của T-111, T-207, T-212, T-409, T-504, T-509. T-012 không thuộc ngoại lệ bắt đầu; dependency T-001, T-002 nay đã `DONE`.
 - **Chuỗi dài nhất tính theo số task** (khớp Implementation_Plan dòng "Đường găng"): T-001 → {T-002, T-003} → T-005 → T-101 → T-102 → T-104 → T-402 → T-403 → T-404 → T-406 → T-510 → T-511. Đây **chưa phải** critical path theo thời lượng vì kế hoạch chưa có ước lượng.
 
 **Điều kiện để bắt đầu T-001:**
