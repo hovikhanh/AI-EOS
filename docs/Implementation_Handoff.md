@@ -215,3 +215,38 @@ Thứ tự tiếp theo (suy ra từ cột "Phụ thuộc" ở mục 5 / Implemen
 **Điều kiện bắt đầu T-002:** đáp ứng theo ngoại lệ duy nhất ở Implementation_Plan §1 — T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026). T-001 vẫn `IN_REVIEW` đến khi đủ DoD.
 
 **Điều kiện cho các giai đoạn sau** (không chặn T-001): assignment vận hành (`finance.period.manage`, ≥ 2 người `finance.approve`, `goals.activate`, hàng chờ review) trước nghiệm thu P4/P5; duyệt dataset benchmark trước T-606; xác nhận diễn giải chat khi kill switch bật trước T-303.
+
+## 10. Nhật ký phiên 12/10/2026 và điểm bắt đầu phiên tiếp theo
+
+Số liệu dưới đây đã được kiểm tra lại lúc ghi checkpoint (12/10/2026): HEAD = `origin/main` = `b7ba32d552982e2ec362c2cc8e95c0562f132fbe`, working tree sạch, run `38262327635` `completed`/`success` trên `b7ba32d`.
+
+### 10.1. Đã hoàn thành
+
+| Hạng mục | Kết quả | Bằng chứng |
+| --- | --- | --- |
+| T-001 — khung repo | `DONE` | Kiểm tra cấu trúc module chạy trong GitHub Actions run `38257197546` (commit `318689c`); trạng thái đồng bộ ở Plan §10, Handoff, Traceability §12 (commit `d1f7f26`, `2f30196`) |
+| T-002 — toolchain + CI | `DONE` | Branch protection `main` đọc lại từ GitHub: required check `ci` (GitHub Actions app 15368), `enforce_admins: true`, bắt buộc PR (0 approval), cấm force-push và xóa `main`. PR #2 (CI đỏ) bị chặn: HTTP 405 `Required status check "ci" is failing.`. PR #3 merge sau khi CI xanh → commit `b7ba32d`, run `38262327635` `success` |
+| Traceability | Đồng bộ | T-001, T-002 `DONE` ở §12; không trạng thái requirement nào thay đổi |
+| Decision_Log D-41 | Đóng (0.10) | Ba điều kiện thực thi đã có bằng chứng (Decision_Log D-41, cột "Điều kiện đóng") |
+
+### 10.2. Quy tắc Git bắt buộc từ nay
+
+- Mọi thay đổi vào `main` đi qua Pull Request; required check `ci` phải xanh trước khi merge. Áp dụng cả cho thay đổi chỉ có tài liệu: branch → PR → CI xanh → merge.
+- Không push trực tiếp vào `main` (branch protection sẽ từ chối); không force-push; không bypass branch protection (kể cả bằng quyền admin).
+- Chỉ làm việc trong repository AI-EOS (`git@github.com:hovikhanh/AI-EOS.git`). Không sửa, stage hay commit repository cha `/home/vika/CyEyes` (HEAD `0a1a629`, 0 file staged lúc ghi checkpoint).
+
+### 10.3. Trạng thái lúc kết thúc phiên
+
+- T-001 `DONE`; T-002 `DONE`; T-012 `READY`, chưa bắt đầu; mọi task khác `TODO`.
+- 80 task: 56 `READY`, 13 `PARTIAL`, 11 `BLOCKED` (cột "Sẵn sàng" — đủ căn cứ, không phải đã được giao).
+- Mọi test case trong TEST_Plan vẫn `NOT RUN`; không requirement nào `IMPLEMENTED`/`VERIFIED`.
+- Mở, không được tự đóng: Q-44 (amendment ADR-001), giả định C1 `[CẦN XÁC NHẬN]` (Implementation_Plan §11.4), câu hỏi frontend chưa có chủ cho chat AI và Trang chủ CEO (Implementation_Plan §12), các mục ở mục 7.
+
+### 10.4. Hướng tiếp tục phiên sau
+
+1. Đọc lại Handoff này; kiểm tra `git status --short --branch`, HEAD, `origin/main` và CI gần nhất của `main` trước khi làm việc.
+2. Xem task graph ở Implementation_Plan §3, §4, §12. Chiều phụ thuộc của T-012: T-012 phụ thuộc **T-001, T-002** — cả hai đã `DONE`, nên dependency của T-012 đã đáp ứng. T-111, T-207, T-212, T-409, T-504, T-509 là các task **phụ thuộc vào T-012** (chúng chờ T-012), không phải điều kiện của T-012.
+3. T-012 `READY` **không** có nghĩa được bắt đầu ngay: chỉ bắt đầu khi CDA giao task tiếp theo.
+4. Trước khi làm bất kỳ task nào: đọc DoD (Implementation_Plan §2 và hàng của task), TEST_Plan, quyết định liên quan và câu hỏi còn mở; không tự đóng quyết định đang mở.
+5. Phạm vi T-012 (không mở rộng): Tailwind + shadcn/ui với token trung tính (D-35); React Router; TanStack Query dùng cookie session, không lưu token ở `localStorage`/`sessionStorage`; manifest PWA + service worker chỉ cache tài nguyên tĩnh, không cache `/api`. Không gồm đăng nhập, app shell nghiệp vụ (T-111), i18n (T-607), màn hình nghiệp vụ. Test case dự kiến ở Implementation_Plan §12 (chưa có trong TEST_Plan, cần CDA duyệt khi bổ sung).
+6. Môi trường local: Node 22 và Python 3.12 không phải mặc định của máy (mặc định Node 24, Python 3.10); xem README "Yêu cầu môi trường". Test PostgreSQL chỉ chạy trên GitHub Actions (máy không có Docker/PostgreSQL).
