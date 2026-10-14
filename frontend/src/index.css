@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/*
+ * Design token trung tính (T-012, UX §8.1–8.2, D-35).
+ * Màu thương hiệu chưa quyết định (D-35 DEFERRED): `primary` dùng thang xám; `ai` và màu trạng thái là
+ * giá trị giữ chỗ — đề xuất, chưa chính thức. Đổi giá trị ở đây, không sửa component.
+ * Chưa có: chế độ tối, hai mật độ Gọn/Thoáng, kiểm tra tương phản WCAG (T-607).
+ */
+:root {
+  --neutral-0: #ffffff;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+
+  --background: var(--neutral-0);
+  --foreground: var(--neutral-900);
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--neutral-600);
+  --border: var(--neutral-200);
+  --input: var(--neutral-300);
+  --ring: var(--neutral-500);
+
+  --primary: var(--neutral-900);
+  --primary-foreground: var(--neutral-0);
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-900);
+  --accent: var(--neutral-100);
+  --accent-foreground: var(--neutral-900);
+
+  /* Giữ chỗ (đề xuất): `ai` phải khác hẳn `primary` (UX §8.2). */
+  --ai: #6d28d9;
+  --ai-foreground: var(--neutral-0);
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #b91c1c;
+  --danger-foreground: var(--neutral-0);
+  --info: #1d4ed8;
+  --stale: #a16207;
+}
+
+@theme inline {
+  --font-sans: "Be Vietnam Pro", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-neutral-0: var(--neutral-0);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
+  --color-neutral-900: var(--neutral-900);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ai: var(--ai);
+  --color-ai-foreground: var(--ai-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-stale: var(--stale);
+}
+
+@theme {
+  --radius-input: 4px;
+  --radius-card: 8px;
+  --radius-panel: 16px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans leading-normal;
+  }
+}

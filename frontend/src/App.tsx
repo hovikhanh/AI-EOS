@@ -1,9 +1,15 @@
-// Khung T-001: chưa có màn hình nghiệp vụ, router, Tailwind/shadcn, TanStack Query hay PWA (thêm ở task sau).
-export function App() {
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import { RouterProvider, type createBrowserRouter } from "react-router";
+
+type AppProps = {
+  router: ReturnType<typeof createBrowserRouter>;
+  queryClient: QueryClient;
+};
+
+export function App({ router, queryClient }: AppProps) {
   return (
-    <main>
-      <h1>AI-EOS</h1>
-      <p>Khung ứng dụng — chưa có chức năng.</p>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   );
 }

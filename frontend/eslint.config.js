@@ -15,6 +15,24 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
+    rules: {
+      // ADR-003: nội dung AI/tài liệu render dạng văn bản, không chèn HTML thô (T-012).
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message: "Không dùng dangerouslySetInnerHTML (ADR-003): render nội dung dạng văn bản.",
+        },
+      ],
+    },
+  },
+  {
+    // Service worker dùng lib WebWorker, nằm ở tsconfig riêng (không lẫn với lib DOM).
+    files: ["src/sw.ts"],
+    languageOptions: {
+      globals: globals.serviceworker,
+      parserOptions: { projectService: false, project: "./tsconfig.sw.json", tsconfigRootDir: import.meta.dirname },
+    },
   },
   {
     files: ["**/*.js"],

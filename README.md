@@ -2,14 +2,14 @@
 
 Hệ thống điều hành doanh nghiệp có AI hỗ trợ, triển khai nội bộ. Tài liệu yêu cầu và thiết kế: [`docs/`](docs/) — bắt đầu từ [Implementation_Handoff](docs/Implementation_Handoff.md); quy tắc cho coding agent: [CLAUDE.md](CLAUDE.md).
 
-> Trạng thái: khung repo (T-001) và toolchain/CI (T-002). Chưa có chức năng, API, CSDL, migration hay Docker.
+> Trạng thái: khung repo (T-001), toolchain/CI (T-002), nền tảng frontend (T-012). Chưa có chức năng, API, CSDL, migration hay Docker.
 
 ## Cấu trúc
 
 | Thư mục | Nội dung |
 | --- | --- |
 | `backend/` | Python package `aieos` (src layout); mỗi module của Architecture §3 là một package con (ADR-001, ADR-002) |
-| `frontend/` | React + Vite + TypeScript strict (ADR-003) |
+| `frontend/` | React + Vite + TypeScript strict; Tailwind CSS + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA chỉ cache tài nguyên tĩnh (ADR-003, T-012) |
 | `infra/` | Docker Compose — tạo ở T-003 |
 | `docs/` | Tài liệu dự án |
 | `scripts/` | `ci.sh` — mọi bước kiểm tra (local và GitHub Actions); `negative_checks.sh` — kiểm tra âm N1–N19; `check_docs.py` — kiểm tra tài liệu |
@@ -55,6 +55,7 @@ npm ci
 npm run lint && npm run format:check && npm run typecheck
 npm run test
 npm run build      # kết quả ở frontend/dist/
+npm run check:build  # không script inline, manifest hợp lệ, dist/sw.js độc lập
 npm run dev        # máy chủ phát triển Vite
 ```
 

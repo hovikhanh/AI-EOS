@@ -81,6 +81,7 @@ step prettier in_frontend npm run -s format:check
 step tsc in_frontend npm run -s typecheck
 step vitest in_frontend npm run -s test
 step vite-build in_frontend npx vite build
+step build-check in_frontend npm run -s check:build
 
 step audit-python audit_python
 step audit-npm in_frontend npm audit --audit-level=high
