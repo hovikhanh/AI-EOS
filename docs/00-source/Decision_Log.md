@@ -1,6 +1,6 @@
 # AI-EOS — Decision Log
 
-> Phiên bản: 0.16 (Q-51 thêm T-006) · Ngày: 14/10/2026 · Trạng thái: **Chờ chủ dự án duyệt các mục PROPOSED / NEEDS_CONFIRMATION**
+> Phiên bản: 0.17 (hồ sơ Q-50) · Ngày: 14/10/2026 · Trạng thái: **Chờ chủ dự án duyệt các mục PROPOSED / NEEDS_CONFIRMATION**
 > Liên quan: [Source_Analysis.md](Source_Analysis.md) (CON/GAP/Q/ASM gốc), [Requirements_Traceability.md](Requirements_Traceability.md) (trạng thái từng yêu cầu).
 > ID quyết định `D-xx` ổn định, không tái sử dụng. Lịch sử thay đổi: mục 6.
 
@@ -302,6 +302,31 @@ CDA cần quyết định: (1) chọn công cụ proxy, scanner, runtime LLM, st
 | `observability` | Không đưa vào T-003 | Ngăn xếp metrics + dashboard (vd. Prometheus, ví dụ ở Pre2C) | ADR-012: tùy chọn, không bắt buộc trong MVP; log JSON + trang Tình trạng hệ thống đã đáp ứng phần bắt buộc. Không thêm dịch vụ chỉ để Compose trông đủ |
 | `llm` | Không đưa vào T-003 | Runtime local (vd. Ollama, ví dụ ở Pre2C) | D-08 chưa chốt; giữ adapter (ADR-011), không chọn provider mặc định cho dữ liệu nhạy cảm trước benchmark (T-606) |
 
+**3.6.3. Hồ sơ Q-50 — cập nhật chữ ký scanner và TC-NFR-01 (chưa quyết định)**
+
+Ranh giới hiện ghi trong tài liệu:
+- NFR-04 (BRD §5.3): cấu hình vùng lưu trữ; tùy chọn lưu trữ và xử lý tại Việt Nam.
+- SRS-NFR-04: toàn bộ **dữ liệu và xử lý** trên máy triển khai, trừ lời gọi provider cloud được phép. Không nói về kết nối không mang dữ liệu.
+- TC-NFR-01: theo dõi kết nối ra ngoài **của container** khi chỉ cấu hình provider local → **không có kết nối ra ngoài máy**, trừ đích backup đã cấu hình. Chặt hơn SRS-NFR-04: cấm mọi kết nối, kể cả kết nối không mang dữ liệu nghiệp vụ.
+- Architecture §9.1: scanner "cập nhật chữ ký định kỳ" — mọi scanner dựa trên chữ ký cần nguồn chữ ký từ bên ngoài, theo cách này hay cách khác.
+
+| # | Phương án | Kết nối ra ngoài | Ưu điểm | Nhược điểm |
+| --- | --- | --- | --- | --- |
+| A | `scanner` tự tải chữ ký trực tiếp | Có, từ container xử lý tài liệu | Đơn giản, chữ ký luôn mới | Container đang giữ file người dùng có đường ra internet; trái chữ nghĩa TC-NFR-01; cần thêm ngoại lệ |
+| B | Container cập nhật riêng (chỉ tải chữ ký, ghi vào volume chữ ký); `scanner` ở mạng `internal` không có đường ra | Có, chỉ từ container cập nhật; container này không đọc file người dùng | Đường xử lý tài liệu không có internet; chữ ký vẫn tự động mới | Thêm một service; TC-NFR-01 cần ghi ngoại lệ cho container cập nhật (giống ngoại lệ "đích backup") |
+| C | Cập nhật ngoại tuyến: người vận hành tải gói chữ ký ở máy khác, kiểm chữ ký số, chép vào volume | Không | Đúng chữ nghĩa TC-NFR-01 | Phụ thuộc thao tác tay; chữ ký có thể cũ → giảm khả năng phát hiện; cần quy định tuổi chữ ký tối đa và người chịu trách nhiệm |
+| D | Mirror chữ ký nội bộ của doanh nghiệp | Không ra ngoài máy (ra mạng nội bộ) | Tự động, không ra internet | Doanh nghiệp phải có hạ tầng mirror; ngoài phạm vi AI-EOS |
+
+Câu hỏi để CDA trả lời:
+1. TC-NFR-01 áp dụng cho (a) mọi container, (b) chỉ container xử lý dữ liệu nghiệp vụ, hay (c) cả máy, kể cả lúc cập nhật chữ ký?
+2. Kết nối ra ngoài **không mang dữ liệu nghiệp vụ** (tải chữ ký) có được chấp nhận như ngoại lệ "đích backup" không?
+3. Tuổi chữ ký tối đa chấp nhận được là bao lâu? (Quyết định C có khả thi hay không.)
+4. Ai vận hành cập nhật nếu chọn C?
+
+Gợi ý kỹ thuật (`PROPOSED`, không phải quyết định): B — giữ container xử lý tài liệu không có đường ra, tách phần cần internet thành service tối thiểu; nếu CDA trả lời (1c) thì chọn C.
+
+**Duyệt công cụ D-43 (3.6.2) — CDA trả lời từng mục:** (1) Caddy cho `proxy`; (2) ClamAV cho `scanner`; (3) không đưa profile `observability` vào T-003; (4) hoãn profile `llm` tới D-08. Trả lời Q-50 và mục (2) cùng lúc vì phương án B thêm một service vào T-003.
+
 ---
 
 ## 4. Ma trận vai trò `[PROPOSED — chưa phải baseline, chờ CDA duyệt (D-21)]`
@@ -467,6 +492,7 @@ Director và Manager: UX §2.1 gộp hai persona; nguồn không nói Director c
 | 0.4 | 12/10/2026 | D-06: ghi nhận định hướng `[CDA nêu]` (Python, React, Local/Docker Compose, miễn phí/mã nguồn mở, adapter); vẫn NEEDS_CONFIRMATION. D-06, D-10, D-14, D-21, D-22: thêm liên kết tới câu hỏi chuẩn hóa và dự thảo ADR-001…013 trong `Pre2C_Decision_Proposals.md`. Không đổi trạng thái quyết định nào | CDA yêu cầu chuẩn bị đề xuất trước Stage 2C |
 | 0.5 | 12/10/2026 | Chốt theo yêu cầu CDA 12/10/2026: D-06, D-25, D-26 → CONFIRMED (`ARCHITECTURE_DECISION`, ADR-001…013); D-10, D-14, D-21, D-22 → CONFIRMED (`CDA_DIRECTIVE` K/F/R/A) với phần còn mở ghi rõ (người giữ `finance.period.manage`, R6); D-27, D-30, D-32 chốt một phần; D-08, D-16, D-29 thêm mặc định an toàn. Cập nhật §5 cho GAP-03/06/07/09/11, CON-08/13, Q-05/09/26, ASM-04. Ghi nhận sai lệch quy trình: Stage 2B chưa thực hiện, Stage 2C thực hiện theo chỉ đạo CDA | Yêu cầu CDA "Chốt quyết định kiến trúc AI-EOS và triển khai Stage 2C" |
 | 0.6 | 12/10/2026 | Stage 2B: thêm ký hiệu `CDA-F1…CDA-F7` để khử trùng mã với luồng UX F1–F5; thêm §7 với Q-28…Q-42 (NEEDS_CONFIRMATION) và tham chiếu AMD-01, AMD-02 (PROPOSED). Không đổi trạng thái hay ID của quyết định nào | Stage 2B |
+| 0.17 | 14/10/2026 | Thêm mục 3.6.3: hồ sơ Q-50 (ranh giới TC-NFR-01, phương án A–D, câu hỏi cho CDA) và danh sách mục cần duyệt của D-43. Không đổi quyết định, ID hay trạng thái | Chuẩn bị hồ sơ cho CDA |
 | 0.16 | 14/10/2026 | Q-51 mở rộng cho T-006 (TC-GEN-05, TC-SEC-05). Không đổi quyết định, ID hay trạng thái khác | Triển khai T-006 |
 | 0.15 | 14/10/2026 | Q-51 mở rộng cho T-011 (TC-FILE-03). Không đổi quyết định, ID hay trạng thái khác | Triển khai T-011 |
 | 0.14 | 14/10/2026 | Thêm Q-51 (NEEDS_CONFIRMATION): phạm vi test case nghiệm thu T-005. Không đổi quyết định, ID hay trạng thái khác | Triển khai T-005 |
@@ -515,5 +541,5 @@ Tất cả **NEEDS_CONFIRMATION**, trừ Q-43, Q-45, Q-46, Q-47 (**CONFIRMED** q
 | Q-47 | Phiên bản major PostgreSQL cho CI service và triển khai (Database_Design không chốt) | ADR-004, T-002, T-003, T-005 | CI service dùng một major được ghim rõ trong workflow, chốt cùng T-003 (Compose) để dev/CI/triển khai giống nhau **Đã trả lời qua D-41 (bổ sung 0.9) — CONFIRMED:** PostgreSQL 18. Điều kiện thực thi: smoke test chạy thật với PostgreSQL 18 trên GitHub Actions trước khi coi cấu hình CSDL/CI hoàn tất; T-003, T-005 dùng cùng major. | TB |
 | Q-48 | Mã hạ tầng dùng chung không có module sở hữu: loader cấu hình/secret (T-004), logging JSON + correlation ID + `/health/*` + khởi tạo ứng dụng FastAPI (T-006), engine/session SQLAlchemy và cấu hình Alembic (T-005), hạ tầng HTTP (T-007). Architecture §3 có 17 module, không module nào nhận các trách nhiệm này; test cấu trúc T-001 cấm package hoặc file `.py` ngoài danh sách đó trong `aieos` | Architecture §3, ADR-001, ADR-002, T-004…T-007, Q-44 | Không tạo package/module mới, không đặt mã hạ tầng vào module nghiệp vụ khi chưa có amendment Architecture §3 (và ADR-001, xem Q-44) được CDA duyệt; T-004, T-006 chưa bắt đầu dù dependency đã `DONE`. `[CẦN XÁC NHẬN]` Phương án để CDA chọn: (a) thêm một module hạ tầng vào Architecture §3 kèm quy tắc phụ thuộc (module nghiệp vụ được import, module hạ tầng không import module nghiệp vụ) và contract import tương ứng; (b) giao từng trách nhiệm cho module hiện có (cần chỉ định cụ thể); (c) phương án khác của CDA. Hồ sơ phương án, ưu/nhược điểm và tác động: mục 3.5. **Đã trả lời qua D-42 — CONFIRMED** (phương án a) | Cao |
 | Q-49 | T-003 (Docker Compose): công cụ `proxy`, `scanner`, runtime LLM, stack quan sát chưa được chọn; DoD "`docker compose up` chạy đủ service" cần image `api`/`worker` chạy được (T-006, T-009) nhưng cột "Phụ thuộc" chỉ ghi T-001; máy local không có Docker | Architecture §9.1, ADR-004, ADR-012, T-003, T-005, T-006, T-009, Q-48 | T-003 chưa bắt đầu; không tự chọn công cụ. Chi tiết và các điểm cần quyết định: mục 3.6. **Đã trả lời qua D-43:** tách DoD và dependency CONFIRMED; công cụ `PROPOSED`, chờ CDA duyệt | Cao |
-| Q-50 | Architecture §9.1 yêu cầu scanner "cập nhật chữ ký định kỳ" — cần kết nối ra ngoài tới nguồn chữ ký; TC-NFR-01 (SRS-NFR-04) yêu cầu không có kết nối ra ngoài máy trừ đích backup đã cấu hình. Áp dụng với mọi scanner, không riêng ClamAV | Architecture §9.1, SRS-NFR-04, TC-NFR-01, D-43, T-003, T-013 | `[CẦN XÁC NHẬN]` Phương án: (a) cho phép riêng `scanner` kết nối ra nguồn chữ ký, ghi ngoại lệ vào TC-NFR-01; (b) cập nhật chữ ký ngoại tuyến (nhập gói chữ ký thủ công); (c) mirror nội bộ. Tới khi có quyết định: T-003 không cấu hình kết nối ra ngoài cho `scanner` | TB |
+| Q-50 | Architecture §9.1 yêu cầu scanner "cập nhật chữ ký định kỳ" — cần kết nối ra ngoài tới nguồn chữ ký; TC-NFR-01 (SRS-NFR-04) yêu cầu không có kết nối ra ngoài máy trừ đích backup đã cấu hình. Áp dụng với mọi scanner, không riêng ClamAV | Architecture §9.1, SRS-NFR-04, TC-NFR-01, D-43, T-003, T-013 | `[CẦN XÁC NHẬN]` Phương án: (a) cho phép riêng `scanner` kết nối ra nguồn chữ ký, ghi ngoại lệ vào TC-NFR-01; (b) cập nhật chữ ký ngoại tuyến (nhập gói chữ ký thủ công); (c) mirror nội bộ. Tới khi có quyết định: T-003 không cấu hình kết nối ra ngoài cho `scanner`. Hồ sơ phương án (A–D), ranh giới TC-NFR-01 và câu hỏi cho CDA: mục 3.6.3 | TB |
 | Q-51 | Tiêu chí nghiệm thu T-005 không đạt được theo nghĩa chặt: Handoff §5 gán cho T-005 TC-DR-01…02, TC-MIG-01…02 ("Tiêu chí nghiệm thu = DoD chung + DoD riêng + các test case dưới đây xanh"). TC-DR-01/02 là diễn tập khôi phục (T-605, phụ thuộc T-005 → vòng). TC-MIG-02 kiểm INV-01…16, các bất biến này tạo ở T-008 (INV-14), T-101 (INV-16), T-107 (INV-09…11), T-301 (INV-12, 13, 15), T-401 (INV-01…07), INV-08 nhiều task — đều sau T-005 | Handoff §5, TEST_Plan §10, Implementation_Plan §2, §4 (T-005, T-605), Database_Design §8 | `[CẦN XÁC NHẬN]` T-005 giữ `IN_REVIEW`. Phương án đề xuất: T-005 nghiệm thu bằng DoD riêng + TC-MIG-01 (harness rỗng → head, so khớp model ↔ schema; downgrade một bước — ADR-013); TC-MIG-02 nghiệm thu dần ở từng task tạo bất biến, đủ khi task cuối hoàn thành; TC-DR-01/02 thuộc T-605. **Cùng loại (0.15):** T-011 — TC-FILE-03 gồm phần "tên chuẩn hóa chỉ là metadata", việc chuẩn hóa tên thuộc T-203 (sau T-011); đề xuất T-011 nghiệm thu phần lưu bằng UUID, phần còn lại ở T-203. **(0.16)** T-006 — TC-GEN-05 cần `If-Match`/`problem+json` (T-007), TC-SEC-05 cần luồng đăng nhập/upload/gọi provider (T-102, T-203, T-204); đề xuất T-006 nghiệm thu bằng DoD riêng (log không chứa `Authorization`, cookie, mật khẩu), hai TC nghiệm thu ở các task đó | Cao |
