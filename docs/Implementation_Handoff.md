@@ -1,7 +1,7 @@
 # AI-EOS — Implementation Handoff (checkpoint trước triển khai)
 
 > Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11–13) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
-> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
+> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); T-004 (cấu hình/secret) `DONE` (14/10/2026, mục 13); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
 ## 1. Đọc trước
 
@@ -290,5 +290,8 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `2073075`, working tree sạch,
 | Q-49 → D-43 | Tách T-003 (Compose — cấu hình) và T-013 mới (Compose — tích hợp); T-005 phụ thuộc T-002, T-004; T-605, T-608 thêm T-013. Công cụ `proxy` = Caddy, `scanner` = ClamAV là `PROPOSED` → T-003, T-013 `BLOCKED` tới khi CDA duyệt. Q-50 mới: cập nhật chữ ký scanner vs TC-NFR-01 |
 | T-012 | Không có phê duyệt mới cho `ĐX-12-1…7` (Implementation_Plan §12.2) → giữ `IN_REVIEW`; bằng chứng kỹ thuật (run `38536047844`) giữ nguyên. Còn thiếu: CDA duyệt và đăng ký TC trong TEST_Plan |
 
-**Task đủ điều kiện sau thay đổi:** T-004, T-006 (chỉ cần T-001). T-005 cần T-004.
+| PR #7 | `194e40e` trên `main`, run `38540541945` (PR) và `38540690372` (`main`) `success` |
+| T-004 | `DONE` — PR #8, run `38541183244` `success`; bằng chứng: Implementation_Plan §10, ghi chú §13 |
+
+**Task đủ điều kiện tiếp theo:** T-006 (chỉ cần T-001); T-005 sau khi T-004 `DONE` (cần T-002, T-004); T-011 sau T-004.
 
