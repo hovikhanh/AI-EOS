@@ -312,3 +312,16 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `d9617a8`, working tree sạch,
 1. **Q-51** — phạm vi TC nghiệm thu của task nền (T-005, T-006, T-011): chấp nhận đề xuất thì ba task chuyển `DONE` dựa trên bằng chứng CI đã có; mở khóa T-007, T-008, T-010, T-101 và chuỗi P1.
 2. **D-43** — duyệt công cụ (Caddy, ClamAV, không profile `observability`, hoãn `llm`) và **Q-50** (ranh giới TC-NFR-01, phương án A–D, Decision_Log mục 3.6.3) → mở khóa T-003, rồi T-013.
 3. **T-012** — duyệt `ĐX-12-1…7` (Implementation_Plan §12.2) để đăng ký TC.
+
+## 15. Nhật ký phiên 14/10/2026 (lần 5) — hồ sơ Q-51, không có task đủ điều kiện
+
+Kiểm tra đầu phiên: HEAD = `origin/main` = `dc2cb70`, working tree sạch, run `38545265165` `success`; PR #9…#12 đã merge đúng commit; không có PR mở; branch protection không đổi. Không có phê duyệt mới cho Q-51, D-43 (công cụ), Q-50, `ĐX-12-1…7`.
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Q-51 | Hồ sơ Decision_Log mục 3.7. Phát hiện: Implementation_Plan §4 (gốc) không gán TC nào cho DoD riêng của T-005, T-006, T-011; TC gây vướng đến từ cột "Test case" của Handoff §5 (suy ra theo SRS). 65 TC được gán cho từ hai task trở lên → đề xuất quy tắc chung "task chủ" (phương án A, `PROPOSED`). T-005, T-006, T-011 giữ `IN_REVIEW` |
+| D-43, Q-50 | Không đổi; hồ sơ ở Decision_Log mục 3.6.2, 3.6.3. T-003, T-013 giữ `BLOCKED` |
+| T-012 | Giữ `IN_REVIEW`; thêm cách đăng ký `ĐX-12-1…7` sau khi duyệt (Implementation_Plan §12.2) |
+| Task đủ điều kiện | Không có (tính lại từ Implementation_Plan §4 và §10). Thiếu đúng một dependency: T-007, T-008, T-010, T-101 ← T-005 |
+
+**Thứ tự quyết định có tác động lớn nhất:** Q-51 (mở T-007, T-008, T-010, T-101 ngay) → D-43 + Q-50 (mở T-003) → `ĐX-12-1…7` (T-012 `DONE`, không mở thêm task nào).
