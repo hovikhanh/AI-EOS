@@ -325,3 +325,10 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `dc2cb70`, working tree sạch,
 | Task đủ điều kiện | Không có (tính lại từ Implementation_Plan §4 và §10). Thiếu đúng một dependency: T-007, T-008, T-010, T-101 ← T-005 |
 
 **Thứ tự quyết định có tác động lớn nhất:** Q-51 (mở T-007, T-008, T-010, T-101 ngay) → D-43 + Q-50 (mở T-003) → `ĐX-12-1…7` (T-012 `DONE`, không mở thêm task nào).
+
+## 16. Nhật ký phiên 14/10/2026 (lần 6) — dự thảo phân tích Q-51
+
+Kiểm tra đầu phiên: HEAD = `origin/main` = `ebf9f37`, working tree sạch, run `38546924533` `success`, không có PR mở. Không có phê duyệt mới; Q-51 vẫn `NEEDS_CONFIRMATION`.
+
+- Dự thảo [Q-51_TC_Ownership_Draft.md](04-delivery/Q-51_TC_Ownership_Draft.md) (`PROPOSED`, chưa có hiệu lực): xác minh 65/199 TC gán cho ≥ 2 task; bảng TC → task chủ → điều kiện → bằng chứng; 7 TC không task nào chạy đủ (TC-DR-02, TC-FIN-14, TC-MIG-02, TC-REV-05, TC-SEC-01, TC-SEC-02, TC-SEC-06); 10 TC bị Plan §4 gán vào DoD của hai task; 4 câu hỏi cho CDA; danh sách tài liệu cập nhật sau khi duyệt.
+- Không đổi Decision_Log, trạng thái task hay TC.
