@@ -6,6 +6,7 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "types": ["vite/client"],
+    "paths": { "@/*": ["./src/*"] },
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
@@ -16,5 +17,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/sw.ts"]
 }

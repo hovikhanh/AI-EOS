@@ -1,7 +1,7 @@
 # AI-EOS — Implementation Handoff (checkpoint trước triển khai)
 
-> Ngày: 12/10/2026 · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
-> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
+> Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
+> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
 ## 1. Đọc trước
 
@@ -81,7 +81,7 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-009 | P0 | READY | T-005, T-008 | SRS-JOB-01, SRS-JOB-02, SRS-JOB-03, SRS-AIC-06 | TC-JOB-01…06, TC-KS-07…09 |  |
 | T-010 | P0 | READY | T-005 | SRS-NTF-01, SRS-NTF-02 | TC-NTF-01 |  |
 | T-011 | P0 | READY | T-004 | SRS-CAP-03 | TC-FILE-03 |  |
-| T-012 | P0 | READY | T-001, T-002 | ADR-003 | — (TC dự kiến: Implementation_Plan §12) | Nền tảng frontend: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh). Dependency T-001, T-002 đã `DONE`; chưa bắt đầu. Q-45, D-41 |
+| T-012 | P0 | READY | T-001, T-002 | ADR-003 | — (TC dự kiến: Implementation_Plan §12) | Nền tảng frontend: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh). Dependency T-001, T-002 đã `DONE`; `IN_REVIEW` 14/10/2026 (mục 11). Q-45, D-41 |
 | T-101 | P1 | READY | T-005 | SRS-IAM-06 | TC-IAM-02, TC-IAM-05 |  |
 | T-102 | P1 | READY | T-101, T-007 | SRS-IAM-04, SRS-IAM-06, SRS-IAM-07, SRS-GEN-01 | TC-GEN-06, TC-IAM-01…05 |  |
 | T-103 | P1 | READY | T-102 | SRS-IAM-05 | TC-IAM-06…07 |  |
@@ -250,3 +250,18 @@ Số liệu dưới đây đã được kiểm tra lại lúc ghi checkpoint (12
 4. Trước khi làm bất kỳ task nào: đọc DoD (Implementation_Plan §2 và hàng của task), TEST_Plan, quyết định liên quan và câu hỏi còn mở; không tự đóng quyết định đang mở.
 5. Phạm vi T-012 (không mở rộng): Tailwind + shadcn/ui với token trung tính (D-35); React Router; TanStack Query dùng cookie session, không lưu token ở `localStorage`/`sessionStorage`; manifest PWA + service worker chỉ cache tài nguyên tĩnh, không cache `/api`. Không gồm đăng nhập, app shell nghiệp vụ (T-111), i18n (T-607), màn hình nghiệp vụ. Test case dự kiến ở Implementation_Plan §12 (chưa có trong TEST_Plan, cần CDA duyệt khi bổ sung).
 6. Môi trường local: Node 22 và Python 3.12 không phải mặc định của máy (mặc định Node 24, Python 3.10); xem README "Yêu cầu môi trường". Test PostgreSQL chỉ chạy trên GitHub Actions (máy không có Docker/PostgreSQL).
+
+## 11. Nhật ký phiên 14/10/2026
+
+Kiểm tra đầu phiên: HEAD = `origin/main` = `45b36f8` (PR #4 — checkpoint của mục 10 — merge sau khi mục 10 ghi `b7ba32d`; không có lệch khác), working tree sạch, run `38263752291` `success` trên `45b36f8`; branch protection `main` đọc lại: required check `ci`, `enforce_admins: true`, bắt buộc PR, cấm force-push/xóa.
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Chọn task | T-012. Task có mọi dependency `DONE`: T-003, T-004, T-006, T-012. T-004, T-006 chưa có module sở hữu trong Architecture §3 → Q-48 (mới, Cao). T-003 cần chọn công cụ chưa chốt và không chạy được Docker local. Chi tiết: Implementation_Plan §12.1 |
+| Lưu ý chiều dependency | T-111, T-207, T-212, T-409, T-504, T-509 phụ thuộc **vào** T-012, không phải dependency của T-012 (mục 10.4) |
+| T-012 | `IN_REVIEW`: code + test trên branch `feat/t012-frontend-foundation`; `scripts/ci.sh` local 18/18 (bước mới `build-check`); bằng chứng và giới hạn ở Implementation_Plan §10 |
+| Decision_Log | 0.11: thêm Q-48 |
+
+**Còn mở sau phiên:** Q-48 chặn bắt đầu T-004, T-006 (và phần mã dùng chung của T-005, T-007); 7 test của T-012 chưa đăng ký TC trong TEST_Plan (cần CDA duyệt); các mục ở 10.3 không đổi.
+
+**Hướng tiếp tục:** khi CDA trả lời Q-48 → T-004, T-006; T-003 sau khi chốt công cụ proxy/scanner (hoặc CDA cho phép chọn khi triển khai) và có môi trường Docker để kiểm tra; T-005 cần T-003.
