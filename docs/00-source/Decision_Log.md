@@ -1,6 +1,6 @@
 # AI-EOS — Decision Log
 
-> Phiên bản: 0.17 (hồ sơ Q-50) · Ngày: 14/10/2026 · Trạng thái: **Chờ chủ dự án duyệt các mục PROPOSED / NEEDS_CONFIRMATION**
+> Phiên bản: 0.18 (hồ sơ Q-51) · Ngày: 14/10/2026 · Trạng thái: **Chờ chủ dự án duyệt các mục PROPOSED / NEEDS_CONFIRMATION**
 > Liên quan: [Source_Analysis.md](Source_Analysis.md) (CON/GAP/Q/ASM gốc), [Requirements_Traceability.md](Requirements_Traceability.md) (trạng thái từng yêu cầu).
 > ID quyết định `D-xx` ổn định, không tái sử dụng. Lịch sử thay đổi: mục 6.
 
@@ -327,6 +327,45 @@ Gợi ý kỹ thuật (`PROPOSED`, không phải quyết định): B — giữ c
 
 **Duyệt công cụ D-43 (3.6.2) — CDA trả lời từng mục:** (1) Caddy cho `proxy`; (2) ClamAV cho `scanner`; (3) không đưa profile `observability` vào T-003; (4) hoãn profile `llm` tới D-08. Trả lời Q-50 và mục (2) cùng lúc vì phương án B thêm một service vào T-003.
 
+### 3.7. Q-51 — Chủ sở hữu test case nghiệm thu (hồ sơ để CDA quyết định)
+
+Trạng thái: **NEEDS_CONFIRMATION**. Chưa có phê duyệt; T-005, T-006, T-011 giữ `IN_REVIEW`. Không TC nào bị xóa, đổi nội dung hay ghi là đã chạy; mọi TC vẫn `NOT RUN` trong TEST_Plan.
+
+**3.7.1. Nguồn của vướng mắc**
+- Implementation_Plan §4 (tài liệu gốc): DoD riêng của T-005, T-006, T-011 **không** gán TC nào. DoD chung (§2) mục 2: "Test **tương ứng** trong TEST_Plan được viết và chạy xanh" — "tương ứng" chưa được định nghĩa.
+- Handoff §5 (checkpoint, tự ghi "nếu lệch với tài liệu gốc, tài liệu gốc thắng"): "Tiêu chí nghiệm thu mỗi task = DoD chung + DoD riêng + các test case dưới đây xanh"; cột "Test case" = TC trong DoD **và TC phủ các SRS của task**. Cách suy ra theo SRS làm một TC thuộc nhiều task.
+- Implementation_Plan §5: "mỗi migration có test rỗng → head và test bất biến tương ứng" — bất biến được kiểm theo từng migration, tức nghiệm thu dần.
+- Kết quả đối chiếu (14/10/2026, script đọc cột "Phụ thuộc" của Implementation_Plan §4 và cột "Test case" của Handoff §5): **65 TC** được gán cho từ hai task trở lên; phần lớn gán đồng thời cho một task và task phụ thuộc vào nó. Vướng mắc vì vậy sẽ lặp lại ở task sau, không chỉ ba task hiện tại.
+
+**3.7.2. Đối chiếu ba task đang `IN_REVIEW`**
+
+| Task | DoD riêng (Plan §4) | Bằng chứng CI | TC ở Handoff §5 | Chạy được đầy đủ ở task này? | Chủ sở hữu đề xuất |
+| --- | --- | --- | --- | --- | --- |
+| T-005 | Migration rỗng → head trong CI; role ứng dụng không có DDL | Run `38543440774` (9 test PostgreSQL) | TC-MIG-01 | Có (harness rỗng → head, so khớp model ↔ schema, downgrade một bước; metadata hiện rỗng) | T-005 (và chạy lại ở mọi migration sau — Plan §5) |
+| | | | TC-MIG-02 (INV-01…16) | Không: bất biến tạo ở T-008, T-101, T-107, T-301, T-401… | Từng task tạo bất biến kiểm phần của mình; TC đạt toàn bộ khi task cuối hoàn thành |
+| | | | TC-DR-01, TC-DR-02 | Không: diễn tập khôi phục cần T-605 (T-605 phụ thuộc T-005) | T-605 |
+| T-006 | Log không chứa `Authorization`, cookie, mật khẩu | Run `38544809935` (gồm readiness PostgreSQL) | TC-GEN-05 (`If-Match`, `problem+json`) | Không: thuộc T-007 (Plan §4 DoD của T-007 ghi TC-GEN-01…05) | T-007 |
+| | | | TC-SEC-05 (log khi đăng nhập, upload, gọi provider) | Không: cần luồng của T-102, T-203, T-204 | Task cuối trong các task đó; T-006 cung cấp bộ lọc log dùng chung |
+| T-011 | Không đường dẫn nào lấy từ tên file người dùng | Run `38544080219` | TC-FILE-03 | Một phần: phần "lưu bằng UUID" chạy ở T-011; phần "tên chuẩn hóa chỉ là metadata" cần chuẩn hóa tên ở T-203 | T-203 (T-011 nghiệm thu phần lưu trữ) |
+
+Yêu cầu bảo mật không đổi: tên file người dùng không bao giờ quyết định đường dẫn lưu trữ; log không chứa secret; role ứng dụng không có DDL.
+
+**3.7.3. Phương án**
+
+| # | Phương án | Ưu điểm | Nhược điểm |
+| --- | --- | --- | --- |
+| A | **Quy tắc chung:** mỗi TC có đúng một *task chủ* = task sớm nhất trong chuỗi dependency mà kịch bản TC chạy được đầy đủ; task trước đó nghiệm thu bằng DoD riêng + phần TC chạy được tại thời điểm đó (ghi rõ "phần nền"). TC vẫn `NOT RUN` tới khi task chủ chạy xanh. Handoff §5 bổ sung cột "Task chủ" | Hết vòng phụ thuộc; mỗi TC có chủ, thời điểm và bằng chứng; áp dụng được cho 65 TC dùng chung, không phải hỏi lại từng task | Phải cập nhật Handoff §5 và Traceability một lần; với TC dùng chung giữa hai task không phụ thuộc nhau (vd. TC-E2E-01…05 ở T-111, T-212, T-409, T-504, T-509 và T-608; TC-SEC-01…04 ở T-601, T-602) cần CDA chỉ định chủ |
+| B | Chỉ ngoại lệ cho T-005, T-006, T-011 như 3.7.2 | Nhanh | Lặp lại ở T-007 (TC-GEN-03…05 dùng chung với T-603), T-009 (TC-KS-07…09 với T-303, T-511), T-101 (TC-IAM-02, 05 với T-102), T-107, T-302, T-401… |
+| C | Giữ nguyên Handoff §5 theo nghĩa chặt | Không đổi tài liệu | T-005 không bao giờ `DONE` được (vòng T-005 → T-605 → T-005); toàn bộ P0/P1 sau T-005 bị chặn |
+
+**Khuyến nghị kỹ thuật (`PROPOSED`, không phải quyết định):** phương án A. Nếu duyệt A, các thay đổi tài liệu đi kèm: (1) Handoff §5 thêm cột "Task chủ" cho mọi TC; (2) Implementation_Plan §2 làm rõ "test tương ứng" = TC có task chủ là task đó; (3) Requirements_Traceability giữ cột Test, thêm task chủ khi cập nhật trạng thái; (4) TEST_Plan không đổi nội dung TC; (5) T-005, T-006, T-011 chuyển `DONE` dựa trên bằng chứng CI đã có (bảng 3.7.2), không cần chạy lại.
+
+**3.7.4. Câu hỏi để CDA trả lời**
+1. Chọn A, B hay C?
+2. Nếu A: chấp nhận định nghĩa "task chủ" ở trên? Với TC dùng chung giữa hai task không phụ thuộc nhau, mặc định chủ là task có TC trong DoD riêng (Plan §4), nếu không có thì task có ID lớn hơn — đồng ý không?
+3. TC-MIG-02: nghiệm thu dần (mỗi task tạo bất biến kiểm phần của mình) và chỉ ghi đạt toàn bộ khi INV-01…16 đều có — đồng ý không?
+4. Chấp nhận chuyển T-005, T-006, T-011 sang `DONE` theo bảng 3.7.2 không?
+
 ---
 
 ## 4. Ma trận vai trò `[PROPOSED — chưa phải baseline, chờ CDA duyệt (D-21)]`
@@ -492,6 +531,7 @@ Director và Manager: UX §2.1 gộp hai persona; nguồn không nói Director c
 | 0.4 | 12/10/2026 | D-06: ghi nhận định hướng `[CDA nêu]` (Python, React, Local/Docker Compose, miễn phí/mã nguồn mở, adapter); vẫn NEEDS_CONFIRMATION. D-06, D-10, D-14, D-21, D-22: thêm liên kết tới câu hỏi chuẩn hóa và dự thảo ADR-001…013 trong `Pre2C_Decision_Proposals.md`. Không đổi trạng thái quyết định nào | CDA yêu cầu chuẩn bị đề xuất trước Stage 2C |
 | 0.5 | 12/10/2026 | Chốt theo yêu cầu CDA 12/10/2026: D-06, D-25, D-26 → CONFIRMED (`ARCHITECTURE_DECISION`, ADR-001…013); D-10, D-14, D-21, D-22 → CONFIRMED (`CDA_DIRECTIVE` K/F/R/A) với phần còn mở ghi rõ (người giữ `finance.period.manage`, R6); D-27, D-30, D-32 chốt một phần; D-08, D-16, D-29 thêm mặc định an toàn. Cập nhật §5 cho GAP-03/06/07/09/11, CON-08/13, Q-05/09/26, ASM-04. Ghi nhận sai lệch quy trình: Stage 2B chưa thực hiện, Stage 2C thực hiện theo chỉ đạo CDA | Yêu cầu CDA "Chốt quyết định kiến trúc AI-EOS và triển khai Stage 2C" |
 | 0.6 | 12/10/2026 | Stage 2B: thêm ký hiệu `CDA-F1…CDA-F7` để khử trùng mã với luồng UX F1–F5; thêm §7 với Q-28…Q-42 (NEEDS_CONFIRMATION) và tham chiếu AMD-01, AMD-02 (PROPOSED). Không đổi trạng thái hay ID của quyết định nào | Stage 2B |
+| 0.18 | 14/10/2026 | Thêm mục 3.7: hồ sơ Q-51 (nguồn vướng mắc, đối chiếu T-005/T-006/T-011, 65 TC dùng chung, phương án A–C, câu hỏi cho CDA). Không đổi quyết định, ID hay trạng thái | Chuẩn bị hồ sơ cho CDA |
 | 0.17 | 14/10/2026 | Thêm mục 3.6.3: hồ sơ Q-50 (ranh giới TC-NFR-01, phương án A–D, câu hỏi cho CDA) và danh sách mục cần duyệt của D-43. Không đổi quyết định, ID hay trạng thái | Chuẩn bị hồ sơ cho CDA |
 | 0.16 | 14/10/2026 | Q-51 mở rộng cho T-006 (TC-GEN-05, TC-SEC-05). Không đổi quyết định, ID hay trạng thái khác | Triển khai T-006 |
 | 0.15 | 14/10/2026 | Q-51 mở rộng cho T-011 (TC-FILE-03). Không đổi quyết định, ID hay trạng thái khác | Triển khai T-011 |
@@ -542,4 +582,4 @@ Tất cả **NEEDS_CONFIRMATION**, trừ Q-43, Q-45, Q-46, Q-47 (**CONFIRMED** q
 | Q-48 | Mã hạ tầng dùng chung không có module sở hữu: loader cấu hình/secret (T-004), logging JSON + correlation ID + `/health/*` + khởi tạo ứng dụng FastAPI (T-006), engine/session SQLAlchemy và cấu hình Alembic (T-005), hạ tầng HTTP (T-007). Architecture §3 có 17 module, không module nào nhận các trách nhiệm này; test cấu trúc T-001 cấm package hoặc file `.py` ngoài danh sách đó trong `aieos` | Architecture §3, ADR-001, ADR-002, T-004…T-007, Q-44 | Không tạo package/module mới, không đặt mã hạ tầng vào module nghiệp vụ khi chưa có amendment Architecture §3 (và ADR-001, xem Q-44) được CDA duyệt; T-004, T-006 chưa bắt đầu dù dependency đã `DONE`. `[CẦN XÁC NHẬN]` Phương án để CDA chọn: (a) thêm một module hạ tầng vào Architecture §3 kèm quy tắc phụ thuộc (module nghiệp vụ được import, module hạ tầng không import module nghiệp vụ) và contract import tương ứng; (b) giao từng trách nhiệm cho module hiện có (cần chỉ định cụ thể); (c) phương án khác của CDA. Hồ sơ phương án, ưu/nhược điểm và tác động: mục 3.5. **Đã trả lời qua D-42 — CONFIRMED** (phương án a) | Cao |
 | Q-49 | T-003 (Docker Compose): công cụ `proxy`, `scanner`, runtime LLM, stack quan sát chưa được chọn; DoD "`docker compose up` chạy đủ service" cần image `api`/`worker` chạy được (T-006, T-009) nhưng cột "Phụ thuộc" chỉ ghi T-001; máy local không có Docker | Architecture §9.1, ADR-004, ADR-012, T-003, T-005, T-006, T-009, Q-48 | T-003 chưa bắt đầu; không tự chọn công cụ. Chi tiết và các điểm cần quyết định: mục 3.6. **Đã trả lời qua D-43:** tách DoD và dependency CONFIRMED; công cụ `PROPOSED`, chờ CDA duyệt | Cao |
 | Q-50 | Architecture §9.1 yêu cầu scanner "cập nhật chữ ký định kỳ" — cần kết nối ra ngoài tới nguồn chữ ký; TC-NFR-01 (SRS-NFR-04) yêu cầu không có kết nối ra ngoài máy trừ đích backup đã cấu hình. Áp dụng với mọi scanner, không riêng ClamAV | Architecture §9.1, SRS-NFR-04, TC-NFR-01, D-43, T-003, T-013 | `[CẦN XÁC NHẬN]` Phương án: (a) cho phép riêng `scanner` kết nối ra nguồn chữ ký, ghi ngoại lệ vào TC-NFR-01; (b) cập nhật chữ ký ngoại tuyến (nhập gói chữ ký thủ công); (c) mirror nội bộ. Tới khi có quyết định: T-003 không cấu hình kết nối ra ngoài cho `scanner`. Hồ sơ phương án (A–D), ranh giới TC-NFR-01 và câu hỏi cho CDA: mục 3.6.3 | TB |
-| Q-51 | Tiêu chí nghiệm thu T-005 không đạt được theo nghĩa chặt: Handoff §5 gán cho T-005 TC-DR-01…02, TC-MIG-01…02 ("Tiêu chí nghiệm thu = DoD chung + DoD riêng + các test case dưới đây xanh"). TC-DR-01/02 là diễn tập khôi phục (T-605, phụ thuộc T-005 → vòng). TC-MIG-02 kiểm INV-01…16, các bất biến này tạo ở T-008 (INV-14), T-101 (INV-16), T-107 (INV-09…11), T-301 (INV-12, 13, 15), T-401 (INV-01…07), INV-08 nhiều task — đều sau T-005 | Handoff §5, TEST_Plan §10, Implementation_Plan §2, §4 (T-005, T-605), Database_Design §8 | `[CẦN XÁC NHẬN]` T-005 giữ `IN_REVIEW`. Phương án đề xuất: T-005 nghiệm thu bằng DoD riêng + TC-MIG-01 (harness rỗng → head, so khớp model ↔ schema; downgrade một bước — ADR-013); TC-MIG-02 nghiệm thu dần ở từng task tạo bất biến, đủ khi task cuối hoàn thành; TC-DR-01/02 thuộc T-605. **Cùng loại (0.15):** T-011 — TC-FILE-03 gồm phần "tên chuẩn hóa chỉ là metadata", việc chuẩn hóa tên thuộc T-203 (sau T-011); đề xuất T-011 nghiệm thu phần lưu bằng UUID, phần còn lại ở T-203. **(0.16)** T-006 — TC-GEN-05 cần `If-Match`/`problem+json` (T-007), TC-SEC-05 cần luồng đăng nhập/upload/gọi provider (T-102, T-203, T-204); đề xuất T-006 nghiệm thu bằng DoD riêng (log không chứa `Authorization`, cookie, mật khẩu), hai TC nghiệm thu ở các task đó | Cao |
+| Q-51 | Tiêu chí nghiệm thu T-005 không đạt được theo nghĩa chặt: Handoff §5 gán cho T-005 TC-DR-01…02, TC-MIG-01…02 ("Tiêu chí nghiệm thu = DoD chung + DoD riêng + các test case dưới đây xanh"). TC-DR-01/02 là diễn tập khôi phục (T-605, phụ thuộc T-005 → vòng). TC-MIG-02 kiểm INV-01…16, các bất biến này tạo ở T-008 (INV-14), T-101 (INV-16), T-107 (INV-09…11), T-301 (INV-12, 13, 15), T-401 (INV-01…07), INV-08 nhiều task — đều sau T-005 | Handoff §5, TEST_Plan §10, Implementation_Plan §2, §4 (T-005, T-605), Database_Design §8 | `[CẦN XÁC NHẬN]` T-005 giữ `IN_REVIEW`. Phương án đề xuất: T-005 nghiệm thu bằng DoD riêng + TC-MIG-01 (harness rỗng → head, so khớp model ↔ schema; downgrade một bước — ADR-013); TC-MIG-02 nghiệm thu dần ở từng task tạo bất biến, đủ khi task cuối hoàn thành; TC-DR-01/02 thuộc T-605. **Cùng loại (0.15):** T-011 — TC-FILE-03 gồm phần "tên chuẩn hóa chỉ là metadata", việc chuẩn hóa tên thuộc T-203 (sau T-011); đề xuất T-011 nghiệm thu phần lưu bằng UUID, phần còn lại ở T-203. **(0.16)** T-006 — TC-GEN-05 cần `If-Match`/`problem+json` (T-007), TC-SEC-05 cần luồng đăng nhập/upload/gọi provider (T-102, T-203, T-204); đề xuất T-006 nghiệm thu bằng DoD riêng (log không chứa `Authorization`, cookie, mật khẩu), hai TC nghiệm thu ở các task đó Hồ sơ đầy đủ (65 TC dùng chung, phương án A–C, câu hỏi cho CDA): mục 3.7 | Cao |

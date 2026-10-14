@@ -406,6 +406,12 @@ Mã `ĐX-12-n` chỉ là nhãn đề xuất, **không phải** ID test case. Khi
 
 CDA cần quyết định: (1) duyệt hay sửa 7 đề xuất; (2) nhóm ID và mục đặt trong TEST_Plan; (3) mức P0/P1/P2.
 
+Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/10/2026):
+- Thêm một mục mới trong TEST_Plan (vd. "Nền tảng frontend (T-012)"), cùng định dạng bảng hiện có: ID · Yêu cầu · Loại · Mức · Tình huống · Kết quả mong đợi; cột "Yêu cầu" ghi ADR-003 (T-012 không có SRS riêng).
+- Nhóm ID đề xuất: `FE`, số 01…07 theo thứ tự `ĐX-12-1…7`; ID chưa được dùng (TEST_Plan hiện có 24 nhóm, không có `FE`). Đăng ký mới với trạng thái `NOT RUN` (TEST_Plan và `check_docs.py` không cho trạng thái đã chạy).
+- Cùng PR: bảng trên giữ cột "Mã đề xuất" và thêm cột ID chính thức để truy vết; Handoff §5 cột "Test case" của T-012 ghi các ID mới; chuyển T-012 sang `DONE` dựa trên run `38536047844` (không cần chạy lại vì mã test không đổi).
+- Trước khi duyệt: không đổi nhãn `ĐX-12-n` thành ID chính thức ở bất kỳ tài liệu nào.
+
 ### 11.7. Ghi chú triển khai T-002 (12/10/2026)
 
 - Contract import-linter đặt tên không dấu (`C1 providers khong import module aieos khac`, …) để output một dòng, kiểm tra âm grep được; diễn giải tiếng Việt ở chú thích trong `backend/pyproject.toml`.
