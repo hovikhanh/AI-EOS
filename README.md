@@ -10,7 +10,7 @@ Hệ thống điều hành doanh nghiệp có AI hỗ trợ, triển khai nội 
 | --- | --- |
 | `backend/` | Python package `aieos` (src layout); mỗi module của Architecture §3 là một package con (ADR-001, ADR-002) |
 | `frontend/` | React + Vite + TypeScript strict; Tailwind CSS + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA chỉ cache tài nguyên tĩnh (ADR-003, T-012) |
-| `infra/` | Docker Compose — tạo ở T-003 |
+| `infra/` | `.env.example` (tên biến cấu hình/secret, T-004); Docker Compose — T-003, T-013 |
 | `docs/` | Tài liệu dự án |
 | `scripts/` | `ci.sh` — mọi bước kiểm tra (local và GitHub Actions); `negative_checks.sh` — kiểm tra âm N1–N19; `check_docs.py` — kiểm tra tài liệu |
 | `.github/workflows/` | `ci.yml` — GitHub Actions gọi `scripts/ci.sh` với PostgreSQL 18 |
@@ -65,4 +65,4 @@ Kiểm tra âm (chạy trên bản sao tạm, không sửa repo; cần mạng; v
 AIEOS_N17_NODE_DIR=<thư mục có node khác major 22> scripts/negative_checks.sh
 ```
 
-Docker Compose ở T-003; cấu hình/secret ở T-004; CSDL và migration ở T-005.
+Cấu hình/secret: loader ở `backend/src/aieos/platform/config.py`, danh sách biến ở `infra/.env.example` (T-004). Docker Compose ở T-003/T-013; CSDL và migration ở T-005.

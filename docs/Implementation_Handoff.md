@@ -290,5 +290,8 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `2073075`, working tree sạch,
 | Q-49 → D-43 | Tách T-003 (Compose — cấu hình) và T-013 mới (Compose — tích hợp); T-005 phụ thuộc T-002, T-004; T-605, T-608 thêm T-013. Công cụ `proxy` = Caddy, `scanner` = ClamAV là `PROPOSED` → T-003, T-013 `BLOCKED` tới khi CDA duyệt. Q-50 mới: cập nhật chữ ký scanner vs TC-NFR-01 |
 | T-012 | Không có phê duyệt mới cho `ĐX-12-1…7` (Implementation_Plan §12.2) → giữ `IN_REVIEW`; bằng chứng kỹ thuật (run `38536047844`) giữ nguyên. Còn thiếu: CDA duyệt và đăng ký TC trong TEST_Plan |
 
-**Task đủ điều kiện sau thay đổi:** T-004, T-006 (chỉ cần T-001). T-005 cần T-004.
+| PR #7 | `194e40e` trên `main`, run `38540541945` (PR) và `38540690372` (`main`) `success` |
+| T-004 | Triển khai trong `platform` (branch `feat/t004-config-secrets`); trạng thái và bằng chứng: Implementation_Plan §10, ghi chú §13 |
+
+**Task đủ điều kiện tiếp theo:** T-006 (chỉ cần T-001); T-005 sau khi T-004 `DONE` (cần T-002, T-004); T-011 sau T-004.
 
