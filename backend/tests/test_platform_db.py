@@ -146,7 +146,8 @@ def database() -> Iterator[ProvisionedDatabase]:
     target = sqlalchemy.create_engine(admin, isolation_level="AUTOCOMMIT")
     try:
         with target.connect() as conn:
-            conn.exec_driver_sql(provision_roles_sql())
+            # Gửi nguyên văn qua psycopg (không tham số) như psql: `%I` của format() không phải placeholder.
+            conn.connection.driver_connection.execute(provision_roles_sql())
             for role, password in passwords.items():
                 conn.exec_driver_sql(f"ALTER ROLE {role} PASSWORD '{password}'")
         target.dispose()
