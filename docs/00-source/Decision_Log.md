@@ -1,6 +1,6 @@
 # AI-EOS — Decision Log
 
-> Phiên bản: 0.11 (thêm Q-48) · Ngày: 14/10/2026 · Trạng thái: **Chờ chủ dự án duyệt các mục PROPOSED / NEEDS_CONFIRMATION**
+> Phiên bản: 0.12 (hồ sơ Q-48, thêm Q-49) · Ngày: 14/10/2026 · Trạng thái: **Chờ chủ dự án duyệt các mục PROPOSED / NEEDS_CONFIRMATION**
 > Liên quan: [Source_Analysis.md](Source_Analysis.md) (CON/GAP/Q/ASM gốc), [Requirements_Traceability.md](Requirements_Traceability.md) (trạng thái từng yêu cầu).
 > ID quyết định `D-xx` ổn định, không tái sử dụng. Lịch sử thay đổi: mục 6.
 
@@ -231,6 +231,59 @@ Stack chưa được xác nhận. Ở 2C, mỗi hạng mục dưới đây có m
 
 **Tiêu chí chung:** chi phí thấp, mã nguồn mở, chạy được trên Local/Docker Compose (D-03), phù hợp dữ liệu tiếng Việt, bảo mật và quyền riêng tư, tài nguyên phần cứng cần thiết, mức độ phổ biến/bảo trì.
 
+### 3.5. Q-48 — Vị trí mã hạ tầng dùng chung (hồ sơ để CDA quyết định)
+
+Trạng thái: **NEEDS_CONFIRMATION**. Mục này chỉ là hồ sơ phương án; chưa phương án nào được áp dụng vào code. T-004, T-006 không bắt đầu cho tới khi CDA chọn.
+
+**3.5.1. Phạm vi câu hỏi**
+
+| Trách nhiệm | Task | Thiết kế | Nơi dùng |
+| --- | --- | --- | --- |
+| Loader cấu hình và secret (Implementation_Plan §7), dừng tiến trình khi thiếu secret | T-004 | ADR-006, ADR-011 | api, worker, lệnh migration; `providers` (URL, khóa API), `storage` (đường dẫn volume), `identity` (thời hạn session, khóa TOTP) |
+| Engine/session SQLAlchemy, cấu hình Alembic, 3 role CSDL | T-005 | Database_Design §2, §10 | mọi module có bảng |
+| Log JSON, correlation ID, bộ lọc secret, `/health/live`, `/health/ready` (CSDL, storage, migration) | T-006 | ADR-012 | api, worker |
+| `problem+json`, CSRF + `Origin`, idempotency store, `ETag`/`If-Match`, rate limit | T-007 | API_Specification §1 | mọi router |
+| Gốc lắp ráp: tạo ứng dụng FastAPI gắn router của mọi module, tiến trình worker, lệnh CLI | T-006, T-009, T-106 | ADR-001, ADR-002 | — (phải import `api` của mọi module) |
+
+Ràng buộc hiện hành:
+- Architecture §3 có 17 module; test cấu trúc T-001 đọc chính bảng này, nên thêm module = thêm dòng vào bảng (sửa Architecture, cần amendment). ADR-001 liệt kê 15 module (Q-44) — nên gộp chung một amendment.
+- Contract C1 (Implementation_Plan §11.4): `providers` không import module `aieos` nào, diễn giải chặt `[CẦN XÁC NHẬN]`. Nếu cấu hình/log nằm trong một module `aieos`, `providers` không dùng được khi chưa nới C1.
+- D-25: log kỹ thuật tách khỏi audit nghiệp vụ → không đặt logging vào `audit`.
+- Hạ tầng phải là "lá" (không import module nghiệp vụ), còn gốc lắp ráp phải import mọi module → hai vai trò này không nằm chung một module nếu không muốn có vòng phụ thuộc.
+
+**3.5.2. Phương án**
+
+| # | Phương án | Ưu điểm | Nhược điểm |
+| --- | --- | --- | --- |
+| 1 | Thêm **hai** module vào Architecture §3: module hạ tầng (lá: cấu hình, CSDL, log/health, HTTP) và module gốc lắp ráp (import `<module>.api` của mọi module, không module nào import ngược). Thêm contract: hạ tầng không import module nào; không module nào import gốc lắp ráp; nới C1 cho `providers` → hạ tầng | Trách nhiệm rõ; contract kiểm tra tự động như các module khác; test cấu trúc tự nhận module mới; không vòng phụ thuộc | Cần amendment Architecture §3 + ADR-001; thêm 2 contract; phải quyết định ngoại lệ C1 |
+| 2 | Thêm **một** module hạ tầng; gốc lắp ráp đặt ngoài package `aieos` (script entry-point) | Ít thay đổi bảng module hơn | Gốc lắp ráp nằm ngoài import-linter và test cấu trúc; vẫn cần amendment và quyết định C1 |
+| 3 | Giao từng trách nhiệm cho module hiện có (vd. CSRF/session → `identity` theo ADR-006; health → `jobs`…) | Không thêm module | Cấu hình, engine CSDL, log không có module phù hợp; mọi module phụ thuộc `identity`/`jobs` → tăng coupling; `providers` vẫn vướng C1 |
+| 4 | Package riêng ngoài `aieos` trong `backend/src` | Không phải sửa bảng §3 | Thoát khỏi import-linter (`root_package = "aieos"`) và test cấu trúc → ranh giới không được kiểm; vẫn là thay đổi kiến trúc cần CDA duyệt |
+
+**3.5.3. Tác động lên task**
+
+| Task | PA 1 | PA 2 | PA 3 | PA 4 |
+| --- | --- | --- | --- | --- |
+| T-004 | Làm được ngay sau quyết định | Như PA 1 | Cần chỉ định module cho cấu hình (chưa có ứng viên) | Làm được, ranh giới không kiểm |
+| T-006 | Log/health ở hạ tầng; app FastAPI ở gốc lắp ráp | App ngoài `aieos` | Log/health phân tán | Như PA 1 nhưng ngoài contract |
+| T-005 | Engine/session + Alembic ở hạ tầng (vẫn cần T-003, xem Q-49) | Như PA 1 | Không có module phù hợp | Như PA 1 |
+| T-007 | Middleware/tiện ích HTTP ở hạ tầng; idempotency store là bảng của hạ tầng | Như PA 1 | CSRF ở `identity`, phần còn lại chưa có chỗ | Như PA 1 |
+
+**3.5.4. CDA cần quyết định:** (1) phương án; (2) tên module (nếu thêm); (3) quy tắc phụ thuộc và contract import mới; (4) ngoại lệ C1 cho `providers`; (5) gộp với amendment ADR-001 (Q-44) hay không.
+
+`PROPOSED` (đề xuất kỹ thuật, không phải quyết định): phương án 1 — là phương án duy nhất giữ mọi mã backend trong phạm vi kiểm tra tự động của ADR-001 mà không tạo vòng phụ thuộc.
+
+### 3.6. Q-49 — T-003 (Docker Compose): công cụ chưa chọn và phụ thuộc chưa ghi
+
+Trạng thái: **NEEDS_CONFIRMATION**. T-003 chưa bắt đầu.
+
+- **Công cụ:** Architecture §9.1 chỉ ghi "mã nguồn mở" cho `proxy` và `scanner`; profile `llm` phụ thuộc D-08; profile `observability` là tùy chọn (ADR-012). Khác với T-605, hàng T-003 không có ghi chú "công cụ cụ thể chọn khi triển khai". Ứng viên chỉ xuất hiện dạng ví dụ trong `Pre2C_Decision_Proposals.md` (Nginx/Caddy cho file tĩnh, Ollama cho LLM local, Prometheus cho quan sát); scanner chưa có ứng viên nào được nêu.
+- **Phụ thuộc chưa ghi:** DoD "`docker compose up` chạy đủ service" cần image `api` và `worker` chạy được, tức là cần ứng dụng FastAPI (T-006, đang chờ Q-48) và tiến trình worker (T-009). Cột "Phụ thuộc" của T-003 chỉ ghi T-001.
+- **Môi trường:** máy phát triển hiện tại không có Docker; runner GitHub Actions có Docker.
+- **Đường găng:** T-005 phụ thuộc T-003, trong khi CI đã có PostgreSQL 18 (Q-47) để chạy migration và test `db`.
+
+CDA cần quyết định: (1) chọn công cụ proxy, scanner, runtime LLM, stack quan sát — hoặc cho phép chọn khi triển khai như T-605; (2) xử lý phụ thuộc `api`/`worker`: (a) thêm T-006, T-009 vào dependency của T-003, (b) tách T-003 thành phần hạ tầng (`proxy`, `db`, `scanner`, profile) làm trước và phần `api`/`worker` sau, hoặc (c) giữ nguyên; (3) GitHub Actions có được dùng làm bằng chứng `docker compose up` không; (4) T-005 có cần chờ T-003 không, hay chỉ cần PostgreSQL 18 của CI.
+
 ---
 
 ## 4. Ma trận vai trò `[PROPOSED — chưa phải baseline, chờ CDA duyệt (D-21)]`
@@ -396,6 +449,7 @@ Director và Manager: UX §2.1 gộp hai persona; nguồn không nói Director c
 | 0.4 | 12/10/2026 | D-06: ghi nhận định hướng `[CDA nêu]` (Python, React, Local/Docker Compose, miễn phí/mã nguồn mở, adapter); vẫn NEEDS_CONFIRMATION. D-06, D-10, D-14, D-21, D-22: thêm liên kết tới câu hỏi chuẩn hóa và dự thảo ADR-001…013 trong `Pre2C_Decision_Proposals.md`. Không đổi trạng thái quyết định nào | CDA yêu cầu chuẩn bị đề xuất trước Stage 2C |
 | 0.5 | 12/10/2026 | Chốt theo yêu cầu CDA 12/10/2026: D-06, D-25, D-26 → CONFIRMED (`ARCHITECTURE_DECISION`, ADR-001…013); D-10, D-14, D-21, D-22 → CONFIRMED (`CDA_DIRECTIVE` K/F/R/A) với phần còn mở ghi rõ (người giữ `finance.period.manage`, R6); D-27, D-30, D-32 chốt một phần; D-08, D-16, D-29 thêm mặc định an toàn. Cập nhật §5 cho GAP-03/06/07/09/11, CON-08/13, Q-05/09/26, ASM-04. Ghi nhận sai lệch quy trình: Stage 2B chưa thực hiện, Stage 2C thực hiện theo chỉ đạo CDA | Yêu cầu CDA "Chốt quyết định kiến trúc AI-EOS và triển khai Stage 2C" |
 | 0.6 | 12/10/2026 | Stage 2B: thêm ký hiệu `CDA-F1…CDA-F7` để khử trùng mã với luồng UX F1–F5; thêm §7 với Q-28…Q-42 (NEEDS_CONFIRMATION) và tham chiếu AMD-01, AMD-02 (PROPOSED). Không đổi trạng thái hay ID của quyết định nào | Stage 2B |
+| 0.12 | 14/10/2026 | Thêm mục 3.5 (hồ sơ phương án Q-48, chưa quyết định) và 3.6; thêm Q-49 (NEEDS_CONFIRMATION) cho T-003. Không đổi quyết định, ID hay trạng thái cũ | Phiên 14/10/2026: không task nào đủ điều kiện viết code |
 | 0.11 | 14/10/2026 | Thêm Q-48 (NEEDS_CONFIRMATION): vị trí mã hạ tầng dùng chung cho T-004…T-007 chưa có trong Architecture §3. Không đổi quyết định, ID hay trạng thái cũ | Chọn task phiên 14/10/2026 (Implementation_Plan §12) |
 | 0.10 | 12/10/2026 | D-41 đóng: ghi bằng chứng cho ba điều kiện thực thi (toolchain chạy thành công, PostgreSQL 18 trên GitHub Actions, branch protection + PR đỏ bị chặn). Không đổi nội dung quyết định; Q-44 và giả định C1 vẫn mở | Hoàn tất T-002 |
 | 0.9 | 12/10/2026 | D-41 thêm phần bổ sung 0.9 (không tạo quyết định mới): Q-43, Q-45, Q-46, Q-47 → CONFIRMED qua D-41 với điều kiện thực thi; hướng toolchain TypeScript 6.0.3 + ESLint 10 + typescript-eslint, phiên bản chỉ xác nhận sau kiểm thử thực tế; Q-44 giữ NEEDS_CONFIRMATION. Nội dung câu hỏi và mặc định cũ giữ nguyên | Chỉ đạo CDA 12/10/2026 |
@@ -437,4 +491,5 @@ Tất cả **NEEDS_CONFIRMATION**, trừ Q-43, Q-45, Q-46, Q-47 (**CONFIRMED** q
 | Q-45 | Đề xuất phạm vi nền tảng frontend ADR-003: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh) chưa được nêu tường minh trong task nào. T-111 có "app shell" nhưng phụ thuộc T-102…T-109; i18n thuộc T-607 | ADR-003, T-111, T-607 | Phương án đề xuất: (a) ghi rõ các hạng mục này vào phạm vi T-111, hoặc (b) task frontend nền tảng riêng chỉ phụ thuộc T-001/T-002 để làm song song P1. Không tạo ID task mới khi chưa được duyệt **Đã trả lời qua D-41 (bổ sung 0.9) — CONFIRMED:** phương án (b), task riêng **T-012** (Implementation_Plan §4, P0); T-111 giữ nguyên phạm vi và dependency. | TB |
 | Q-46 | Nền tảng CI và branch protection: dùng nền tảng nào (repo chưa có remote), ai cấu hình bảo vệ nhánh `main` | ADR-013, T-002, D-41 | Chỉ có `scripts/ci.sh` chạy local; workflow CI là bản chưa xác minh cho đến khi có remote và lần chạy thật; không tuyên bố "CI chặn merge" **Đã trả lời qua D-41 (bổ sung 0.9) — CONFIRMED:** GitHub Actions. Điều kiện thực thi: bằng chứng ghi riêng cho `scripts/ci.sh` (local), workflow GitHub Actions (cần remote và lần chạy thật) và branch protection `main` (cần cấu hình và xác minh); chưa có thì không tuyên bố đã xác minh. | Cao (chặn DoD của T-002) |
 | Q-47 | Phiên bản major PostgreSQL cho CI service và triển khai (Database_Design không chốt) | ADR-004, T-002, T-003, T-005 | CI service dùng một major được ghim rõ trong workflow, chốt cùng T-003 (Compose) để dev/CI/triển khai giống nhau **Đã trả lời qua D-41 (bổ sung 0.9) — CONFIRMED:** PostgreSQL 18. Điều kiện thực thi: smoke test chạy thật với PostgreSQL 18 trên GitHub Actions trước khi coi cấu hình CSDL/CI hoàn tất; T-003, T-005 dùng cùng major. | TB |
-| Q-48 | Mã hạ tầng dùng chung không có module sở hữu: loader cấu hình/secret (T-004), logging JSON + correlation ID + `/health/*` + khởi tạo ứng dụng FastAPI (T-006), engine/session SQLAlchemy và cấu hình Alembic (T-005), hạ tầng HTTP (T-007). Architecture §3 có 17 module, không module nào nhận các trách nhiệm này; test cấu trúc T-001 cấm package hoặc file `.py` ngoài danh sách đó trong `aieos` | Architecture §3, ADR-001, ADR-002, T-004…T-007, Q-44 | Không tạo package/module mới, không đặt mã hạ tầng vào module nghiệp vụ khi chưa có amendment Architecture §3 (và ADR-001, xem Q-44) được CDA duyệt; T-004, T-006 chưa bắt đầu dù dependency đã `DONE`. `[CẦN XÁC NHẬN]` Phương án để CDA chọn: (a) thêm một module hạ tầng vào Architecture §3 kèm quy tắc phụ thuộc (module nghiệp vụ được import, module hạ tầng không import module nghiệp vụ) và contract import tương ứng; (b) giao từng trách nhiệm cho module hiện có (cần chỉ định cụ thể); (c) phương án khác của CDA | Cao |
+| Q-48 | Mã hạ tầng dùng chung không có module sở hữu: loader cấu hình/secret (T-004), logging JSON + correlation ID + `/health/*` + khởi tạo ứng dụng FastAPI (T-006), engine/session SQLAlchemy và cấu hình Alembic (T-005), hạ tầng HTTP (T-007). Architecture §3 có 17 module, không module nào nhận các trách nhiệm này; test cấu trúc T-001 cấm package hoặc file `.py` ngoài danh sách đó trong `aieos` | Architecture §3, ADR-001, ADR-002, T-004…T-007, Q-44 | Không tạo package/module mới, không đặt mã hạ tầng vào module nghiệp vụ khi chưa có amendment Architecture §3 (và ADR-001, xem Q-44) được CDA duyệt; T-004, T-006 chưa bắt đầu dù dependency đã `DONE`. `[CẦN XÁC NHẬN]` Phương án để CDA chọn: (a) thêm một module hạ tầng vào Architecture §3 kèm quy tắc phụ thuộc (module nghiệp vụ được import, module hạ tầng không import module nghiệp vụ) và contract import tương ứng; (b) giao từng trách nhiệm cho module hiện có (cần chỉ định cụ thể); (c) phương án khác của CDA. Hồ sơ phương án, ưu/nhược điểm và tác động: mục 3.5 | Cao |
+| Q-49 | T-003 (Docker Compose): công cụ `proxy`, `scanner`, runtime LLM, stack quan sát chưa được chọn; DoD "`docker compose up` chạy đủ service" cần image `api`/`worker` chạy được (T-006, T-009) nhưng cột "Phụ thuộc" chỉ ghi T-001; máy local không có Docker | Architecture §9.1, ADR-004, ADR-012, T-003, T-005, T-006, T-009, Q-48 | T-003 chưa bắt đầu; không tự chọn công cụ. Chi tiết và các điểm cần quyết định: mục 3.6 | Cao |
