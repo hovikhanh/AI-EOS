@@ -1,7 +1,7 @@
 # AI-EOS — Implementation Handoff (checkpoint trước triển khai)
 
-> Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11–13) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
-> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); T-004 (cấu hình/secret) `DONE` (14/10/2026, mục 13); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
+> Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11–14) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
+> Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); T-004 (cấu hình/secret) `DONE` (14/10/2026, mục 13); T-005, T-006, T-011 `IN_REVIEW` (14/10/2026, mục 14, Q-51); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
 ## 1. Đọc trước
 
@@ -303,7 +303,12 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `d9617a8`, working tree sạch,
 | --- | --- |
 | T-005 | Triển khai, merge PR #9 (`2cb5fc1`, run `38543440774` PR, `38543791513` `main`): engine/session, Alembic + revision M-01, script role, lệnh `migrate`; 9 test PostgreSQL chạy trong CI. `IN_REVIEW` — Q-51 (phạm vi TC nghiệm thu). Chi tiết: Implementation_Plan §10, §14 |
 | T-011 | Triển khai, merge PR #10 (`875c2b7`, run `38544080219`) (module `storage`): `LocalStorage` khóa UUID, ghi nguyên tử, SHA-256, `delete_unreferenced` có tuổi tối thiểu bắt buộc, `is_ready`. `IN_REVIEW` — Q-51 (TC-FILE-03 phần chuẩn hóa tên thuộc T-203). Chi tiết: Implementation_Plan §10, §15 |
-| T-006 | Triển khai (`platform/logs.py`, `platform/web.py`, `app/asgi.py`): log JSON + che dữ liệu, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (CSDL + migration + storage). `IN_REVIEW` — Q-51 (TC-GEN-05, TC-SEC-05). Chi tiết: Implementation_Plan §10, §16 |
+| T-006 | Triển khai, merge PR #11 (`aa405fc`, run `38544809935`) (`platform/logs.py`, `platform/web.py`, `app/asgi.py`): log JSON + che dữ liệu, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (CSDL + migration + storage). `IN_REVIEW` — Q-51 (TC-GEN-05, TC-SEC-05). Chi tiết: Implementation_Plan §10, §16 |
 | Q-51 (mới, Cao) | TC-DR-01/02, TC-MIG-02 gán cho T-005 phụ thuộc task sau T-005 → đề xuất nghiệm thu T-005 bằng DoD riêng + TC-MIG-01 |
 
 **Tác động:** T-005, T-006, T-011 đều `IN_REVIEW` chờ Q-51. T-007, T-008, T-010, T-101 (và chuỗi sau) cần T-005 `DONE`; T-203, T-204 cần T-011/T-004 và chuỗi P2. Không còn task nào đủ điều kiện bắt đầu cho tới khi CDA trả lời Q-51 (hoặc D-43/Q-50 cho T-003).
+
+**Cần CDA quyết định (cuối phiên lần 4):**
+1. **Q-51** — phạm vi TC nghiệm thu của task nền (T-005, T-006, T-011): chấp nhận đề xuất thì ba task chuyển `DONE` dựa trên bằng chứng CI đã có; mở khóa T-007, T-008, T-010, T-101 và chuỗi P1.
+2. **D-43** — duyệt công cụ (Caddy, ClamAV, không profile `observability`, hoãn `llm`) và **Q-50** (ranh giới TC-NFR-01, phương án A–D, Decision_Log mục 3.6.3) → mở khóa T-003, rồi T-013.
+3. **T-012** — duyệt `ĐX-12-1…7` (Implementation_Plan §12.2) để đăng ký TC.
