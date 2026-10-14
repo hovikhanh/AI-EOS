@@ -259,7 +259,7 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `45b36f8` (PR #4 — checkpoint
 | --- | --- |
 | Chọn task | T-012. Task có mọi dependency `DONE`: T-003, T-004, T-006, T-012. T-004, T-006 chưa có module sở hữu trong Architecture §3 → Q-48 (mới, Cao). T-003 cần chọn công cụ chưa chốt và không chạy được Docker local. Chi tiết: Implementation_Plan §12.1 |
 | Lưu ý chiều dependency | T-111, T-207, T-212, T-409, T-504, T-509 phụ thuộc **vào** T-012, không phải dependency của T-012 (mục 10.4) |
-| T-012 | `IN_REVIEW`: code + test trên branch `feat/t012-frontend-foundation`; `scripts/ci.sh` local 18/18 (bước mới `build-check`); bằng chứng và giới hạn ở Implementation_Plan §10 |
+| T-012 | `IN_REVIEW`: PR #5 (branch `feat/t012-frontend-foundation`); `scripts/ci.sh` local 18/18 (bước mới `build-check`); GitHub Actions run `38536047844` `success` trên `16c1e9e`. Giữ `IN_REVIEW` đến khi CDA duyệt đăng ký TC trong TEST_Plan; bằng chứng và giới hạn ở Implementation_Plan §10 |
 | Decision_Log | 0.11: thêm Q-48 |
 
 **Còn mở sau phiên:** Q-48 chặn bắt đầu T-004, T-006 (và phần mã dùng chung của T-005, T-007); 7 test của T-012 chưa đăng ký TC trong TEST_Plan (cần CDA duyệt); các mục ở 10.3 không đổi.
