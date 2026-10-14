@@ -265,3 +265,15 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `45b36f8` (PR #4 — checkpoint
 **Còn mở sau phiên:** Q-48 chặn bắt đầu T-004, T-006 (và phần mã dùng chung của T-005, T-007); 7 test của T-012 chưa đăng ký TC trong TEST_Plan (cần CDA duyệt); các mục ở 10.3 không đổi.
 
 **Hướng tiếp tục:** khi CDA trả lời Q-48 → T-004, T-006; T-003 sau khi chốt công cụ proxy/scanner (hoặc CDA cho phép chọn khi triển khai) và có môi trường Docker để kiểm tra; T-005 cần T-003.
+
+## 12. Nhật ký phiên 14/10/2026 (lần 2)
+
+Kiểm tra đầu phiên: HEAD = `origin/main` = `da716ce` (PR #5 merge 14/10/2026), working tree sạch; run `38536405383` `success` trên `da716ce`; branch protection không đổi. Không có quyết định CDA mới về Q-48 hay TC của T-012: T-012 giữ `IN_REVIEW`.
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Chọn task | Không task nào đủ điều kiện viết code. Task có mọi dependency `DONE`: T-003, T-004, T-006 (T-012 đã làm). T-004, T-006 chờ Q-48; T-003 chờ Q-49 (công cụ + phụ thuộc `api`/`worker` vào T-006, T-009). T-005 cần T-003; T-007 cần T-005; T-011 cần T-004; các task khác cần T-005 trở đi |
+| Decision_Log 0.12 | Mục 3.5: hồ sơ phương án Q-48 (4 phương án, ưu/nhược, tác động T-004…T-007, điểm CDA cần quyết định). Mục 3.6 + Q-49 mới cho T-003 |
+| T-012 | Đề xuất 7 test case (`PROPOSED`, nhãn `ĐX-12-1…7`, chưa đăng ký TEST_Plan): Implementation_Plan §12.2 |
+
+**Cần CDA quyết định để mở khóa:** Q-48 (→ T-004, T-006, rồi T-007, T-011); Q-49 (→ T-003, rồi T-005 và gần như toàn bộ P0/P1); duyệt đề xuất TC ở Implementation_Plan §12.2 (→ T-012 `DONE`).
