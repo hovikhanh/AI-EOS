@@ -295,3 +295,13 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `2073075`, working tree sạch,
 
 **Task đủ điều kiện tiếp theo:** T-006 (chỉ cần T-001); T-005 sau khi T-004 `DONE` (cần T-002, T-004); T-011 sau T-004.
 
+## 14. Nhật ký phiên 14/10/2026 (lần 4)
+
+Kiểm tra đầu phiên: HEAD = `origin/main` = `d9617a8`, working tree sạch, run `38541532132` `success`; branch protection không đổi; T-001, T-002, T-004 `DONE`, T-012 `IN_REVIEW`. D-43: tách DoD/dependency `CONFIRMED`, công cụ `PROPOSED`; Q-50 mở.
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| T-005 | Triển khai (PR #9): engine/session, Alembic + revision M-01, script role, lệnh `migrate`; 9 test PostgreSQL chạy trong CI. `IN_REVIEW` — Q-51 (phạm vi TC nghiệm thu). Chi tiết: Implementation_Plan §10, §14 |
+| Q-51 (mới, Cao) | TC-DR-01/02, TC-MIG-02 gán cho T-005 phụ thuộc task sau T-005 → đề xuất nghiệm thu T-005 bằng DoD riêng + TC-MIG-01 |
+
+**Tác động:** T-007, T-008, T-010, T-101 (và chuỗi sau) cần T-005 `DONE` → chờ Q-51. Không phụ thuộc T-005: T-006 (T-001), T-011 (T-004).

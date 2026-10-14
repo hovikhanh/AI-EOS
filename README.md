@@ -65,4 +65,11 @@ Kiểm tra âm (chạy trên bản sao tạm, không sửa repo; cần mạng; v
 AIEOS_N17_NODE_DIR=<thư mục có node khác major 22> scripts/negative_checks.sh
 ```
 
-Cấu hình/secret: loader ở `backend/src/aieos/platform/config.py`, danh sách biến ở `infra/.env.example` (T-004). Docker Compose ở T-003/T-013; CSDL và migration ở T-005.
+Cấu hình/secret: loader ở `backend/src/aieos/platform/config.py`, danh sách biến ở `infra/.env.example` (T-004). Docker Compose ở T-003/T-013.
+
+CSDL (T-005, PostgreSQL 18): superuser chạy một lần `psql -d <csdl> -f backend/src/aieos/platform/sql/provision_roles.sql` (tạo `aieos_owner`, `aieos_app`, `aieos_backup`; không đặt mật khẩu — đặt riêng, vd. `\password`), rồi chạy migration bằng role chủ sở hữu:
+
+```bash
+cd backend
+AIEOS_DATABASE_OWNER_URL=postgresql://aieos_owner:<mật khẩu>@<host>/<csdl> uv run --locked python -m aieos.app migrate
+```
