@@ -191,7 +191,7 @@
 | NFR-01 | Tài liệu ≤ 5 trang: trích xuất p95 ≤ 60 giây; xử lý bất đồng bộ, thông báo khi xong | BRD §5.3 | CONFIRMED | MVP | — | PRD §6 | SRS-CAP-21, SRS-NFR-01 | N/A — ADR-005 | T-206, T-604 (BLOCKED) | TC-CAP-16, TC-PERF-01 |
 | NFR-02 | Thông lượng ≥ 1.000 trang/giờ/tenant ở MVP, mở rộng ngang | BRD §5.3 | CONFIRMED | MVP | GAP-05 | PRD §6 | SRS-NFR-02 | N/A — ADR-005 | T-604 (BLOCKED) | TC-PERF-02 |
 | NFR-03 | RPO ≤ 15 phút, RTO ≤ 4 giờ cho core platform | BRD §5.3 | CONFIRMED | — | — | PRD §6 | SRS-NFR-03 | N/A — ADR-004, Architecture §9.3 | T-005, T-605 | TC-DR-01, TC-DR-02, TC-MIG-01, TC-MIG-02 |
-| NFR-04 | Cấu hình vùng lưu trữ; tùy chọn lưu trữ và xử lý tại Việt Nam | BRD §5.3 | CONFIRMED | — | SEC-DC-04 | PRD §6 | SRS-NFR-04 | N/A — ADR-011, ADR-004 | T-003 | TC-NFR-01 |
+| NFR-04 | Cấu hình vùng lưu trữ; tùy chọn lưu trữ và xử lý tại Việt Nam | BRD §5.3 | CONFIRMED | — | SEC-DC-04 | PRD §6 | SRS-NFR-04 | N/A — ADR-011, ADR-004 | T-003, T-013 | TC-NFR-01 |
 | NFR-05 | Giao diện và AI tiếng Việt, tiếng Anh; hiểu câu hỏi trộn hai ngôn ngữ | BRD §5.3 | CONFIRMED | — | UX-37, UX-38 | PRD §6 | SRS-GEN-06, SRS-NFR-05 | N/A — ADR-003 | T-111, T-607 | TC-GEN-07, TC-NFR-02 |
 | NFR-06 | Mobile: chụp tài liệu, duyệt, check-in, hỏi AI (PWA hoặc app) | BRD §5.3 | NEEDS_CONFIRMATION | — | CON-08, D-27 | PRD §6 | SRS-NFR-06 | N/A — ADR-003 | T-608 | TC-NFR-03 |
 | NFR-07 | Khả dụng AI: tự chuyển model dự phòng; nhập thủ công luôn hoạt động | BRD §5.3 | CONFIRMED | — | BR-21 | PRD §6 | SRS-BRF-12, SRS-NFR-07, SRS-PRV-03 | N/A — ADR-011 | T-204, T-510 | TC-BRF-07, TC-NFR-04, TC-PRV-05 |
@@ -505,3 +505,4 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - Không requirement nào `IMPLEMENTED`/`VERIFIED`; không test case nào trong TEST_Plan được chạy (test cấu trúc của T-001 không thuộc TEST_Plan).
 - T-002 (toolchain + CI) `DONE` (branch protection `main`, PR đỏ #2 bị chặn merge, GitHub Actions xanh) — Implementation_Plan §10. T-002 không có dòng trong ma trận và không có TC trong TEST_Plan; không trạng thái requirement nào thay đổi; mọi TC vẫn `NOT RUN`.
 - T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026) — Implementation_Plan §10. T-012 chỉ truy vết tới ADR-003; không dòng nào trong ma trận có cột Task chứa T-012, nên không trạng thái requirement nào thay đổi. Các task phụ thuộc T-012 (T-111, T-207, T-212, T-409, T-504, T-509) vẫn `TODO`; mọi TC vẫn `NOT RUN` (test của T-012 chưa đăng ký trong TEST_Plan).
+- 14/10/2026 (D-42, D-43): thêm task T-013 (Compose — tích hợp); dòng NFR-04 cột Task thêm T-013 (TC-NFR-01 cần stack chạy được, thuộc T-013). T-005 đổi dependency (T-002, T-004). Không trạng thái requirement nào thay đổi; mọi TC vẫn `NOT RUN`.

@@ -49,7 +49,8 @@ Xung đột: không tự chọn; ghi vào Decision_Log (CON/Q mới) và báo CD
 - Tiền: `NUMERIC`/chuỗi thập phân, không `float`.
 - Runtime: Python 3.12.x (uv, `backend/uv.lock`), Node.js 22 LTS ≥ 22.22.2 (npm, `frontend/package-lock.json`).
 - Kiểm tra trước khi kết thúc thay đổi code: `scripts/ci.sh` (runtime, docs, ruff, mypy `--strict`, import-contract, pytest, ESLint, Prettier, tsc, Vitest, build, pip-audit, npm audit). GitHub Actions gọi đúng script này.
-- Ranh giới module: contract C1–C3 trong `backend/pyproject.toml` (import-linter) và C4 trong `backend/tests/test_module_boundaries.py`; không nới contract khi chưa có quyết định CDA (Q-43).
+- Ranh giới module: contract C1–C3, C5–C6 trong `backend/pyproject.toml` (import-linter), C4 trong `backend/tests/test_module_boundaries.py`, C7 trong `backend/tests/test_platform_ownership.py`; không nới contract khi chưa có quyết định CDA (Q-43, D-42).
+- Hạ tầng dùng chung (cấu hình/secret, engine CSDL, log/health, HTTP) chỉ ở module `platform`; lắp ráp ứng dụng ở `app`; module khác dùng qua `platform.api` (D-42, Architecture §3 quy tắc 8–10).
 - Test PostgreSQL: marker `db`, cần `AIEOS_TEST_DATABASE_URL`; `AIEOS_REQUIRE_DB=1` mà thiếu URL thì thất bại.
 
 ## 6. Bảo mật, secret, log

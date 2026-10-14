@@ -2,10 +2,10 @@
 
 | Trường | Giá trị |
 | --- | --- |
-| Status | CONFIRMED |
+| Status | CONFIRMED · Amendment 1 (14/10/2026, D-42) |
 | Source | `ARCHITECTURE_DECISION` trong định hướng `[CDA nêu]` "backend Python" (Decision_Log D-06); so sánh tại `Pre2C_Decision_Proposals.md` §2.2 |
 | Liên quan | D-06, D-07; UX-23, FR-DCS-01, FR-AIQ-02 |
-| Ngày cập nhật | 12/10/2026 |
+| Ngày cập nhật | 14/10/2026 |
 
 ## Context
 Backend cần: trả lời AI truyền dần với nút Dừng (UX-23), schema trích xuất do Admin cấu hình (FR-DCS-01), hợp đồng API rõ ràng, transaction và khóa dòng cho tài chính (D-14).
@@ -13,6 +13,7 @@ Backend cần: trả lời AI truyền dần với nút Dừng (UX-23), schema t
 ## Decision
 - Python (phiên bản ổn định được hỗ trợ, chốt trong lockfile khi triển khai), **FastAPI** (ASGI), **SQLAlchemy 2** (typed ORM, `select()`), **Alembic** cho migration, **Pydantic v2** cho schema request/response và validation.
 - Logic nghiệp vụ nằm ở tầng service của từng module; router chỉ làm validate → gọi service → trả response.
+- **[Amendment 1]** Cơ chế tạo ứng dụng FastAPI, engine/session SQLAlchemy và tích hợp cấu hình Alembic thuộc module `platform`; module `app` (composition root) gắn router của các module vào ứng dụng.
 - Driver PostgreSQL hỗ trợ async cho API; worker có thể dùng cùng tầng service.
 - OpenAPI sinh từ code là nguồn kiểm tra đối chiếu với `API_Specification.md` (contract test, ADR-013).
 - Quản lý phụ thuộc có lockfile; quét lỗ hổng phụ thuộc trong CI.
@@ -32,3 +33,10 @@ Backend cần: trả lời AI truyền dần với nút Dừng (UX-23), schema t
 - Pydantic validate mọi input; từ chối trường thừa ở schema ghi (`extra="forbid"`).
 - Không trả stack trace ra client; lỗi theo định dạng chuẩn (API_Specification §1.5).
 - Mọi route mặc định yêu cầu xác thực; route công khai phải khai báo tường minh và có test (ADR-013).
+
+## Amendments
+
+### Amendment 1 — D-42 (14/10/2026)
+- **Nguồn:** `CDA_DIRECTIVE` 14/10/2026 (Q-48).
+- **Thay đổi:** vị trí mã: tạo ứng dụng FastAPI, engine/session SQLAlchemy, cấu hình Alembic ở `platform`; lắp ráp router ở `app`. Router của module vẫn mỏng; service vẫn ở module sở hữu.
+- **Tác động:** Architecture §3 (1.3), ADR-001 Amendment 1, T-005, T-006.

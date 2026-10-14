@@ -1,6 +1,6 @@
 # AI-EOS — Architecture (Stage 2C)
 
-> Phiên bản: 1.2 · Ngày: 12/10/2026 · Trạng thái: **Baseline kiến trúc Stage 2C — chờ CDA review** · Thay đổi: §13
+> Phiên bản: 1.3 · Ngày: 14/10/2026 · Trạng thái: **Baseline kiến trúc Stage 2C — chờ CDA review** · Thay đổi: §13
 > Hiện trạng: AI-EOS **chưa có code** (D-04). Tài liệu mô tả kiến trúc mục tiêu; không có thành phần nào ở trạng thái đã triển khai.
 > Liên quan: [ADR-001…013](decisions/), [Database_Design.md](Database_Design.md), [API_Specification.md](API_Specification.md), [Decision_Log.md](../00-source/Decision_Log.md), [Requirements_Traceability.md](../00-source/Requirements_Traceability.md).
 
@@ -124,6 +124,8 @@ flowchart TB
 | `notify` | Thông báo in-app | notification | K6 |
 | `storage` | Adapter lưu file | — | ADR-004 |
 | `providers` | LLM/OCR/converter adapter | call_log (thuộc `ai`) | ADR-011 |
+| `platform` | Hạ tầng dùng chung, không nghiệp vụ: cấu hình và secret (T-004); engine/session SQLAlchemy và tích hợp cấu hình Alembic (T-005); log JSON, correlation ID, health/readiness, cơ chế tạo ứng dụng FastAPI (T-006); hạ tầng HTTP dùng chung (T-007) | — (không bảng nghiệp vụ) | D-42 |
+| `app` | Composition root: lắp ráp ứng dụng API (gắn router của các module), tiến trình worker, lệnh CLI; chỉ khởi tạo và nối module, không chứa nghiệp vụ | — | D-42 |
 
 **Quy tắc phụ thuộc** (`ARCHITECTURE_DECISION`, kiểm tra tự động trong CI):
 1. Module chỉ import interface công khai (`<module>.api`) của module khác, không import `models`/`repository` của module khác.
@@ -133,6 +135,9 @@ flowchart TB
 5. Mọi quyết định quyền qua `access.policy.authorize(...)`.
 6. `providers` không phụ thuộc module nghiệp vụ nào.
 7. Ghi trực tiếp của **người dùng** (form C1, giao dịch tài chính nhập tay) đi qua service của domain với authorization + audit; không cần gateway.
+8. `platform` không import module `aieos` nào khác. Module khác dùng `platform` qua `platform.api` (quy tắc 1). `platform` không phải module nghiệp vụ nên `providers` được dùng `platform.api` (quy tắc 6) — `CDA_DIRECTIVE` D-42.
+9. `app` chỉ import `<module>.api`; không module nào import `app` — D-42.
+10. Chỉ `platform` được tạo engine SQLAlchemy, cấu hình logging toàn cục và đọc biến môi trường; module khác nhận cấu hình, session, logger qua `platform.api` — D-42.
 
 ---
 
@@ -583,6 +588,7 @@ Chiến lược công cụ ở ADR-013. Test case chi tiết viết ở `docs/04
 | Phiên bản | Thay đổi | Loại |
 | --- | --- | --- |
 | 1.0 | Baseline Stage 2C | — |
+| 1.3 | §3: thêm module `platform` (hạ tầng dùng chung) và `app` (composition root), quy tắc 8–10. ADR-001, ADR-002 có Amendment 1 | D-42 |
 | 1.2 | §6: thêm `config.briefing_schedule`, `goals.activate`; §7: `ON_HOLD` (AMD-01); §8.2: phân loại job và Briefing khi kill switch bật (AMD-02). ADR-005, ADR-008, ADR-009 có Amendment 1 | D-37, D-38, D-39 |
 | 1.1 | Ghi chú sai lệch quy trình được cập nhật; module `insights` có thực thể; §12 cập nhật điểm mở. Không đổi luồng, kiểm soát, ADR | Làm rõ |
 
