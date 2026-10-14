@@ -19,7 +19,7 @@ from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Connection, Engine, MetaData, create_engine
 from sqlalchemy.engine import URL, make_url
-from sqlalchemy.exc import ArgumentError
+from sqlalchemy.exc import ArgumentError, SQLAlchemyError
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from aieos.platform.config import Secret, Settings
@@ -159,3 +159,12 @@ def run_migrations(settings: Settings, target_metadata: MetaData | None = None) 
     finally:
         engine.dispose()
     return revision or ""
+
+
+def database_ready(engine: Engine) -> bool:
+    """Kiểm tra readiness (ADR-012): kết nối được CSDL và migration đang ở head."""
+    try:
+        with engine.connect() as connection:
+            return current_revision(connection) == head_revision()
+    except (SQLAlchemyError, OSError):
+        return False
