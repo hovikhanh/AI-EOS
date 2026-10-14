@@ -1,6 +1,6 @@
 # AI-EOS — Implementation Handoff (checkpoint trước triển khai)
 
-> Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
+> Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11–13) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
 > Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
 ## 1. Đọc trước
@@ -30,8 +30,8 @@
 
 | ADR | Quyết định | Trạng thái |
 | --- | --- | --- |
-| ADR-001 | Modular monolith + worker, một PostgreSQL | CONFIRMED |
-| ADR-002 | Python, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2 | CONFIRMED |
+| ADR-001 | Modular monolith + worker, một PostgreSQL | CONFIRMED · Amendment 1 (D-42: thêm `platform`, `app`; danh sách module = Architecture §3) |
+| ADR-002 | Python, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2 | CONFIRMED · Amendment 1 (D-42) |
 | ADR-003 | React + Vite + TypeScript strict + PWA; Tailwind + shadcn/ui | CONFIRMED |
 | ADR-004 | PostgreSQL; storage adapter (volume cục bộ); backup ngoài máy | CONFIRMED |
 | ADR-005 | Job queue trên PostgreSQL (claim `SKIP LOCKED`, lease, retry, outbox) | CONFIRMED · Amendment 1 |
@@ -65,16 +65,16 @@
 
 ## 5. Task
 
-Tổng **80 task**: **56 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai" và T-012 thêm ngày 12/10/2026), **13 PARTIAL**, **11 BLOCKED**. Thực thi: T-001 `DONE` (run `38257197546`), T-002 `DONE` (branch protection + PR #2 bị chặn), các task khác `TODO` (Implementation_Plan §10). `READY` chỉ nghĩa là đủ căn cứ; task chỉ được bắt đầu khi mọi dependency `DONE`. Ngoại lệ duy nhất: T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026; Implementation_Plan §1, "Điều kiện bắt đầu"). Test case: **199**, tất cả `NOT RUN`.
+Tổng **81 task**: **55 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai" và T-012 thêm ngày 12/10/2026), **13 PARTIAL**, **13 BLOCKED** (cập nhật 14/10/2026 theo D-43: T-003 chuyển `BLOCKED`, thêm T-013 `BLOCKED`). Thực thi: T-001 `DONE` (run `38257197546`), T-002 `DONE` (branch protection + PR #2 bị chặn), các task khác `TODO` (Implementation_Plan §10). `READY` chỉ nghĩa là đủ căn cứ; task chỉ được bắt đầu khi mọi dependency `DONE`. Ngoại lệ duy nhất: T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026; Implementation_Plan §1, "Điều kiện bắt đầu"). Test case: **199**, tất cả `NOT RUN`.
 Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD riêng của task + các test case dưới đây xanh. Cột "Test case" gồm TC ghi trong DoD của task và TC phủ các SRS của task (TEST_Plan).
 
 | ID | Giai đoạn | Sẵn sàng | Phụ thuộc | Requirement (SRS) | Test case | Ghi chú |
 | --- | --- | --- | --- | --- | --- | --- |
 | T-001 | P0 | READY | — | ADR-001, ADR-002, ADR-003 | — |  |
 | T-002 | P0 | READY | T-001 | ADR-013, ADR-001 | — |  |
-| T-003 | P0 | READY | T-001 | SRS-NFR-04 | TC-NFR-01 |  |
+| T-003 | P0 | BLOCKED | T-001 | SRS-NFR-04 | — | Compose — cấu hình (D-43); công cụ chờ CDA duyệt; Q-50 |
 | T-004 | P0 | READY | T-001 | ADR-006, ADR-011 | — |  |
-| T-005 | P0 | READY | T-002, T-003 | SRS-NFR-03 | TC-DR-01…02, TC-MIG-01…02 |  |
+| T-005 | P0 | READY | T-002, T-004 | SRS-NFR-03 | TC-DR-01…02, TC-MIG-01…02 |  |
 | T-006 | P0 | READY | T-001 | SRS-GEN-05 | TC-GEN-05, TC-SEC-05 |  |
 | T-007 | P0 | READY | T-005 | SRS-GEN-01, SRS-GEN-02, SRS-GEN-03, SRS-GEN-04, SRS-GEN-05 | TC-GEN-01…06, TC-SEC-05 |  |
 | T-008 | P0 | READY | T-005 | SRS-AUD-01, SRS-AUD-02, SRS-AUD-03 | TC-AUD-01…03 |  |
@@ -82,6 +82,7 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-010 | P0 | READY | T-005 | SRS-NTF-01, SRS-NTF-02 | TC-NTF-01 |  |
 | T-011 | P0 | READY | T-004 | SRS-CAP-03 | TC-FILE-03 |  |
 | T-012 | P0 | READY | T-001, T-002 | ADR-003 | — (TC dự kiến: Implementation_Plan §12) | Nền tảng frontend: Tailwind + shadcn/ui, React Router, TanStack Query, manifest + service worker PWA (chỉ cache tài nguyên tĩnh). Dependency T-001, T-002 đã `DONE`; `IN_REVIEW` 14/10/2026 (mục 11). Q-45, D-41 |
+| T-013 | P0 | BLOCKED | T-003, T-004, T-005, T-006, T-009 | SRS-NFR-04 | TC-NFR-01 | Compose — tích hợp (D-43); công cụ chờ CDA duyệt; Q-50 |
 | T-101 | P1 | READY | T-005 | SRS-IAM-06 | TC-IAM-02, TC-IAM-05 |  |
 | T-102 | P1 | READY | T-101, T-007 | SRS-IAM-04, SRS-IAM-06, SRS-IAM-07, SRS-GEN-01 | TC-GEN-06, TC-IAM-01…05 |  |
 | T-103 | P1 | READY | T-102 | SRS-IAM-05 | TC-IAM-06…07 |  |
@@ -138,10 +139,10 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 | T-602 | P6 | READY | T-111, T-203, T-306 | SRS-NFR-11 | TC-SEC-01…04 |  |
 | T-603 | P6 | READY | T-404, T-405, T-009 | SRS-GEN-03, SRS-GEN-04 | TC-GEN-03…05 |  |
 | T-604 | P6 | BLOCKED | T-206, T-205 | SRS-NFR-01, SRS-NFR-02 | TC-PERF-01…02 | cần provider thật (D-08) để đo đại diện; có thể đo pipeline với adapter giả lập |
-| T-605 | P6 | READY | T-003, T-005 | SRS-NFR-03 | TC-DR-01…02, TC-MIG-01…02 | READY (công cụ cụ thể chọn khi triển khai) |
+| T-605 | P6 | READY | T-005, T-013 | SRS-NFR-03 | TC-DR-01…02, TC-MIG-01…02 | READY (công cụ cụ thể chọn khi triển khai) |
 | T-606 | P6 | READY | T-204 | SRS-NFR-09 | TC-NFR-06 |  |
 | T-607 | P6 | READY | T-111 | SRS-NFR-05, SRS-NFR-08 | TC-NFR-02, TC-NFR-05 |  |
-| T-608 | P6 | READY | Các task frontend | SRS-NFR-06 | TC-E2E-01…06, TC-NFR-03 |  |
+| T-608 | P6 | READY | Các task frontend, T-013 | SRS-NFR-06 | TC-E2E-01…06, TC-NFR-03 |  |
 | T-901 | Bị | BLOCKED | — | SRS-SLS-01, SRS-SLS-02, FR-HM-04 | — | D-40, Q-38; điều kiện mở: CDA cung cấp đặc tả |
 | T-902 | Bị | BLOCKED | — | SRS-WRK-12, F5, FR-HM-06 | — | Q-34; điều kiện mở: Mô hình workload |
 | T-903 | Bị | BLOCKED | — | SRS-WRK-12 | — | Q-35, D-31; điều kiện mở: Quyết định lịch nội bộ/ngoài |
@@ -155,6 +156,7 @@ Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD r
 
 | Task | Lý do | Điều kiện mở |
 | --- | --- | --- |
+| T-003, T-013 | Công cụ `proxy`, `scanner` chưa được duyệt (D-43 `PROPOSED`); cập nhật chữ ký scanner vs TC-NFR-01 (Q-50) | CDA duyệt công cụ (Decision_Log mục 3.6.2) và trả lời Q-50 |
 | T-205 | Provider LLM/OCR chưa chọn | D-08: benchmark (T-606) + CDA chọn |
 | T-407 | Định nghĩa burn ròng | Q-39 |
 | T-604 | Đo hiệu năng đại diện cần provider thật | D-08 (có thể đo pipeline với adapter giả lập) |
@@ -204,7 +206,7 @@ Q-40 đã được trả lời qua D-37.
 **T-001 — Khung repo** (P0, READY, không phụ thuộc): `backend/` (package theo module ADR-001), `frontend/` (React + Vite + TS strict), `infra/` (Compose), giữ `docs/`.
 
 Thứ tự tiếp theo (suy ra từ cột "Phụ thuộc" ở mục 5 / Implementation_Plan mục 4; `{…}` = cần tất cả, chạy song song được):
-- **P0:** T-001 → {T-002, T-003} → T-005 → T-008 → T-009. Nhánh song song: T-004 và T-006 chỉ cần T-001; T-007 và T-010 cần T-005; T-011 cần T-004; T-012 (nền tảng frontend) cần T-001 và T-002 — là dependency của T-111, T-207, T-212, T-409, T-504, T-509. T-012 không thuộc ngoại lệ bắt đầu; dependency T-001, T-002 nay đã `DONE`.
+- **P0** (cập nhật 14/10/2026, D-43: xem Implementation_Plan §3): T-001 → {T-002, T-004} → T-005 → T-008 → T-009; T-003 chỉ cần T-001; T-013 cần T-003, T-004, T-005, T-006, T-009. Bản cũ: T-001 → {T-002, T-003} → T-005 → T-008 → T-009. Nhánh song song: T-004 và T-006 chỉ cần T-001; T-007 và T-010 cần T-005; T-011 cần T-004; T-012 (nền tảng frontend) cần T-001 và T-002 — là dependency của T-111, T-207, T-212, T-409, T-504, T-509. T-012 không thuộc ngoại lệ bắt đầu; dependency T-001, T-002 nay đã `DONE`.
 - **Chuỗi dài nhất tính theo số task** (khớp Implementation_Plan dòng "Đường găng"): T-001 → {T-002, T-003} → T-005 → T-101 → T-102 → T-104 → T-402 → T-403 → T-404 → T-406 → T-510 → T-511. Đây **chưa phải** critical path theo thời lượng vì kế hoạch chưa có ước lượng.
 
 **Điều kiện để bắt đầu T-001:**
@@ -277,3 +279,16 @@ Kiểm tra đầu phiên: HEAD = `origin/main` = `da716ce` (PR #5 merge 14/10/20
 | T-012 | Đề xuất 7 test case (`PROPOSED`, nhãn `ĐX-12-1…7`, chưa đăng ký TEST_Plan): Implementation_Plan §12.2 |
 
 **Cần CDA quyết định để mở khóa:** Q-48 (→ T-004, T-006, rồi T-007, T-011); Q-49 (→ T-003, rồi T-005 và gần như toàn bộ P0/P1); duyệt đề xuất TC ở Implementation_Plan §12.2 (→ T-012 `DONE`).
+
+## 13. Nhật ký phiên 14/10/2026 (lần 3) — áp dụng chỉ đạo CDA cho Q-48, Q-49
+
+Kiểm tra đầu phiên: HEAD = `origin/main` = `2073075`, working tree sạch, run `38538619882` `success`; branch protection không đổi.
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| Q-48 → D-42 (CONFIRMED) | Thêm module `platform` (hạ tầng dùng chung) và `app` (composition root, dạng package) vào Architecture §3 (1.3), quy tắc 8–10; ADR-001, ADR-002 Amendment 1; Q-44 trả lời cùng. Contract mới C5, C6 (import-linter), C7 (test AST); C1 cho phép `providers` → `platform`. Kiểm tra âm N20–N22 |
+| Q-49 → D-43 | Tách T-003 (Compose — cấu hình) và T-013 mới (Compose — tích hợp); T-005 phụ thuộc T-002, T-004; T-605, T-608 thêm T-013. Công cụ `proxy` = Caddy, `scanner` = ClamAV là `PROPOSED` → T-003, T-013 `BLOCKED` tới khi CDA duyệt. Q-50 mới: cập nhật chữ ký scanner vs TC-NFR-01 |
+| T-012 | Không có phê duyệt mới cho `ĐX-12-1…7` (Implementation_Plan §12.2) → giữ `IN_REVIEW`; bằng chứng kỹ thuật (run `38536047844`) giữ nguyên. Còn thiếu: CDA duyệt và đăng ký TC trong TEST_Plan |
+
+**Task đủ điều kiện sau thay đổi:** T-004, T-006 (chỉ cần T-001). T-005 cần T-004.
+

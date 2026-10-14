@@ -2,10 +2,10 @@
 
 | Trường | Giá trị |
 | --- | --- |
-| Status | CONFIRMED |
+| Status | CONFIRMED · Amendment 1 (14/10/2026, D-42) |
 | Source | `ARCHITECTURE_DECISION` — khuyến nghị tại `Pre2C_Decision_Proposals.md` §2.1, được CDA chỉ định làm quyết định mặc định (yêu cầu ngày 12/10/2026) |
 | Liên quan | D-03, D-06, D-09, D-13, D-14, D-26; BR-04, NFR-02 |
-| Ngày cập nhật | 12/10/2026 |
+| Ngày cập nhật | 14/10/2026 |
 
 ## Context
 AI-EOS là hệ thống nội bộ một doanh nghiệp, triển khai Local/Docker Compose (D-03). Yêu cầu có tính toàn vẹn cao: mọi ghi từ Domain 22 đi qua Tool Registry (BR-04), kill switch thực thi ở backend (D-09), giao dịch tài chính có phê duyệt và bút toán đảo (D-13, D-14). Thông lượng mục tiêu MVP ≥ 1.000 trang/giờ (NFR-02).
@@ -13,6 +13,7 @@ AI-EOS là hệ thống nội bộ một doanh nghiệp, triển khai Local/Dock
 ## Decision
 - Một ứng dụng backend Python duy nhất (API process) và một hoặc nhiều **worker process** chạy cùng codebase, dùng chung **một PostgreSQL** làm nguồn dữ liệu chính.
 - Code chia theo module nghiệp vụ với ranh giới rõ (xem `Architecture.md` §3): `identity`, `access`, `org`, `capture`, `goals`, `work`, `finance`, `sales` (khung), `ai`, `gateway`, `jobs`, `audit`, `notify`, `storage`, `providers`.
+- **[Amendment 1]** Danh sách module chính thức là bảng `Architecture.md` §3 (19 module), gồm thêm `knowledge`, `insights` (đã có từ Architecture 1.1), `platform` (hạ tầng dùng chung) và `app` (composition root).
 - Module chỉ giao tiếp qua interface công khai (service API trong process) hoặc qua job/sự kiện trong CSDL; không truy cập bảng của module khác trực tiếp, trừ module `audit` (chỉ ghi qua API audit).
 - Quy tắc phụ thuộc được kiểm tra tự động trong CI (vd. công cụ kiểm tra import-contract).
 - Không dùng microservices trong MVP.
@@ -33,3 +34,12 @@ AI-EOS là hệ thống nội bộ một doanh nghiệp, triển khai Local/Dock
 - Một tiến trình API → một bề mặt xác thực và một policy module (ADR-007), giảm nguy cơ lệch quyền giữa service.
 - Worker không mở cổng mạng ra ngoài; chỉ kết nối CSDL, storage, provider.
 - Vi phạm ranh giới module (gọi repository của module khác, bỏ qua cổng ghi) là lỗi chặn merge.
+
+## Amendments
+
+### Amendment 1 — D-42 (14/10/2026)
+- **Nguồn:** `CDA_DIRECTIVE` 14/10/2026 trả lời Q-48 (chọn phương án thêm module hạ tầng và composition root) và Q-44 (đồng bộ danh sách module).
+- **Thay đổi:** danh sách module ở mục Decision lấy theo `Architecture.md` §3; thêm `platform` (cấu hình/secret, engine/session CSDL, tích hợp Alembic, log, health, cơ chế tạo ứng dụng FastAPI, hạ tầng HTTP) và `app` (lắp ráp API, worker, CLI). `knowledge`, `insights` đã có trong Architecture 1.1 nhưng chưa có trong ADR này.
+- **Quy tắc phụ thuộc thêm** (Architecture §3, quy tắc 8–10): `platform` không import module `aieos` nào; không module nào import `app`; chỉ `platform` tạo engine CSDL, cấu hình logging toàn cục, đọc biến môi trường. Kiểm tra tự động: contract C5, C6 (import-linter), C7 (test AST) — Implementation_Plan §11.4.
+- **Không đổi:** kiểu kiến trúc, một PostgreSQL, giao tiếp qua `<module>.api`, cổng ghi duy nhất (ADR-008).
+- **Tác động:** Architecture 1.3, ADR-002 Amendment 1, `backend/pyproject.toml`, test cấu trúc và ranh giới.

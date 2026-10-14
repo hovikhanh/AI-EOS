@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kiểm tra âm N1–N19 cho scripts/ci.sh (T-002, Implementation_Plan §11.5).
+# Kiểm tra âm N1–N22 cho scripts/ci.sh (T-002, D-42; Implementation_Plan §11.5).
 # Mỗi ca: sao chép repo (file được theo dõi + chưa theo dõi, bỏ file bị ignore) vào thư mục tạm, tiêm một lỗi,
 # chạy scripts/ci.sh và yêu cầu: mã thoát khác 0, dừng đúng bước, log có dấu hiệu lỗi mong đợi.
 # Không sửa repo gốc. Cần mạng cho npm/uv và cho N19 (quét lỗ hổng).
@@ -88,13 +88,19 @@ n17() { :; }
 n18() { printf '\n[liên kết hỏng](khong-ton-tai.md)\n' >> docs/Implementation_Handoff.md; }
 n19a() { (cd backend && uv add --quiet --dev "jinja2==2.10"); }
 n19b() { (cd frontend && npm install --silent --no-audit --no-fund --save-exact lodash@4.17.20); }
+n20() {
+  write $B/access/api.py $'"""API công khai."""\n'
+  write $B/platform/n20.py $'from aieos.access import api\n\nNAME = api.__name__\n'
+}
+n21() { write $B/goals/n21.py $'from aieos import app\n\nNAME = app.__name__\n'; }
+n22() { write $B/goals/n22.py $'import os\n\nVALUE = os.environ.get("AIEOS_X")\n'; }
 
 echo "Thư mục tạm: $WORK"
 run_case N1 ruff-check 'F401' n1
 run_case N2 ruff-format 'would be reformatted' n2
 run_case N3 mypy 'Incompatible return value' n3
 run_case N4 import-contracts 'C2 ai-jobs-capture khong import domain BROKEN' n4
-run_case N5 import-contracts 'C1 providers khong import module aieos khac BROKEN' n5
+run_case N5 import-contracts 'C1 providers khong import module aieos khac ngoai platform BROKEN' n5
 run_case N6 import-contracts 'C3 domain khong import gateway BROKEN' n6
 run_case N7 pytest 'test_source_tree_respects_c4' n7
 run_case N8 pytest 'test_n8' n8
@@ -115,6 +121,9 @@ run_case N17b runtime 'Cần Python|No interpreter found|requires-python' n17 UV
 run_case N18 docs 'khong-ton-tai.md' n18
 run_case N19a audit-python 'jinja2' n19a
 run_case N19b audit-npm 'lodash' n19b
+run_case N20 import-contracts 'C5 platform khong import module aieos khac BROKEN' n20
+run_case N21 import-contracts 'C6 khong module nao import app BROKEN' n21
+run_case N22 pytest 'test_only_platform_owns_infrastructure' n22
 
 if [ "$FAILED" -ne 0 ]; then
   echo "NEGATIVE CHECKS FAILED (log: $LOGS)"
