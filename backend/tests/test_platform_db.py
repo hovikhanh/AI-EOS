@@ -309,19 +309,20 @@ def test_transaction_commits_or_rolls_back(database: ProvisionedDatabase) -> Non
 
 
 @pytest.mark.db
-def test_migrate_command_runs_as_owner_without_printing_secret(database: ProvisionedDatabase) -> None:
-    owner_url = database.urls["aieos_owner"]
+def test_migrate_command_requires_owner_role_and_hides_secret(database: ProvisionedDatabase) -> None:
     env = {k: v for k, v in os.environ.items() if not k.startswith("AIEOS_")}
+    command = [sys.executable, "-m", "aieos.app", "migrate"]
+
+    # CSDL chưa migrate: role ứng dụng không có DDL → lệnh thất bại, không in mật khẩu.
+    app_url = database.urls["aieos_app"]
+    env["AIEOS_DATABASE_OWNER_URL"] = app_url.render_as_string(hide_password=False)
+    failed = subprocess.run(command, env=env, capture_output=True, text=True, check=False)
+    assert failed.returncode == 1
+    assert str(app_url.password) not in failed.stdout + failed.stderr
+
+    owner_url = database.urls["aieos_owner"]
     env["AIEOS_DATABASE_OWNER_URL"] = owner_url.render_as_string(hide_password=False)
-    result = subprocess.run(
-        [sys.executable, "-m", "aieos.app", "migrate"], env=env, capture_output=True, text=True, check=False
-    )
+    result = subprocess.run(command, env=env, capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr[-500:].replace(str(owner_url.password), "***")
     assert head_revision() in result.stdout
     assert str(owner_url.password) not in result.stdout + result.stderr
-    env["AIEOS_DATABASE_OWNER_URL"] = database.urls["aieos_app"].render_as_string(hide_password=False)
-    failed = subprocess.run(
-        [sys.executable, "-m", "aieos.app", "migrate"], env=env, capture_output=True, text=True, check=False
-    )
-    assert failed.returncode == 1
-    assert str(database.urls["aieos_app"].password) not in failed.stdout + failed.stderr
