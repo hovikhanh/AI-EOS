@@ -147,7 +147,9 @@ def database() -> Iterator[ProvisionedDatabase]:
     try:
         with target.connect() as conn:
             # Gửi nguyên văn qua psycopg (không tham số) như psql: `%I` của format() không phải placeholder.
-            conn.connection.driver_connection.execute(provision_roles_sql())
+            driver = conn.connection.driver_connection
+            assert driver is not None
+            driver.execute(provision_roles_sql())
             for role, password in passwords.items():
                 conn.exec_driver_sql(f"ALTER ROLE {role} PASSWORD '{password}'")
         target.dispose()
