@@ -200,7 +200,7 @@ Quy tắc: một chuỗi revision; mỗi migration có test rỗng → head và 
 
 | Biến | Loại | Dùng bởi |
 | --- | --- | --- |
-| `AIEOS_DATABASE_URL` | Secret | api, worker (role `aieos_app`) |
+| `AIEOS_DATABASE_URL` | Secret | api, worker, CLI quản trị `admin-cli` (role `aieos_app`) |
 | `AIEOS_DATABASE_OWNER_URL` | Secret | lệnh migration |
 | `AIEOS_CSRF_KEY` | Secret | api |
 | `AIEOS_TOTP_ENCRYPTION_KEY` | Secret | api |
@@ -214,7 +214,7 @@ Quy tắc: một chuỗi revision; mỗi migration có test rỗng → head và 
 | `AIEOS_BACKUP_TARGET` | Cấu hình | backup |
 | `AIEOS_AUTH_RATE_LIMIT_ATTEMPTS`, `AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS` | Cấu hình bắt buộc, không mặc định (D-57) — số lần thử tối đa trong cửa sổ, theo IP và theo tài khoản, cho đăng nhập, MFA, chấp nhận lời mời, reauth (API_Specification §1.9); đăng ký vào loader ở T-102 (đã đăng ký) | api |
 | `AIEOS_AUTH_LOCKOUT_THRESHOLD`, `AIEOS_AUTH_LOCKOUT_MINUTES` | Cấu hình bắt buộc, không mặc định — số lần sai liên tiếp để khóa tạm và thời gian khóa (SRS-IAM-07 "giá trị cấu hình"; áp nguyên tắc D-57; đăng ký ở T-102) | api |
-| `AIEOS_PASSWORD_MIN_LENGTH` | Cấu hình bắt buộc, không mặc định (D-58) — độ dài mật khẩu tối thiểu cho CLI T-106, đổi mật khẩu T-104, lời mời T-105; đăng ký vào loader ở T-106 | api, CLI |
+| `AIEOS_PASSWORD_MIN_LENGTH` | Cấu hình bắt buộc, không mặc định (D-58) — độ dài mật khẩu tối thiểu cho CLI T-106, đổi mật khẩu T-104, lời mời T-105; đăng ký vào loader ở T-106 (đã đăng ký) | api, CLI |
 
 Secret nạp qua Docker secrets hoặc file môi trường không commit. Không có giá trị mặc định cho secret; thiếu → tiến trình dừng (T-004).
 
@@ -549,4 +549,13 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - SRS-NTF-02 (không dữ liệu nhạy cảm): CSDL/service không kiểm được nội dung; trách nhiệm ở module gọi và được kiểm ở phần TC-NTF-01 của T-304, T-403, T-505 (D-58). T-010 bảo đảm: chỉ người nhận đọc/đánh dấu được (người khác → `404`), `link` chỉ là đường dẫn nội bộ (service + CHECK CSDL) — quyết định kỹ thuật của agent để thông báo không dẫn ra ngoài hệ thống.
 - API-NOT-02 trả `200` kèm thông báo (API_Specification §8 không ghi response; chọn để frontend cập nhật ngay); gọi lại giữ nguyên `read_at`.
 - Ngoài phạm vi: số chưa đọc, lọc theo trạng thái, dọn thông báo cũ (cần DELETE + chính sách lưu trữ), giao diện chuông thông báo (T-111/T-513).
+
+## 25. Ghi chú triển khai T-106 (15/10/2026)
+
+- Vị trí: `identity/admin.py` (`bootstrap_admin`, `recover_admin` — logic), `app/admin_cli.py` (lệnh `python -m aieos.app bootstrap-admin|recover-admin`); `access.api.active_admins` (ADMIN có `status = 'ACTIVE'`, cùng định nghĩa INV-11). Không có endpoint HTTP (ADR-006).
+- Cấu hình: tiến trình mới `admin-cli` trong loader (T-004) — `AIEOS_DATABASE_URL` (role `aieos_app`, đủ quyền: chỉ INSERT/UPDATE) và `AIEOS_PASSWORD_MIN_LENGTH` (D-58; bắt buộc, không mặc định; thiếu/sai → mã thoát 2). Mật khẩu: `--password-file` (Docker secret) hoặc nhập tương tác hai lần; không nhận qua tham số dòng lệnh (lộ trong lịch sử shell/danh sách tiến trình). Độ dài tối đa 1024 (giới hạn API đăng nhập). Không in email hay mật khẩu.
+- Bootstrap: advisory lock `admin-membership` (khóa của trigger INV-11) → chưa có ADMIN `ACTIVE` → tài khoản `ACTIVE`, `must_enroll_mfa = true`, `created_by = NULL`; `grant_role` ADMIN với `granted_by = NULL`; audit `identity.admin.bootstrap` (`actor_type = BOOTSTRAP`). Email đã có tài khoản → từ chối (không nâng tài khoản có sẵn thành ADMIN — quyết định kỹ thuật của agent). Theo ADR-006 (nhập mật khẩu, buộc MFA); đề xuất "mật khẩu tạm buộc đổi ở lần đầu" của D-22 mục 3.3.2 là `PROPOSED`, ADR-006 không yêu cầu — không làm.
+- Recover: cần `--confirm` (thiếu → mã 1, không đổi gì) và `--reason`; đích phải là ADMIN `ACTIVE` (trigger INV-11 bảo đảm luôn có ít nhất một). Đặt mật khẩu mới do người vận hành nhập; `mfa_enabled = false`, xóa `mfa_secret_enc`, `must_enroll_mfa = true`; đánh dấu mã khôi phục còn lại đã dùng; gỡ khóa tạm (`locked_until`, bộ đếm); `version + 1`; thu hồi mọi session; audit `identity.admin.recover` kèm lý do; thông báo `ADMIN_RECOVERED` (tiêu đề chung, không tên/email, không link) cho mọi ADMIN `ACTIVE` khác (T-010).
+- `[CẦN XÁC NHẬN]`: khôi phục tài khoản ADMIN đang `LOCKED`/`DISABLED` (đổi trạng thái về `ACTIVE`) — chưa làm; hiện chỉ khôi phục ADMIN `ACTIVE`.
+- Đăng nhập lần đầu sau bootstrap/recover: session ở trạng thái chờ MFA (T-102); đăng ký MFA là T-103.
 

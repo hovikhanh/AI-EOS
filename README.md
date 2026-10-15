@@ -73,3 +73,11 @@ CSDL (T-005, PostgreSQL 18): superuser chạy một lần `psql -d <csdl> -f bac
 cd backend
 AIEOS_DATABASE_OWNER_URL=postgresql://aieos_owner:<mật khẩu>@<host>/<csdl> uv run --locked python -m aieos.app migrate
 ```
+
+ADMIN đầu tiên (T-106; không có tài khoản mặc định): cần `AIEOS_DATABASE_URL` (role `aieos_app`) và `AIEOS_PASSWORD_MIN_LENGTH`; mật khẩu nhập tương tác hoặc qua `--password-file` (không có tham số mật khẩu). Tài khoản tạo ra phải đăng ký MFA trước khi dùng.
+
+```bash
+uv run --locked python -m aieos.app bootstrap-admin --email <email> --display-name "<tên>"
+# Khôi phục ADMIN (mật khẩu mới, đăng ký lại MFA, thu hồi session, thông báo ADMIN khác):
+uv run --locked python -m aieos.app recover-admin --email <email> --reason "<lý do>" --confirm
+```

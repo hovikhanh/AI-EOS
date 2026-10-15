@@ -23,6 +23,7 @@ class Process(enum.Enum):
     API = "api"
     WORKER = "worker"
     MIGRATE = "migrate"
+    ADMIN_CLI = "admin-cli"  # bootstrap-admin, recover-admin (T-106, ADR-006 A2/A6)
 
 
 class Kind(enum.Enum):
@@ -42,9 +43,10 @@ class Variable:
 _API = frozenset({Process.API})
 _WORKER = frozenset({Process.WORKER})
 _API_WORKER = frozenset({Process.API, Process.WORKER})
+_API_CLI = frozenset({Process.API, Process.ADMIN_CLI})
 
 VARIABLES: tuple[Variable, ...] = (
-    Variable("AIEOS_DATABASE_URL", Kind.SECRET, _API_WORKER, note="role aieos_app"),
+    Variable("AIEOS_DATABASE_URL", Kind.SECRET, _API_WORKER | _API_CLI, note="role aieos_app"),
     Variable("AIEOS_DATABASE_OWNER_URL", Kind.SECRET, frozenset({Process.MIGRATE}), note="role aieos_owner"),
     Variable("AIEOS_CSRF_KEY", Kind.SECRET, _API),
     Variable("AIEOS_TOTP_ENCRYPTION_KEY", Kind.SECRET, _API),
@@ -64,6 +66,8 @@ VARIABLES: tuple[Variable, ...] = (
     Variable("AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS", Kind.CONFIG, _API, note="D-57"),
     Variable("AIEOS_AUTH_LOCKOUT_THRESHOLD", Kind.CONFIG, _API, note="SRS-IAM-07, nguyên tắc D-57"),
     Variable("AIEOS_AUTH_LOCKOUT_MINUTES", Kind.CONFIG, _API, note="SRS-IAM-07, nguyên tắc D-57"),
+    # Chính sách mật khẩu (D-58): bắt buộc, không mặc định — CLI T-106, đổi mật khẩu T-104, lời mời T-105.
+    Variable("AIEOS_PASSWORD_MIN_LENGTH", Kind.CONFIG, _API_CLI, note="D-58"),
     # Dùng bởi công cụ backup (T-605), không phải tiến trình Python của AI-EOS.
     Variable("AIEOS_BACKUP_TARGET", Kind.CONFIG, frozenset(), required=False, note="T-605"),
 )
