@@ -1,6 +1,6 @@
 # AI-EOS — Software Requirements Specification (SRS)
 
-> Phiên bản: 1.1 · Ngày: 12/10/2026 · Trạng thái: **Stage 2B — CDA duyệt có điều kiện (D-37…D-40)** · Thay đổi: §18
+> Phiên bản: 1.2 (15/10/2026, D-51) · Ngày: 12/10/2026 · Trạng thái: **Stage 2B — CDA duyệt có điều kiện (D-37…D-40)** · Thay đổi: §18
 > Nguồn: [PRD.md](PRD.md), [Requirements_Traceability](../00-source/Requirements_Traceability.md), [Decision_Log](../00-source/Decision_Log.md) 0.6, ADR-001…013, [Architecture](../03-architecture/Architecture.md), [Database_Design](../03-architecture/Database_Design.md), [API_Specification](../03-architecture/API_Specification.md).
 > AI-EOS chưa có code; mọi yêu cầu ở đây là đặc tả, không có yêu cầu nào `IMPLEMENTED`/`VERIFIED`.
 
@@ -154,7 +154,7 @@ Trạng thái và chuyển: Architecture §8.5 (BRD §3.6 + bổ sung `ARCHITECT
 | SRS-GOAL-01 | Objective có tiêu đề, owner, kỳ, đơn vị, Objective cha (tùy chọn); KR có Objective, chỉ số, baseline, target, owner, kỳ | BRD §3.4 | CONFIRMED | DB `goals.objective`, `key_result` |
 | SRS-GOAL-02 | KPI có chỉ số, baseline, target, owner, kỳ | BRD §3.4 | CONFIRMED | DB `goals.kpi` |
 | SRS-GOAL-03 | Objective/KR/KPI dựng từ tài liệu ở trạng thái `DRAFT`; chỉ chuyển `ACTIVE` khi người có quyền kích hoạt xác nhận. Trạng thái khác (đóng, hủy, lưu trữ) chưa có → Q-28 | US-DC-005 | CONFIRMED (DRAFT→ACTIVE) / NEEDS_CONFIRMATION (khác) | API-GOAL-04 |
-| SRS-GOAL-04 | Kích hoạt cần thao tác rõ ràng của người có permission `goals.activate` trong phạm vi (đơn vị hoặc công ty). Permission chỉ giao qua assignment, role đủ điều kiện `CEO`, `MANAGER`; **chưa có quyền nền** cho tới khi CDA trả lời Q-28. Người tạo bản nháp từ tài liệu không tự kích hoạt Objective cấp công ty | US-DC-005, D-39 | CONFIRMED (thao tác rõ ràng) / NEEDS_CONFIRMATION (ai giữ quyền, Q-28) | API-GOAL-04 |
+| SRS-GOAL-04 | Kích hoạt cần thao tác rõ ràng của người có permission `goals.activate` trong phạm vi (đơn vị hoặc công ty). Permission chỉ giao qua assignment, role đủ điều kiện `CEO`, `MANAGER`; [1.2] Q-28 (D-51): cấp công ty — CEO, cấp đơn vị — MANAGER; không có quyền nền. Người tạo bản nháp từ tài liệu không tự kích hoạt Objective cấp công ty | US-DC-005, D-39 | CONFIRMED (thao tác rõ ràng) / NEEDS_CONFIRMATION (ai giữ quyền, Q-28) | API-GOAL-04 |
 | SRS-GOAL-05 | Mục tiêu `DRAFT` không xuất hiện trong ô chỉ số, Briefing, câu trả lời AI về tiến độ | Suy ra từ US-DC-005 | CONFIRMED | — |
 | SRS-GOAL-06 | Ghi giá trị thực tế KPI/KR từ báo cáo định kỳ đã review (commit qua gateway) hoặc nhập tay; mỗi giá trị gắn kỳ báo cáo và nguồn | BRD §3.4, FR-DC-17 | CONFIRMED | API-GOAL-06 |
 | SRS-GOAL-07 | Check-in KR: giá trị, độ tự tin (thang `[CẦN XÁC NHẬN]`, mặc định 0–10 — PROPOSED), blocker (văn bản; giọng nói chuyển văn bản); lưu thời điểm; owner KR hoặc người được giao check-in | F4, FR-DC-06 | CONFIRMED (trường) / NEEDS_CONFIRMATION (thang, nhịp) | API-GOAL-05 |
@@ -204,7 +204,7 @@ Trạng thái và chuyển: Architecture §8.5 (BRD §3.6 + bổ sung `ARCHITECT
 | SRS-BRF-02 | 4 ô chỉ số; CEO chọn từ danh sách chỉ số có sẵn; mặc định doanh thu, dòng tiền, OKR, task trễ | UX §6.1 | CONFIRMED | API-INS-01 |
 | SRS-BRF-03 | Mỗi ô hiển thị giá trị, thời điểm cập nhật dữ liệu nguồn, và nhãn "dữ liệu cũ" khi quá ngưỡng (ngưỡng theo chỉ số, cấu hình `[CẦN XÁC NHẬN]`) | FR-DF-03, UX-26 | CONFIRMED / NEEDS_CONFIRMATION (ngưỡng) | — |
 | SRS-BRF-04 | Bấm ô → công thức, nguồn, thời điểm, bản ghi, tài liệu gốc | U3, US-DC-011 | CONFIRMED | API-ORG-03 |
-| SRS-BRF-05 | Định nghĩa ô mặc định (PROPOSED, D-28/Q-37): **Doanh thu** = tổng `REVENUE` đã ghi sổ trong kỳ hiện hành; **Dòng tiền** = `CASH_BALANCE` đã ghi sổ mới nhất; **OKR** = số KR `ACTIVE` đã có giá trị đo trong kỳ / tổng KR `ACTIVE` (không phải % đạt — Q-29); **Task trễ** = số task `OPEN` quá hạn trong phạm vi. Theo D-39: ô hiển thị nhãn "Chỉ số đề xuất — chưa chính thức", **không** có màu trạng thái hay cảnh báo, không dùng làm cơ sở cảnh báo/Briefing | UX §6.1, ADR-009, D-39 | PROPOSED | — |
+| SRS-BRF-05 | Định nghĩa ô mặc định (D-28/Q-37): **Doanh thu** = tổng `REVENUE` đã ghi sổ trong kỳ hiện hành; **Dòng tiền** = `CASH_BALANCE` đã ghi sổ mới nhất; **OKR** = số KR `ACTIVE` đã có giá trị đo trong kỳ / tổng KR `ACTIVE` (không phải % đạt — Q-29); **Task trễ** = số task `OPEN` quá hạn trong phạm vi. [1.2] Công thức chính thức theo Q-37 (D-51, 15/10/2026) — bỏ nhãn "chưa chính thức"; **không** có màu trạng thái hay cảnh báo cho tới khi có ngưỡng; ngưỡng "dữ liệu cũ" là cấu hình, chưa có giá trị | UX §6.1, ADR-009, D-39, D-51 | CONFIRMED | — |
 | SRS-BRF-06 | Ô không có dữ liệu → trạng thái trống + gợi ý bổ sung; không hiển thị 0 khi không có dữ liệu | UX-30, BR-14 | CONFIRMED | — |
 | SRS-BRF-07 | "Cần anh quyết" chỉ gồm mục có nguồn truy vết được trong hệ thống: bản nháp AI chờ CEO xác nhận; task giao cho CEO quá hạn hoặc sắp đến hạn. Mỗi mục có liên kết đối tượng nguồn và nút hành động tại chỗ. Loại mục khác chờ Q-36 | UX §6.1, U6, D-39 | CONFIRMED (theo D-39) | API-AI-07 |
 | SRS-BRF-08 | "AI đã làm": hành động L3 trong 24 giờ gần nhất, tách nền với việc của người, có hoàn tác khi còn hạn | UX §6.1, U4 | CONFIRMED | API-AI-07 |
@@ -452,3 +452,4 @@ Q-28…Q-42 (Decision_Log §7) và các mục NEEDS_CONFIRMATION trong tài li�
 | --- | --- | --- |
 | 1.0 | Stage 2B | — |
 | 1.1 | SRS-FIN-05, 08, 16 cập nhật; thêm SRS-FIN-17 (`ON_HOLD`) — AMD-01. SRS-BRF-11 **đảo lại** (Briefing bị chặn khi kill switch bật), thêm SRS-BRF-13; SRS-AIC-06 thêm `job_class` — AMD-02. SRS-GOAL-04, SRS-BRF-05, 07, 09 theo mặc định D-39. SRS-SLS-01 theo D-40. SRS-ACC-10 tách quyền nhân sự (R6). §15.2 ghi nhận AMD đã duyệt | D-37…D-40, D-21 |
+| 1.2 | SRS-BRF-05 → CONFIRMED (Q-37), bỏ nhãn "chưa chính thức"; SRS-GOAL-04 ghi phạm vi kích hoạt (Q-28) | D-51 |

@@ -1,7 +1,7 @@
 # AI-EOS — Ma trận truy vết yêu cầu (Requirements Traceability)
 
-> Phiên bản: 0.6 (Stage 2D) · Ngày: 12/10/2026 · Trạng thái: **Chờ chủ dự án duyệt**
-> Quyết định áp dụng: xem [Decision_Log.md](Decision_Log.md). Lịch sử thay đổi: mục 7 (0.2), mục 8 (0.3), mục 9 (0.4), mục 10 (0.5), mục 11 (0.6), mục 12 (0.6.1).
+> Phiên bản: 0.7 · Ngày: 15/10/2026 · Trạng thái: **Chờ chủ dự án duyệt**
+> Quyết định áp dụng: xem [Decision_Log.md](Decision_Log.md). Lịch sử thay đổi: mục 7 (0.2), mục 8 (0.3), mục 9 (0.4), mục 10 (0.5), mục 11 (0.6), mục 12 (0.6.1), mục 13 (0.7).
 > AI-EOS là dự án mới, độc lập (D-04, D-05). Code hiện có: khung repo T-001, toolchain T-002, nền tảng frontend T-012 (mục 12), chưa hiện thực requirement nào.
 > Phân tích, mâu thuẫn (CON), khoảng trống (GAP), giả định (ASM), câu hỏi (Q): xem [Source_Analysis.md](Source_Analysis.md).
 > Các cột **PRD · SRS · API · Task · Test**: từ 0.4 cột API được điền theo [API_Specification.md](../03-architecture/API_Specification.md) (endpoint ở trạng thái DESIGNED, chưa triển khai) hoặc `N/A — <lý do/ADR>`; từ 0.5 cột PRD/SRS điền theo [PRD](../02-requirements/PRD.md) và [SRS](../02-requirements/SRS.md) (§17 của SRS cho ánh xạ gián tiếp); từ 0.6 cột Task/Test điền theo [Implementation_Plan](../04-delivery/Implementation_Plan.md) và [TEST_Plan](../04-delivery/TEST_Plan.md) (task bị chặn ghi `(BLOCKED)`; test ở trạng thái `NOT RUN`).
@@ -157,8 +157,8 @@
 | FR-AUT-02 | Level cấu hình theo tool × vai trò × ngưỡng giá trị | BRD §4.2 | CONFIRMED | P0 | GAP-08 | US-AIC-04 | SRS-AIC-02, SRS-AIC-15 | API-AI-04, API-AI-05 | T-301, T-302, T-305 | TC-AIC-02, TC-AIC-12 |
 | FR-AUT-03 | Hoàn tác ≥ 24 giờ cho L3; với dữ liệu tài chính chỉ bằng bút toán đảo liên kết bản gốc, không xóa lịch sử/audit | BRD §4.2 | CONFIRMED | P0 | BR-11, CON-12, UX-41, D-13, D-14 | UX_Flows | SRS-AIC-10, SRS-FIN-10 | API-AI-11, API-FIN-12 | T-304, T-405 | TC-AIC-10, TC-FIN-23, TC-FIN-24, TC-FIN-25 (+2) |
 | FR-AUT-04 | Kill switch chỉ Admin; hạ L3/L4 về L2; kiểm tra ở cổng ghi backend | BRD §4.2 | CONFIRMED | P0 | BR-13, CON-04, UX-29, D-09, D-10 | UX_Flows | SRS-AIC-04 | N/A — giao diện (UX Flows 2B) | T-303 | TC-KS-01, TC-KS-02 |
-| FR-HM-01 | Bộ chỉ số sức khỏe mặc định, doanh nghiệp tinh chỉnh được | BRD §4.3 | CONFIRMED | — | CON-09 | UX_Flows | SRS-BRF-02 | N/A — giao diện (UX Flows 2B) | T-510 | TC-BRF-01 |
-| FR-HM-02 | Chỉ số có công thức và ngưỡng, dùng chung cho Dashboard, Briefing, AI | BRD §4.3 | CONFIRMED | — | FR-DF-06 | UX_Flows | SRS-BRF-05 | N/A — giao diện (UX Flows 2B) | T-510 | TC-BRF-02 |
+| FR-HM-01 | Bộ chỉ số sức khỏe mặc định, doanh nghiệp tinh chỉnh được | BRD §4.3 | CONFIRMED | — | CON-09 | UX_Flows | SRS-BRF-02 | N/A — giao diện (UX Flows 2B) | T-510, T-513 | TC-BRF-01 |
+| FR-HM-02 | Chỉ số có công thức và ngưỡng, dùng chung cho Dashboard, Briefing, AI | BRD §4.3 | CONFIRMED | — | FR-DF-06 | UX_Flows | SRS-BRF-05 | N/A — giao diện (UX Flows 2B) | T-510, T-513 | TC-BRF-02 |
 | FR-HM-03 | Nhóm Tài chính: tăng trưởng DT, biên LN gộp/EBITDA, cash runway, DSO/DPO/CCC, công nợ quá hạn, chênh lệch ngân sách | BRD §4.3 | PROPOSED | — | CON-09, GAP-16 | US-FNL-05 | SRS-FIN-15 | N/A — giao diện (UX Flows 2B) | T-407 (BLOCKED) | TC-FIN-31 (BLOCKED) |
 | FR-HM-04 | Nhóm Khách hàng: pipeline coverage, tỷ lệ chuyển đổi/chu kỳ bán, NRR/churn, tập trung DT, CAC/LTV/NPS | BRD §4.3 | PROPOSED | — | CON-09 | UX_Flows | SRS-SLS-02 | N/A — giao diện (UX Flows 2B) | T-901 (BLOCKED) | Chưa có test |
 | FR-HM-05 | Nhóm Vận hành: hoàn thành đúng hạn, dự án trễ, thực thi quyết định | BRD §4.3 | PROPOSED | — | CON-09 | US-WRK-03 | SRS-WRK-02 | N/A — giao diện (UX Flows 2B) | T-505 | TC-WRK-02 |
@@ -242,7 +242,7 @@ Toàn bộ mục này là `PROPOSED` (đề xuất thiết kế) trừ khi ghi k
 
 | ID | Luồng | Mục tiêu | Nguồn liên kết | Trạng thái | Liên quan | PRD | SRS | API | Task | Test |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F1 | CEO buổi sáng: Briefing → giao việc | ≤ 2 phút, ≤ 5 chạm | UC-01, UC-03 (v1.0) | PROPOSED | GAP-01, FR-EXT-04 | US-BRF-04, US-WRK-05 | SRS-BRF-01, SRS-BRF-07, SRS-BRF-11, SRS-NTF-01 (+2) | API-INS-01, API-AI-07, API-AI-09 | T-010, T-506, T-508, T-510 (+2) | TC-BRF-01, TC-BRF-05, TC-BRF-09, TC-BRF-11 (+4) |
+| F1 | CEO buổi sáng: Briefing → giao việc | ≤ 2 phút, ≤ 5 chạm | UC-01, UC-03 (v1.0) | PROPOSED | GAP-01, FR-EXT-04 | US-BRF-04, US-WRK-05 | SRS-BRF-01, SRS-BRF-07, SRS-BRF-11, SRS-NTF-01 (+2) | API-INS-01, API-AI-07, API-AI-09 | T-010, T-506, T-508, T-510 (+2), T-513 | TC-BRF-01, TC-BRF-05, TC-BRF-09, TC-BRF-11 (+4) |
 | F2 | Gửi tài liệu và AI trích xuất | Gửi ≤ 3 chạm; review ≤ 60 giây | US-DC-003, 006 | PROPOSED | CON-05, D-18 | UX_Flows | SRS-CAP-01, SRS-CAP-21, SRS-REV-04 | API-DOC-01, API-REV-01, API-REV-03 | T-203, T-206, T-207 | TC-CAP-16, TC-FILE-02, TC-REV-02 |
 | F3 | Biên bản họp thành việc | ≤ 10 phút kể cả duyệt | UC-06 (UC-02 v1.0) | PROPOSED | CON-11 | UX_Flows | SRS-ACC-11, SRS-WRK-05, SRS-WRK-06, SRS-WRK-07 | API-WORK-02, API-WORK-06 | T-108, T-201, T-506 | TC-ACC-09, TC-WRK-06, TC-WRK-07 |
 | F4 | Check-in KPI/OKR của nhân viên | ≤ 30 giây | US-OKR-006 (v1.0) | PROPOSED | GAP-01 | US-GOAL-03 | SRS-GOAL-07, SRS-GOAL-08, SRS-GOAL-11, SRS-NTF-01 | API-GOAL-05 | T-010, T-501, T-504, T-906 (BLOCKED) | TC-GOAL-04, TC-GOAL-06, TC-GOAL-10, TC-NTF-01 |
@@ -252,9 +252,9 @@ Toàn bộ mục này là `PROPOSED` (đề xuất thiết kế) trừ khi ghi k
 
 | ID | Mô tả ngắn | Nguồn | Trạng thái | Liên quan | PRD | SRS | API | Task | Test |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| UX-01 | Trang chủ theo vai trò, lấy ngoại lệ làm trung tâm; nội dung theo vai trò (UX §4.1) | UX §1, §4.1 | PROPOSED | CON-13 | UX_Flows | SRS-BRF-01 | N/A — giao diện (UX Flows 2B) | T-510 | TC-BRF-01 |
-| UX-02 | Thanh AI toàn cục (⌘K/Ctrl+K): tìm kiếm, hỏi, ra lệnh, nhập bằng lời, thả file; gợi ý theo màn hình | UX §1, §7.2 | PROPOSED | FR-DC-03 | US-AIC-05 | SRS-AIC-12 | API-AI-12 | T-306 | TC-AIC-13, TC-AIC-14 |
-| UX-03 | Mọi con số bấm được: popover công thức, nguồn, thời điểm cập nhật, bản ghi, tài liệu gốc | UX §1, U3 | PROPOSED | US-DC-011 | UX_Flows | SRS-BRF-04 | API-ORG-03 | T-211, T-510 | TC-CAP-12 |
+| UX-01 | Trang chủ theo vai trò, lấy ngoại lệ làm trung tâm; nội dung theo vai trò (UX §4.1) | UX §1, §4.1 | PROPOSED | CON-13 | UX_Flows | SRS-BRF-01 | N/A — giao diện (UX Flows 2B) | T-510, T-513 | TC-BRF-01 |
+| UX-02 | Thanh AI toàn cục (⌘K/Ctrl+K): tìm kiếm, hỏi, ra lệnh, nhập bằng lời, thả file; gợi ý theo màn hình | UX §1, §7.2 | PROPOSED | FR-DC-03 | US-AIC-05 | SRS-AIC-12 | API-AI-12 | T-306, T-308 | TC-AIC-13, TC-AIC-14 |
+| UX-03 | Mọi con số bấm được: popover công thức, nguồn, thời điểm cập nhật, bản ghi, tài liệu gốc | UX §1, U3 | PROPOSED | US-DC-011 | UX_Flows | SRS-BRF-04 | API-ORG-03 | T-211, T-510, T-513 | TC-CAP-12 |
 | UX-04 | Vùng thả file toàn cục; Hộp thư dữ liệu; AI đoán đích đến theo ngữ cảnh | UX §1, U5 | PROPOSED | C3 | UX_Flows | SRS-CAP-01 | API-DOC-01 | T-203 | TC-FILE-02 |
 | UX-05 | Mỗi Autonomy Level một mẫu giao diện cố định (insight card, suggestion chip, action card, undo toast, báo cáo hoạt động) | UX §7.1 | PROPOSED | FR-AUT-01, CON-02, D-11 | UX_Flows | SRS-AIC-07, SRS-AIC-11 | API-AI-08, API-AI-09 | T-304 | TC-AIC-07, TC-AIC-08, TC-AIC-09, TC-AIC-17 |
 | UX-06 | Mobile tập trung 4 việc: Briefing, hỏi AI, chụp/gửi tài liệu, duyệt | UX §1, §6.3 | PROPOSED | NFR-06 | UX_Flows | SRS-NFR-06 | N/A — giao diện (UX Flows 2B) | T-608 | TC-NFR-03 |
@@ -263,7 +263,7 @@ Toàn bộ mục này là `PROPOSED` (đề xuất thiết kế) trừ khi ghi k
 | UX-09 | Người đa vai trò đổi ngữ cảnh ở thanh trên; Trang chủ đổi theo | UX §4.2 | PROPOSED | CON-13 | UX_Flows | SRS-ACC-05 | API-AUTH-07 | T-107, T-109 | TC-ACC-04 |
 | UX-10 | Breadcrumb theo chuỗi nghiệp vụ Chiến lược › Objective › KR › Dự án › Task (P06) | UX §4.2 | PROPOSED | GAP-01 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-11 | Trang chi tiết entity cùng bố cục; tab Tổng quan, Liên kết, Lịch sử, Tài liệu gốc, Hoạt động AI; panel AI phải | UX §4.2 | PROPOSED | — | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
-| UX-12 | Trang chủ CEO: dòng tóm tắt; 4 ô chỉ số chọn được (mặc định doanh thu, dòng tiền, OKR, task trễ); "Cần anh quyết" trên "Rủi ro"; "AI đã làm"; panel AI | UX §6.1 | PROPOSED | CON-09 | UX_Flows | SRS-BRF-01 | API-INS-01, API-INS-02 | T-510 | TC-BRF-01 |
+| UX-12 | Trang chủ CEO: dòng tóm tắt; 4 ô chỉ số chọn được (mặc định doanh thu, dòng tiền, OKR, task trễ); "Cần anh quyết" trên "Rủi ro"; "AI đã làm"; panel AI | UX §6.1 | PROPOSED | CON-09 | UX_Flows | SRS-BRF-01 | API-INS-01, API-INS-02 | T-510, T-513 | TC-BRF-01 |
 | UX-13 | Review: liên kết hai chiều trường ↔ vùng trên bản gốc | UX §6.2 | PROPOSED | FR-DC-19 | UX_Flows | SRS-REV-02 | N/A — giao diện (UX Flows 2B) | T-207 | TC-REV-07 |
 | UX-14 | Độ tin cậy 3 mức màu + hình (● ◐ ○); mặc định ≥ 90 / 60–89 / < 60; chỉnh theo loại tài liệu | UX §6.2 | NEEDS_CONFIRMATION | CON-07, ASM-05, D-29 | UX_Flows | SRS-REV-03 | N/A — giao diện (UX Flows 2B) | T-207 | TC-REV-07 |
 | UX-15 | Con trỏ nhảy vào trường cần xem trước; trường trọng yếu luôn phải đi qua; tài liệu kế tiếp mở ngay | UX §6.2 | PROPOSED | BR-03 | US-DC-006 | SRS-REV-04, SRS-REV-05 | N/A — giao diện (UX Flows 2B) | T-207 | TC-REV-02, TC-REV-06 |
@@ -273,15 +273,15 @@ Toàn bộ mục này là `PROPOSED` (đề xuất thiết kế) trừ khi ghi k
 | UX-19 | Thẻ duyệt mobile; vuốt duyệt hàng loạt mục rủi ro thấp; sinh trắc học cho mục tài chính trên ngưỡng | UX §6.3 | NEEDS_CONFIRMATION | CON-08, GAP-08, D-27, D-16 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-20 | Ngoại tuyến: xếp hàng ảnh chụp và cập nhật task, nhãn "chưa đồng bộ" | UX §6.3 | NEEDS_CONFIRMATION | CON-08, D-27 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-21 | Một từ vựng trạng thái ("AI gợi ý", "AI soạn", "AI đã làm"); màu `ai` chỉ cho nội dung do AI tạo | UX §7.1, §8.2 | PROPOSED | U4 | UX_Flows | SRS-AIC-11 | N/A — giao diện (UX Flows 2B) | T-304 | TC-AIC-17 |
-| UX-22 | Panel AI theo ngữ cảnh, hiển thị "AI đang xem: …" | UX §7.2 | PROPOSED | U2 | UX_Flows | SRS-AIC-12 | API-AI-12 | T-306 | TC-AIC-13, TC-AIC-14 |
-| UX-23 | Trạng thái đang nghĩ hiện các bước thật; streaming; nút Dừng | UX §7.2 | PROPOSED | — | UX_Flows | SRS-AIC-12 | API-AI-12 | T-306 | TC-AIC-13, TC-AIC-14 |
-| UX-24 | Source chip trích dẫn trên mỗi khẳng định; mở bản ghi/tài liệu gốc đúng đoạn | UX §7.2 | PROPOSED | FR-AIQ-02, FR-DC-23 | US-AIC-05 | SRS-AIC-12 | API-AI-12 | T-306 | TC-AIC-13, TC-AIC-14 |
-| UX-25 | Nhãn độ tin cậy Cao/TB/Thấp trong hội thoại; phần trăm chỉ ở màn Review | UX §7.2 | PROPOSED | FR-AIQ-03 | UX_Flows | SRS-AIC-12, SRS-REV-03 | N/A — giao diện (UX Flows 2B) | T-207, T-306 | TC-AIC-13, TC-AIC-14, TC-REV-07 |
-| UX-26 | Nhãn độ tươi dữ liệu, cảnh báo khi quá ngưỡng của chỉ số | UX §7.2 | PROPOSED | FR-DF-03 | UX_Flows | SRS-BRF-03 | N/A — giao diện (UX Flows 2B) | T-510 | TC-BRF-03 |
-| UX-27 | Feed "AI đã làm": timeline L3/L4, lọc, lý do, nút Hoàn tác | UX §7.2 | PROPOSED | CON-02, CON-12, D-11 | US-BRF-03 | SRS-BRF-08 | API-AI-07 | T-510 | TC-BRF-06 |
+| UX-22 | Panel AI theo ngữ cảnh, hiển thị "AI đang xem: …" | UX §7.2 | PROPOSED | U2 | UX_Flows | SRS-AIC-12 | API-AI-12 | T-306, T-308 | TC-AIC-13, TC-AIC-14 |
+| UX-23 | Trạng thái đang nghĩ hiện các bước thật; streaming; nút Dừng | UX §7.2 | PROPOSED | — | UX_Flows | SRS-AIC-12 | API-AI-12 | T-306, T-308 | TC-AIC-13, TC-AIC-14 |
+| UX-24 | Source chip trích dẫn trên mỗi khẳng định; mở bản ghi/tài liệu gốc đúng đoạn | UX §7.2 | PROPOSED | FR-AIQ-02, FR-DC-23 | US-AIC-05 | SRS-AIC-12 | API-AI-12 | T-306, T-308 | TC-AIC-13, TC-AIC-14 |
+| UX-25 | Nhãn độ tin cậy Cao/TB/Thấp trong hội thoại; phần trăm chỉ ở màn Review | UX §7.2 | PROPOSED | FR-AIQ-03 | UX_Flows | SRS-AIC-12, SRS-REV-03 | N/A — giao diện (UX Flows 2B) | T-207, T-306, T-308 | TC-AIC-13, TC-AIC-14, TC-REV-07 |
+| UX-26 | Nhãn độ tươi dữ liệu, cảnh báo khi quá ngưỡng của chỉ số | UX §7.2 | PROPOSED | FR-DF-03 | UX_Flows | SRS-BRF-03 | N/A — giao diện (UX Flows 2B) | T-510, T-513 | TC-BRF-03 |
+| UX-27 | Feed "AI đã làm": timeline L3/L4, lọc, lý do, nút Hoàn tác | UX §7.2 | PROPOSED | CON-02, CON-12, D-11 | US-BRF-03 | SRS-BRF-08 | API-AI-07 | T-510, T-513 | TC-BRF-06 |
 | UX-28 | Phản hồi một chạm 👍/👎 và "Sai ở đâu?" trên câu trả lời và bản trích xuất | UX §7.2 | PROPOSED | FR-AIQ-04 | US-AIC-06 | SRS-AIC-14 | API-AI-13 | T-307 | TC-AIC-16 |
 | UX-29 | Kill switch trong AI Control Center, **chỉ Admin** (D-09 bỏ quyền CEO của UX §7.2); L3/L4 → L2; băng thông báo | UX §7.2 | CONFIRMED | CON-04, D-09 | UX_Flows | SRS-AIC-04 | N/A — giao diện (UX Flows 2B) | T-303 | TC-KS-01, TC-KS-02 |
-| UX-30 | AI nói "chưa có dữ liệu" kèm gợi ý; nguồn mâu thuẫn hiện cả hai, người chọn, ghi Lineage | UX §7.3 | PROPOSED | FR-DF-04 | US-AIC-05 | SRS-AIC-13, SRS-BRF-06 | N/A — giao diện (UX Flows 2B) | T-306, T-510 | TC-AIC-15, TC-BRF-04 |
+| UX-30 | AI nói "chưa có dữ liệu" kèm gợi ý; nguồn mâu thuẫn hiện cả hai, người chọn, ghi Lineage | UX §7.3 | PROPOSED | FR-DF-04 | US-AIC-05 | SRS-AIC-13, SRS-BRF-06 | N/A — giao diện (UX Flows 2B) | T-306, T-510, T-513 | TC-AIC-15, TC-BRF-04 |
 | UX-31 | Design token: Be Vietnam Pro (dự phòng Inter), cỡ chữ, lưới 4 px, bo góc, độ sâu, chuyển động, màu ngữ nghĩa | UX §8.1, §8.2 | PROPOSED | Q-18 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-32 | Thư viện thành phần (cơ bản, dữ liệu, AI, nhập liệu, điều hướng); xây trên shadcn/ui + Radix | UX §8.3 | PROPOSED | ASM-04, GAP-06, D-06 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-33 | Quy tắc trực quan hóa: tiêu đề là kết luận, luôn có đường kế hoạch, đơn vị rút gọn kiểu Việt, điểm dữ liệu bấm được | UX §8.4 | PROPOSED | — | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
@@ -289,7 +289,7 @@ Toàn bộ mục này là `PROPOSED` (đề xuất thiết kế) trừ khi ghi k
 | UX-35 | MVP web responsive + PWA, chưa native | UX §9.1 | NEEDS_CONFIRMATION | CON-08, Q-12, D-27 | UX_Flows | SRS-NFR-06 | N/A — giao diện (UX Flows 2B) | T-608 | TC-NFR-03 |
 | UX-36 | WCAG 2.1 AA: tương phản, bàn phím, trình đọc màn hình, bảng dữ liệu thay thế biểu đồ, vùng chạm ≥ 44 px | UX §9.2 | PROPOSED | NFR-08 | UX_Flows | SRS-NFR-08 | N/A — giao diện (UX Flows 2B) | T-607 | TC-NFR-05 |
 | UX-37 | Tiếng Việt mặc định; định dạng tiền, ngày, phần trăm VN/EN | UX §9.3, U8 | PROPOSED | NFR-05 | UX_Flows | SRS-GEN-06 | N/A — giao diện (UX Flows 2B) | T-111 | TC-GEN-07 |
-| UX-38 | AI trả lời bằng ngôn ngữ người dùng hỏi | UX §9.3 | PROPOSED | NFR-05 | UX_Flows | SRS-AIC-12 | N/A — giao diện (UX Flows 2B) | T-306 | TC-AIC-13, TC-AIC-14 |
+| UX-38 | AI trả lời bằng ngôn ngữ người dùng hỏi | UX §9.3 | PROPOSED | NFR-05 | UX_Flows | SRS-AIC-12 | N/A — giao diện (UX Flows 2B) | T-306, T-308 | TC-AIC-13, TC-AIC-14 |
 | UX-39 | Cách AI xưng hô do Admin cấu hình | UX §9.3 | PROPOSED | Q-19 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-40 | Hai mật độ Thoáng/Gọn trên cùng component | UX §3, §8.1 | PROPOSED | U7 | UX_Flows | N/A — N/A | N/A — giao diện (UX Flows 2B) | N/A — N/A | N/A — N/A |
 | UX-41 | Undo toast 10 giây, tạm dừng khi hover/focus; sau đó Hoàn tác trong feed 24 giờ | UX §7.1, §9.2 | PROPOSED | FR-AUT-03 | US-AIC-03 | SRS-AIC-10 | N/A — giao diện (UX Flows 2B) | T-304 | TC-AIC-10 |
@@ -510,3 +510,11 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - T-005 (nền CSDL, module `platform`) `IN_REVIEW` (14/10/2026, PR #9) — Implementation_Plan §10, §14. Dòng NFR-03 (Task T-005, T-605) giữ trạng thái: RPO/RTO chưa đo (T-605); Q-51 về phạm vi TC nghiệm thu T-005.
 - T-011 (storage adapter, module `storage`) `IN_REVIEW` (14/10/2026) — Implementation_Plan §10, §15. T-011 không có ở cột Task của ma trận → không trạng thái requirement nào thay đổi; Q-51 về TC-FILE-03.
 - T-006 (log JSON, correlation ID, health; module `platform`, `app`) `IN_REVIEW` (14/10/2026) — Implementation_Plan §10, §16. T-006 không có ở cột Task của ma trận → không trạng thái requirement nào thay đổi; Q-51 về TC-GEN-05, TC-SEC-05.
+
+## 13. Cập nhật 0.7 (quyết định CDA 15/10/2026)
+
+- Không đổi, không xóa requirement ID (vẫn 217); **không đổi trạng thái** dòng nào; không dòng nào `IMPLEMENTED`/`VERIFIED`.
+- D-49: thêm task T-308 (frontend panel chat AI) vào cột Task của UX-02, UX-22, UX-23, UX-24, UX-25, UX-38; T-513 (frontend Trang chủ CEO) vào UX-01, UX-03, UX-12, UX-26, UX-27, UX-30, F1, FR-HM-01, FR-HM-02.
+- D-44: task chủ của từng TC ở TEST_Plan §12. Khi chuyển `VERIFIED`, chỉ dùng TC đã `PASSED` ở task chủ.
+- D-44, D-47: T-005, T-006, T-011, T-012 `DONE` (Implementation_Plan §10). TC đã `PASSED`: TC-MIG-01 (T-005), TC-FE-01…07 (T-012). Dòng NFR-03 giữ trạng thái: TC-MIG-02, TC-DR-01/02 thuộc T-605, RPO/RTO chưa đo.
+- D-51: câu hỏi nghiệp vụ Q-28…Q-42 (trừ Q-40) đã trả lời toàn bộ hoặc một phần; trạng thái dòng requirement **không** tự đổi theo — cần rà riêng từng dòng `NEEDS_CONFIRMATION` liên quan (FR-HM, MET, UX, SC) ở lần cập nhật sau.

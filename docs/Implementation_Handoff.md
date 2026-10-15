@@ -3,6 +3,7 @@
 > Ngày: 12/10/2026, cập nhật 14/10/2026 (mục 11–14) · Loại: checkpoint bàn giao, **không** phải tài liệu yêu cầu. Nguồn sự thật vẫn là các tài liệu được liên kết; nếu checkpoint này lệch với chúng, tài liệu gốc thắng.
 > Trạng thái: tài liệu Stage 2A–2D đã hoàn thành (baseline commit `683f847`); T-001 (khung repo) `DONE` (commit `318689c`, GitHub Actions run `38257197546`); T-002 (toolchain + CI) `DONE` (branch protection `main`: required check `ci`, PR bắt buộc, `enforce_admins`; PR đỏ #2 bị chặn merge — HTTP 405); T-012 (nền tảng frontend) `IN_REVIEW` (14/10/2026, mục 11); T-004 (cấu hình/secret) `DONE` (14/10/2026, mục 13); T-005, T-006, T-011 `IN_REVIEW` (14/10/2026, mục 14, Q-51); xem Implementation_Plan §10; chưa có test nào trong TEST_Plan được chạy.
 
+> **Cập nhật 15/10/2026:** hiện trạng dự án chuyển sang [PROJECT_STATUS.md](PROJECT_STATUS.md), quyết định đang mở ở [OPEN_DECISIONS.md](OPEN_DECISIONS.md). Phần trạng thái dưới đây là lịch sử tới 14/10/2026. Task chủ của từng TC: TEST_Plan §12 (D-44) — cột "Test case" ở mục 5 chỉ là danh sách tham chiếu, không phải tiêu chí nghiệm thu.
 ## 1. Đọc trước
 
 | Thứ tự | File | Vai trò |
@@ -66,7 +67,7 @@
 ## 5. Task
 
 Tổng **81 task**: **55 READY** (gồm T-605 "READY — công cụ cụ thể chọn khi triển khai" và T-012 thêm ngày 12/10/2026), **13 PARTIAL**, **13 BLOCKED** (cập nhật 14/10/2026 theo D-43: T-003 chuyển `BLOCKED`, thêm T-013 `BLOCKED`). Thực thi: T-001 `DONE` (run `38257197546`), T-002 `DONE` (branch protection + PR #2 bị chặn), các task khác `TODO` (Implementation_Plan §10). `READY` chỉ nghĩa là đủ căn cứ; task chỉ được bắt đầu khi mọi dependency `DONE`. Ngoại lệ duy nhất: T-002 được bắt đầu khi T-001 `IN_REVIEW` (CDA 12/10/2026; Implementation_Plan §1, "Điều kiện bắt đầu"). Test case: **199**, tất cả `NOT RUN`.
-Tiêu chí nghiệm thu mỗi task = DoD chung (Implementation_Plan §2) + DoD riêng của task + các test case dưới đây xanh. Cột "Test case" gồm TC ghi trong DoD của task và TC phủ các SRS của task (TEST_Plan).
+~~Tiêu chí nghiệm thu mỗi task = DoD chung + DoD riêng + các test case dưới đây xanh.~~ **Thay bằng D-44 (15/10/2026):** nghiệm thu = DoD chung + DoD riêng + TC mà task làm chủ (TEST_Plan §12) `PASSED`; TC khác trong cột dưới đây chỉ là bằng chứng thành phần. Cột "Test case" gồm TC ghi trong DoD của task và TC phủ các SRS của task (TEST_Plan).
 
 | ID | Giai đoạn | Sẵn sàng | Phụ thuộc | Requirement (SRS) | Test case | Ghi chú |
 | --- | --- | --- | --- | --- | --- | --- |
