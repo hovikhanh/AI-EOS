@@ -1,7 +1,7 @@
 # AI-EOS — Database Design (Stage 2C)
 
 > Phiên bản: 1.2 · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — đang hiện thực theo migration** · Thay đổi: §12
-> Schema thiết kế. **Đã có migration** (15/10/2026): `0001` (M-01, schema + quyền role, T-005), `0002` (M-04 `audit.event` + INV-14, T-008), `0003` (phần `jobs` của M-05, T-009), `0004` (M-02 `identity`, T-101); phần còn lại vẫn là đề xuất. Hiện trạng: [PROJECT_STATUS](../PROJECT_STATUS.md).
+> Schema thiết kế. **Đã có migration** (15/10/2026): `0001` (M-01, schema + quyền role, T-005), `0002` (M-04 `audit.event` + INV-14, T-008), `0003` (phần `jobs` của M-05, T-009), `0004` (M-02 `identity`, T-101), `0005` (M-03 `access_seed`, T-107); phần còn lại vẫn là đề xuất. Hiện trạng: [PROJECT_STATUS](../PROJECT_STATUS.md).
 > Nguồn: ADR-004, ADR-005, ADR-007…ADR-010; Architecture §3–§8. Nhãn nguồn như Architecture (`SOURCE`, `CDA`, `CDA_DIRECTIVE`, `ARCHITECTURE_DECISION`, `[CẦN XÁC NHẬN]`).
 
 ## 1. Nguyên tắc
@@ -137,7 +137,7 @@ Một lời mời còn hiệu lực mỗi user: unique `(user_id) WHERE used_at 
 | granted_at, reason | reason NOT NULL khi granted_by NOT NULL |
 
 Trigger `trg_user_role_no_admin_cfo`: từ chối INSERT nếu user đã có role còn lại của cặp `ADMIN`/`CFO` (R7).
-Xóa role: trigger `trg_last_admin_guard` từ chối nếu sau thao tác không còn `ADMIN` có `user_account.status='ACTIVE'`; ứng dụng giữ advisory lock `admin-membership` khi thay đổi để tránh race (A4).
+Xóa role: trigger `trg_last_admin_guard` từ chối nếu sau thao tác không còn `ADMIN` có `user_account.status='ACTIVE'`; ứng dụng giữ advisory lock `admin-membership` khi thay đổi để tránh race (A4). Hiện thực (T-107): lock đặt trong trigger; thêm `trg_last_admin_status` trên `identity.user_account` khi tài khoản ADMIN rời `ACTIVE` (SRS-ACC-07: không khóa/vô hiệu Admin cuối).
 
 ### `access.assignment`
 | Cột | Ghi chú |
