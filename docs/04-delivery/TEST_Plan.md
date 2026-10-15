@@ -363,7 +363,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_two_admins_removing_each_other_keeps_one`) |
 | `TC-ACC-07` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_assignment_requires_eligible_role`) |
 | `TC-ACC-08` | **T-109** | D-44 (bảng 65 TC) | T-104 | `PASSED` — run `38708289449` (T-109, PR #27; `test_role_change_revokes_target_sessions`) |
-| `TC-ACC-09` | **T-201** | D-44 (bảng 65 TC) | T-108 | `NOT RUN` |
+| `TC-ACC-09` | **T-201** | D-44 (bảng 65 TC) | T-108 | `PASSED` — run `38737949724` (T-201, PR #32; `test_every_role_reads_directory_fields_only`) |
 | `TC-ACC-10` | Chưa có `[CẦN XÁC NHẬN]` (theo R1 đề xuất T-108; SRS-ACC-04 còn PROPOSED) | — | — | `NOT RUN` |
 | `TC-FILE-01` | **T-203** | duy nhất | — | `NOT RUN` |
 | `TC-FILE-02` | **T-203** | duy nhất | — | `NOT RUN` |

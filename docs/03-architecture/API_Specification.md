@@ -54,7 +54,7 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 | Giá trị | Ý nghĩa |
 | --- | --- |
 | `DESIGNED` | Đã thiết kế ở 2C, chưa có code |
-| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`); API-AUTH-05, API-AUTH-09 (T-104, run `38705903816`); API-ADM-01, API-ADM-04…09 (T-109, run `38708289449`); API-ADM-02, API-ADM-03, API-AUTH-08 (T-105, run `38710976904`) |
+| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`); API-AUTH-05, API-AUTH-09 (T-104, run `38705903816`); API-ADM-01, API-ADM-04…09 (T-109, run `38708289449`); API-ADM-02, API-ADM-03, API-AUTH-08 (T-105, run `38710976904`); API-ORG-01, API-ORG-02 (T-201, run `38737949724`) |
 | `SKELETON` | Chỉ khung; chi tiết chờ 2B (D-24) |
 | `DEFERRED` | Ngoài MVP |
 
@@ -202,6 +202,9 @@ Ghi chính thức bản ghi từ form (C1) đi qua endpoint của module đích 
 | API-ORG-01 | GET | `/org/units` | `org.directory.read` | Cây tổ chức | UC-07 |
 | API-ORG-02 | GET | `/org/employees` | `org.directory.read` | Danh bạ (chỉ trường không nhạy cảm) | UC-06, US-DC-007 |
 | API-ORG-03 | GET | `/lineage/{resource_type}/{resource_id}` | `data.read` trên đối tượng | Nguồn gốc: bản ghi, người nhập, tài liệu, trang | FR-DF-04, US-DC-011, UX-03 |
+
+**API-ORG-01** (T-201) → `200 { "items": [{ "id", "name", "code", "parent_id", "head_employee_id" }] }` — danh sách phẳng, client dựng cây theo `parent_id`.
+**API-ORG-02** (T-201) `?q=&org_unit_id=&limit=&cursor=` → `{ "items": [{ "id", "full_name", "title", "org_unit_id", "org_unit_name", "manager_id", "manager_name" }], "next_cursor" }` — chỉ nhân viên đang làm (`ACTIVE`), sắp theo họ tên; `q` tìm trong họ tên (không phân biệt hoa thường). Chỉ trường danh bạ (SRS-ACC-11).
 
 ---
 
