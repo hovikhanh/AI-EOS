@@ -532,4 +532,5 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - T-013 (Compose tích hợp, 15/10/2026): dòng NFR-04 — cả T-003, T-013 `DONE`, TC-NFR-01 `PASSED` (run `38722522003`); **giữ trạng thái** `[CẦN XÁC NHẬN]`: NFR-04 gồm "tùy chọn lưu trữ và xử lý tại Việt Nam", trong khi provider demo DeepSeek (ngoài Việt Nam, D-50) và định tuyến dữ liệu ở production còn mở ở mục 0 OPEN_DECISIONS — không nâng `VERIFIED` khi điểm này chưa quyết.
 - T-201 (danh bạ, 15/10/2026): dòng F3 (Task T-108, T-201, T-506), UC-06 giữ trạng thái — cần T-506 (biên bản họp → task). SRS-ACC-11 (TC-ACC-09 `PASSED`) không có dòng riêng trong ma trận.
 - T-505 (task, 15/10/2026): dòng có T-505 trong cột Task giữ trạng thái — cần thêm task giao diện/tổng quan (T-509), biên bản họp (T-506).
+- T-401 (bảng finance, 15/10/2026): dòng có T-401 giữ trạng thái — cần API giao dịch/kỳ (T-402…T-406).
 - T-111 (frontend, 15/10/2026): dòng UX-08 (Task T-108, T-111) và UX-37 (T-111) giữ trạng thái — dòng đang `PROPOSED` (yêu cầu UX chưa xác nhận); đã có code ẩn mục không quyền và định dạng ngày Việt Nam, chưa có tiếng Anh (UX-37, T-607). UX-09 (đổi ngữ cảnh đa vai trò) chưa làm.

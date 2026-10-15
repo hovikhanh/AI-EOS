@@ -434,10 +434,10 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-SEC-04` | **T-602** | D-44 (bảng 65 TC) | T-601 | `NOT RUN` |
 | `TC-SEC-05` | **T-602** | D-44 (bảng 65 TC) | T-006, T-007 | `NOT RUN` |
 | `TC-SEC-06` | **T-206** | D-44 câu 3 | T-112, T-204 | `NOT RUN` |
-| `TC-FIN-01` | **T-401** | duy nhất | — | `NOT RUN` |
-| `TC-FIN-02` | **T-401** | duy nhất | — | `NOT RUN` |
-| `TC-FIN-03` | **T-401** | D-44 (bảng 65 TC) | T-404 | `NOT RUN` |
-| `TC-FIN-04` | **T-401** | D-44 (bảng 65 TC) | T-404 | `NOT RUN` |
+| `TC-FIN-01` | **T-401** | duy nhất | — | `PASSED` — run `38755214148` (T-401, PR #34; `test_posted_amount_immutable`) |
+| `TC-FIN-02` | **T-401** | duy nhất | — | `PASSED` — run `38755214148` (T-401, PR #34; `test_delete_refused`) |
+| `TC-FIN-03` | **T-401** | D-44 (bảng 65 TC) | T-404 | `PASSED` — run `38755214148` (T-401, PR #34; `test_approver_cannot_be_creator`) |
+| `TC-FIN-04` | **T-401** | D-44 (bảng 65 TC) | T-404 | `PASSED` — run `38755214148` (T-401, PR #34; `test_on_hold_cannot_be_posted`) |
 | `TC-FIN-05` | **T-403** | duy nhất | — | `NOT RUN` |
 | `TC-FIN-06` | **T-403** | duy nhất | — | `NOT RUN` |
 | `TC-FIN-07` | **T-403** | duy nhất | — | `NOT RUN` |
