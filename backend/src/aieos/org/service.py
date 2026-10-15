@@ -156,6 +156,21 @@ def subtree(session: Session, unit_ids: Iterable[uuid.UUID]) -> frozenset[uuid.U
     return frozenset(r.id for r in rows)
 
 
+def user_unit_path(session: Session, user_id: uuid.UUID) -> frozenset[uuid.UUID]:
+    """Đơn vị của nhân viên gắn với tài khoản và mọi đơn vị cấp trên (`access.api.Resource.org_units`); rỗng nếu tài
+    khoản chưa gắn nhân viên hoặc nhân viên chưa có đơn vị."""
+    rows = session.execute(
+        text(
+            "WITH RECURSIVE up(id, parent_id) AS ("
+            "SELECT u.id, u.parent_id FROM identity.user_account a JOIN org.employee e ON e.id = a.employee_id "
+            "JOIN org.org_unit u ON u.id = e.org_unit_id WHERE a.id = :user "
+            "UNION SELECT p.id, p.parent_id FROM org.org_unit p JOIN up ON p.id = up.parent_id) SELECT id FROM up"
+        ),
+        {"user": user_id},
+    )
+    return frozenset(r.id for r in rows)
+
+
 @dataclass(frozen=True)
 class OrgDirectoryScope:
     """`access.api.OrgScope` dựa trên cây tổ chức (T-201 cho T-108)."""

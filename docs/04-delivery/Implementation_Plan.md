@@ -665,3 +665,14 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Chưa có API ghi đơn vị/nhân viên và chưa có cách gắn tài khoản ↔ nhân viên qua API: dữ liệu vào qua import nhân sự (T-210, `hr.import`, write gateway). Hàm ghi trong `org.api` (`create_unit`, `create_employee`, `set_parent`, `set_head`) dành cho T-210 và test. Trước T-210, demo không có dữ liệu danh bạ (danh sách trống).
 - Test `backend/tests/test_org.py` (5): TC-ACC-09 (5 role, đúng 7 trường), lọc/tìm/phân trang, trigger chống vòng, phạm vi MANAGER chạy cùng `scope_filter` (T-108), khóa ngoại tài khoản ↔ nhân viên. 7 đột biến → test đỏ.
 
+## 35. Ghi chú triển khai T-505 (15/10/2026)
+
+- Vị trí: module `work` (`models.py`, `service.py`, `router.py`); migration `0011` (`work.task`, idempotency theo `(assigned_by, idempotency_key)` — INV-08); `org.api.user_unit_path` (đơn vị của owner + cấp trên cho `Resource.org_units`).
+- Quy tắc theo D-51 (Q-33): `OPEN`/`DONE`, chỉ người giao mở lại. Theo mặc định `PROPOSED` của SRS: hạn bắt buộc khi tạo tay (SRS-WRK-01), người chỉ có role EMPLOYEE chỉ tự giao (SRS-WRK-04).
+- Phạm vi: task gắn với đơn vị của **owner** (tài khoản → nhân viên → đơn vị, không thêm cột) — `scope_filter` của T-108 trên đơn vị đó; người giao/owner luôn thấy task của mình. Owner chưa gắn nhân viên → chỉ CEO, owner, người giao thấy.
+- "Trễ"/"đúng hạn" tính trong SQL theo múi giờ `Asia/Ho_Chi_Minh` (SRS-GEN-06).
+- Thông báo `TASK_ASSIGNED` khi giao cho người khác hoặc đổi owner; tiêu đề chung, không chép tiêu đề task (SRS-NTF-02).
+- Phòng thủ hai lớp: "EMPLOYEE chỉ tự giao" trùng với kiểm tra phạm vi (EMPLOYEE chỉ có phạm vi của mình) — bỏ riêng lớp này test không đỏ; giữ để không phụ thuộc vào ma trận quyền hiện tại.
+- Chưa làm: tổng quan thực thi của CEO theo đơn vị (SRS-WRK-10 — số task, trễ, đúng hạn; T-509), giao diện task (frontend), liên kết mục tiêu có khóa ngoại (`objective_id` — T-501), nguồn tài liệu (T-202/T-506).
+- TC-ACC-03 (chủ T-505 tổng, D-59): phần task đạt ở `test_listing_follows_role_scope`; phần mục tiêu thuộc T-502 → chưa ghi PASS.
+

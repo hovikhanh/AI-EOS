@@ -2,7 +2,7 @@
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
 xác thực (T-102) → router (auth, MFA T-103, step-up T-104, quản trị T-109, lời mời T-105, thông báo T-010,
-danh bạ T-201) → kiểm tra readiness.
+danh bạ T-201, task T-505) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -49,6 +49,7 @@ from aieos.platform.api import (
     parse_allowed_origins,
 )
 from aieos.storage.api import StorageError, storage_from_settings
+from aieos.work.api import build_work_router
 
 CSRF_EXEMPT_PATHS: frozenset[str] = frozenset({API_PREFIX + LOGIN_PATH, API_PREFIX + ACCEPT_INVITATION_PATH})
 PUBLIC_PATHS: frozenset[tuple[str, str]] = frozenset(
@@ -126,6 +127,7 @@ def create_app() -> FastAPI:
             build_access_admin_router(guard, authenticator.revoke_sessions),
             build_notify_router(factory, authenticator.require_session),
             build_org_router(guard),
+            build_work_router(guard),
         ),
         csrf=csrf,
     )

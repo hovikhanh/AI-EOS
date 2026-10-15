@@ -273,6 +273,8 @@ Request `{ "reason": "Nhập sai số tiền" }` → `201` bút toán đảo `DR
 | API-INS-03 | GET/PUT | `/admin/insights/briefing-schedule` | `config.briefing_schedule` | STEP-UP (PUT), IF-MATCH | Giờ, tần suất, bật/tắt lịch tạo Briefing; `reason` bắt buộc; audit. Không kích hoạt tạo Briefing khi kill switch bật | DESIGNED | D-38, SRS-BRF-13 |
 | API-SALES-01 | — | Sales Pipeline Lite | — | — | Chưa có endpoint; chưa thuộc phạm vi triển khai MVP (D-40) | SKELETON | SC-05 |
 
+Chi tiết T-505: task `{ "id", "title", "owner_user_id", "assigned_by", "due_date", "status", "completed_at", "completed_by", "objective_id", "created_via", "created_at", "version", "overdue", "completed_on_time" }`, `ETag` = `"<version>"`. `overdue` = `OPEN` và hạn trước hôm nay (giờ Việt Nam); `completed_on_time` = ngày hoàn thành ≤ hạn (`null` khi chưa xong hoặc không có hạn). API-WORK-01 `?owner_user_id=&status=&overdue=&org_unit_id=&limit=&cursor=` (đơn vị gồm cấp dưới); thấy task khi owner trong phạm vi `data.read` hoặc mình là owner/người giao. API-WORK-03 `{ "title", "owner_user_id", "due_date", "objective_id"? }` → `201`; owner ngoài phạm vi hoặc EMPLOYEE giao cho người khác → `403`. API-WORK-04 `{ "title"?, "due_date"?, "owner_user_id"? }` (đổi owner: chỉ người giao). API-WORK-05 đã ở trạng thái đích → `409 INVALID_STATE`. Task ngoài phạm vi → `404`; thấy nhưng không phải owner/người giao → `403`.
+
 ## 8. Thông báo và hệ thống
 
 | ID | Method | Path | Quyền | Mô tả | Req |

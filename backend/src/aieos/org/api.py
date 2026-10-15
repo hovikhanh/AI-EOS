@@ -17,6 +17,7 @@ from aieos.org.service import (
     set_head,
     set_parent,
     subtree,
+    user_unit_path,
 )
 
 __all__ = [
@@ -31,4 +32,5 @@ __all__ = [
     "set_head",
     "set_parent",
     "subtree",
+    "user_unit_path",
 ]
