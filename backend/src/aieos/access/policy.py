@@ -220,15 +220,23 @@ class PermissionGuard:
     factory: sessionmaker[Session]
     require_session: Callable[..., Principal]
     org: OrgScope = NO_ORG
-    _checks: dict[str, Callable[..., Actor]] = field(default_factory=dict)
+    require_step_up: Callable[..., Principal] | None = None  # T-104: `Authenticator.require_step_up`
+    _checks: dict[tuple[str, bool], Callable[..., Actor]] = field(default_factory=dict)
 
-    def route(self, permission: str) -> dict[str, Any]:
-        """`@router.get(path, **guard.route("data.read"))`: khai báo + kiểm tra; handler lấy `Actor` qua `actor`."""
-        return {**declare(permission), "dependencies": [Depends(self._check(permission))]}
+    def route(self, permission: str, *, step_up: bool = False) -> dict[str, Any]:
+        """`@router.get(path, **guard.route("data.read"))`: khai báo + kiểm tra; handler lấy `Actor` qua `actor`.
 
-    def _check(self, permission: str) -> Callable[..., Actor]:
-        if permission not in self._checks:
+        `step_up=True` (thao tác `STEP-UP`, SRS-IAM-08): session phải xác thực lại gần đây → nếu không `401
+        REAUTH_REQUIRED`. Kiểm tra permission chạy trước step-up: người không có quyền nhận `403`, không bị mời reauth.
+        """
+        return {**declare(permission), "dependencies": [Depends(self._check(permission, step_up))]}
+
+    def _check(self, permission: str, step_up: bool) -> Callable[..., Actor]:
+        key = (permission, step_up)
+        if key not in self._checks:
             guard = self
+            if step_up and self.require_step_up is None:
+                raise ValueError("PermissionGuard thiếu require_step_up cho route STEP-UP")
 
             def check(request: Request, principal: Principal = Depends(self.require_session)) -> Actor:  # noqa: B008
                 with transaction(guard.factory) as session:
@@ -237,11 +245,13 @@ class PermissionGuard:
                 if not decision.allowed:
                     guard._audit_denied(actor.user_id, permission, decision.reason)
                     raise ApiError("FORBIDDEN")
+                if step_up and guard.require_step_up is not None:
+                    guard.require_step_up(request)
                 setattr(request.state, _ACTOR_STATE, actor)
                 return actor
 
-            self._checks[permission] = check
-        return self._checks[permission]
+            self._checks[key] = check
+        return self._checks[key]
 
     @staticmethod
     def actor(request: Request) -> Actor:

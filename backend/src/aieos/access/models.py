@@ -6,7 +6,7 @@ Bảng, seed và trigger INV-09/10/11 do migration 0005 tạo; model phải kh�
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Text, Uuid, func
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from aieos.platform.api import Base
@@ -70,6 +70,8 @@ class AssignmentRow(Base):
         CheckConstraint("revoked_by IS NULL OR revoked_by <> user_id", name="not_self_revoked"),
         CheckConstraint("(revoked_at IS NULL) = (revoked_by IS NULL)", name="revocation"),
         CheckConstraint("reason <> ''", name="reason"),
+        CheckConstraint("(idempotency_key IS NULL) = (request_hash IS NULL)", name="idempotency_hash"),
+        UniqueConstraint("granted_by", "idempotency_key"),
         Index("ix_assignment_user", "user_id", "permission_code"),
         _SCHEMA,
     )
@@ -86,3 +88,5 @@ class AssignmentRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked_by: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey(_USER_FK))
+    idempotency_key: Mapped[str | None] = mapped_column(Text)  # 0008 (T-109, INV-08)
+    request_hash: Mapped[str | None] = mapped_column(Text)

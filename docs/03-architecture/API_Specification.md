@@ -104,6 +104,16 @@ Không có endpoint đăng ký công khai. Bootstrap và khôi phục ADMIN ch�
 
 **API-ADM-05** request `{ "roles": ["MANAGER"], "reason": "..." }` → `200` user mới, `ETag`; lỗi: `403 SELF_ROLE_CHANGE`, `409 LAST_ADMIN`, `412 VERSION_CONFLICT`, `422 ROLE_COMBINATION_FORBIDDEN`, `401 REAUTH_REQUIRED`.
 
+Chi tiết T-109:
+- User (API-ADM-01/04/05): `{ "id", "email", "display_name", "status", "roles": [...], "mfa_enabled", "created_at", "version" }`; `ETag` = `"<version>"` (tăng khi đổi trạng thái hoặc role). API-ADM-01 phân trang cursor §1.8 (mới nhất trước).
+- **API-ADM-04** `{ "status": "ACTIVE" | "LOCKED" | "DISABLED", "reason": "..." (tùy chọn) }` → `200` user + `ETag`. Tài khoản `INVITED` → `409 INVALID_STATE` (kích hoạt qua lời mời, T-105); tự đổi trạng thái của mình → `403 FORBIDDEN`; rời `ACTIVE` → thu hồi mọi session; về `ACTIVE` → xóa khóa tạm.
+- API-ADM-04/05 thiếu `If-Match` → `428`; lệch → `412`. Role không tồn tại → `422 VALIDATION_ERROR`.
+- **API-ADM-06** `?user_id=&permission=&limit=&cursor=` → `{ "items": [assignment], "next_cursor" }`; gồm cả assignment đã thu hồi/hết hạn. Assignment: `{ "id", "user_id", "permission", "scope_type", "scope_id", "valid_from", "valid_to", "granted_by", "reason", "created_at", "revoked_at", "revoked_by" }`.
+- **API-ADM-07** `{ "user_id", "permission", "scope_type", "scope_id", "valid_to", "reason" }` + `Idempotency-Key` → `201` assignment; phạm vi sai (vd. `ORG_UNIT` thiếu `scope_id`) → `422 VALIDATION_ERROR` (trường `scope_id`). Giao/thu hồi → thu hồi mọi session của tài khoản đích (SRS-IAM-11).
+- **API-ADM-08** → `204` (đã thu hồi trước đó → `204`, không đổi gì); không tồn tại → `404`; tự thu hồi của mình → `403 SELF_ROLE_CHANGE`.
+- **API-ADM-09** → `200 [{ "code", "base": [...], "eligible": [...] }]`.
+- Lỗi nghiệp vụ trên các API ghi ở đây được audit `FAILED`; thiếu quyền → audit `DENIED` (SRS-AUD-01).
+
 ---
 
 ## 4. AI control, hành động và trợ lý — `ai`, `gateway`

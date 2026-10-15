@@ -596,3 +596,13 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - TC-IAM-08 chủ T-104; phần đổi mật khẩu của TC-AUD-02 (chủ T-105, D-55) là bằng chứng thành phần.
 - D-59 (CDA, 15/10/2026): TC-ACC-03 → chủ T-505, phần mục tiêu ở T-502 (đóng Q-52).
 
+## 29. Ghi chú triển khai T-109 (15/10/2026)
+
+- Vị trí: `identity/users.py` (`UserAdmin`: danh sách, trạng thái, role) + `identity/router.py` (`build_user_admin_router`: API-ADM-01/04/05); `access/router.py` (`build_access_admin_router`: API-ADM-06/07/08/09); `access/service.py` (`set_roles`, `list_assignments`, `role_catalog`, idempotency). Quyền qua `PermissionGuard.route(permission, step_up=...)` (T-108); `PermissionGuard` nay nhận `require_step_up` (T-104) — kiểm permission trước, step-up sau (người không có quyền nhận `403`, không bị mời reauth).
+- Thu hồi session (SRS-IAM-11): đổi role, giao/thu hồi assignment, rời `ACTIVE` → thu hồi mọi session của tài khoản đích. `access` không import `identity`: composition root truyền `Authenticator.revoke_sessions` làm `on_change`.
+- **Lỗi tìm thấy và sửa:** test TC-ACC-06 (hai ADMIN gỡ nhau đồng thời) bắt deadlock — service khóa dòng tài khoản đích trước, trigger INV-11 lấy advisory lock `admin-membership` sau rồi đọc các ADMIN khác → thứ tự khóa ngược nhau. Sửa: `UserAdmin` lấy advisory lock trước khi khóa dòng (A4 "tuần tự hóa"). 
+- Migration `0008`: `access.assignment.idempotency_key`, `request_hash`, UNIQUE `(granted_by, idempotency_key)` — API-ADM-07 `IDEMPOTENT` theo INV-08 (Database_Design §4 trước đó chưa có cột).
+- Lựa chọn của agent: không tự đổi trạng thái tài khoản của mình (`403`, tránh tự khóa); `reason` của API-ADM-04 tùy chọn (tài liệu chỉ bắt buộc ở API-ADM-05); API-ADM-08 không nhận lý do (`revoke_assignment` T-107 không có cột lý do thu hồi); tài khoản `INVITED` không đổi trạng thái ở API-ADM-04.
+- Audit (SRS-AUD-01, TC-AUD-01): thành công ghi trong cùng transaction (`access.role.grant/revoke`, `access.assignment.*`, `identity.user.status`); từ chối quyền `access.denied` `DENIED`; lỗi nghiệp vụ `FAILED` (transaction riêng, `reason` = mã lỗi).
+- API-ADM-02/03 (tạo tài khoản, lời mời) thuộc T-105; API-ADM-10/11 thuộc T-110.
+

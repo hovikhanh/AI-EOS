@@ -10,13 +10,18 @@ ghi audit `ADMIN` trong cùng transaction (ADR-010). Kiểm tra quyền của ng
 - `create_assignment` / `revoke_assignment`: chỉ cho role đủ điều kiện (`ASSIGNMENT_NOT_ELIGIBLE`); thu hồi bằng
   `revoked_at`, không xóa.
 Thu hồi session sau khi đổi role (A3) thuộc T-104/T-109.
+
+T-109: `set_roles` (thay tập role: gỡ trước, cấp sau để đổi `ADMIN` → `CFO` không vướng INV-10), `list_assignments`,
+`role_catalog`, idempotency cho `create_assignment` (`idempotency_key`, `request_hash` — migration 0008, INV-08).
+Vi phạm CHECK/FK của assignment → `422 VALIDATION_ERROR` có tên trường.
 """
 
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import delete, insert, select, text, update
+from sqlalchemy import ColumnElement, delete, insert, select, text, tuple_, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
@@ -27,6 +32,8 @@ from aieos.platform.api import ApiError
 # SQLSTATE do trigger migration 0005 phát; CHECK vi phạm là 23514 (kèm tên ràng buộc).
 _SQLSTATE_CODES = {"AE001": "ROLE_COMBINATION_FORBIDDEN", "AE002": "LAST_ADMIN", "AE003": "ASSIGNMENT_NOT_ELIGIBLE"}
 _SELF_CHECKS = ("ck_user_role_not_self_granted", "ck_assignment_not_self_granted", "ck_assignment_not_self_revoked")
+_FIELD_CHECKS = {"ck_assignment_scope_id": "scope_id", "ck_assignment_validity": "valid_to"}
+_FIELD_FKS = {"fk_assignment_user_id_user_account": "user_id", "fk_assignment_permission_code_permission": "permission"}
 
 
 class ScopeType(StrEnum):
@@ -41,8 +48,12 @@ def _translate(error: DBAPIError) -> ApiError | None:
     if state in _SQLSTATE_CODES:
         return ApiError(_SQLSTATE_CODES[state])
     diag = getattr(error.orig, "diag", None)
-    if state == "23514" and getattr(diag, "constraint_name", None) in _SELF_CHECKS:
+    constraint = getattr(diag, "constraint_name", None)
+    if state == "23514" and constraint in _SELF_CHECKS:
         return ApiError("SELF_ROLE_CHANGE")
+    field = _FIELD_CHECKS.get(constraint or "") if state == "23514" else _FIELD_FKS.get(constraint or "")
+    if state in ("23514", "23503") and field:
+        return ApiError("VALIDATION_ERROR", errors=[{"field": field, "message": "Giá trị không hợp lệ"}])
     return None
 
 
@@ -140,6 +151,8 @@ def create_assignment(
     granted_by: uuid.UUID,
     reason: str,
     valid_to: datetime | None = None,
+    idempotency_key: str | None = None,
+    request_hash: str | None = None,
 ) -> uuid.UUID:
     if granted_by == user_id:
         raise ApiError("SELF_ROLE_CHANGE")
@@ -155,6 +168,8 @@ def create_assignment(
             granted_by=granted_by,
             reason=reason,
             valid_to=valid_to,
+            idempotency_key=idempotency_key,
+            request_hash=request_hash,
         ),
     )
     _audit(
@@ -181,3 +196,110 @@ def revoke_assignment(session: Session, *, assignment_id: uuid.UUID, revoked_by:
     )
     if changed:
         _audit(session, revoked_by, "access.assignment.revoke", target, {"assignment_id": str(assignment_id)})
+
+
+def set_roles(
+    session: Session, *, user_id: uuid.UUID, roles: set[str], changed_by: uuid.UUID, reason: str
+) -> tuple[set[str], set[str]]:
+    """Thay tập role của `user_id` (API-ADM-05); trả (thêm, gỡ). Gỡ trước rồi cấp (đổi ADMIN → CFO hợp lệ)."""
+    if changed_by == user_id:
+        raise ApiError("SELF_ROLE_CHANGE")
+    unknown = roles - known_roles(session)
+    if unknown:
+        raise ApiError("VALIDATION_ERROR", errors=[{"field": "roles", "message": "Role không tồn tại"}])
+    current = roles_of(session, user_id)
+    removed, added = current - roles, roles - current
+    for role in sorted(removed):
+        revoke_role(session, user_id=user_id, role=role, revoked_by=changed_by, reason=reason)
+    for role in sorted(added):
+        grant_role(session, user_id=user_id, role=role, granted_by=changed_by, reason=reason)
+    return added, removed
+
+
+@dataclass(frozen=True)
+class Assignment:
+    id: uuid.UUID
+    user_id: uuid.UUID
+    permission: str
+    scope_type: str
+    scope_id: str | None
+    valid_from: datetime
+    valid_to: datetime | None
+    granted_by: uuid.UUID
+    reason: str
+    created_at: datetime
+    revoked_at: datetime | None
+    revoked_by: uuid.UUID | None
+
+
+def _assignment(row: AssignmentRow) -> Assignment:
+    return Assignment(
+        row.id,
+        row.user_id,
+        row.permission_code,
+        row.scope_type,
+        row.scope_id,
+        row.valid_from,
+        row.valid_to,
+        row.granted_by,
+        row.reason,
+        row.created_at,
+        row.revoked_at,
+        row.revoked_by,
+    )
+
+
+def get_assignment(session: Session, assignment_id: uuid.UUID) -> Assignment | None:
+    row = session.get(AssignmentRow, assignment_id)
+    return None if row is None else _assignment(row)
+
+
+def find_assignment_by_key(
+    session: Session, granted_by: uuid.UUID, idempotency_key: str
+) -> tuple[str, Assignment] | None:
+    row = session.scalar(
+        select(AssignmentRow).where(
+            AssignmentRow.granted_by == granted_by, AssignmentRow.idempotency_key == idempotency_key
+        )
+    )
+    if row is None or row.request_hash is None:
+        return None
+    return row.request_hash, _assignment(row)
+
+
+def list_assignments(
+    session: Session,
+    *,
+    user_id: uuid.UUID | None = None,
+    permission: str | None = None,
+    limit: int,
+    after: tuple[datetime, uuid.UUID] | None = None,
+) -> list[Assignment]:
+    """API-ADM-06: mới nhất trước (`created_at`, `id` giảm dần); gồm cả assignment đã thu hồi/hết hạn."""
+    conditions: list[ColumnElement[bool]] = []
+    if user_id is not None:
+        conditions.append(AssignmentRow.user_id == user_id)
+    if permission is not None:
+        conditions.append(AssignmentRow.permission_code == permission)
+    if after is not None:
+        conditions.append(tuple_(AssignmentRow.created_at, AssignmentRow.id) < tuple_(*after))
+    query = (
+        select(AssignmentRow)
+        .where(*conditions)
+        .order_by(AssignmentRow.created_at.desc(), AssignmentRow.id.desc())
+        .limit(limit)
+    )
+    return [_assignment(row) for row in session.scalars(query)]
+
+
+def role_catalog(session: Session) -> list[dict[str, object]]:
+    """API-ADM-09: mỗi role kèm permission nền (`BASE`) và permission đủ điều kiện nhận assignment (`ELIGIBLE`)."""
+    rows = session.execute(
+        text("SELECT role_code, permission_code, kind FROM access.role_permission ORDER BY role_code, permission_code")
+    ).all()
+    catalog: dict[str, dict[str, list[str]]] = {
+        code: {"base": [], "eligible": []} for code in sorted(known_roles(session))
+    }
+    for role, permission, kind in rows:
+        catalog[role]["base" if kind == "BASE" else "eligible"].append(permission)
+    return [{"code": code, **lists} for code, lists in catalog.items()]
