@@ -45,7 +45,7 @@ class AppConfigError(ValueError):
     """Giá trị cấu hình không hợp lệ; thông điệp chỉ nêu tên biến."""
 
 
-def _positive_int(settings: Settings, name: str) -> int:
+def positive_int(settings: Settings, name: str) -> int:
     raw = settings.config(name)
     try:
         value = int(raw)
@@ -58,12 +58,12 @@ def _positive_int(settings: Settings, name: str) -> int:
 
 def auth_settings(settings: Settings) -> AuthSettings:
     return AuthSettings(
-        idle=timedelta(minutes=_positive_int(settings, "AIEOS_SESSION_IDLE_MINUTES")),
-        absolute=timedelta(hours=_positive_int(settings, "AIEOS_SESSION_ABSOLUTE_HOURS")),
-        rate_limit_attempts=_positive_int(settings, "AIEOS_AUTH_RATE_LIMIT_ATTEMPTS"),
-        rate_limit_window=timedelta(seconds=_positive_int(settings, "AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS")),
-        lockout_threshold=_positive_int(settings, "AIEOS_AUTH_LOCKOUT_THRESHOLD"),
-        lockout_duration=timedelta(minutes=_positive_int(settings, "AIEOS_AUTH_LOCKOUT_MINUTES")),
+        idle=timedelta(minutes=positive_int(settings, "AIEOS_SESSION_IDLE_MINUTES")),
+        absolute=timedelta(hours=positive_int(settings, "AIEOS_SESSION_ABSOLUTE_HOURS")),
+        rate_limit_attempts=positive_int(settings, "AIEOS_AUTH_RATE_LIMIT_ATTEMPTS"),
+        rate_limit_window=timedelta(seconds=positive_int(settings, "AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS")),
+        lockout_threshold=positive_int(settings, "AIEOS_AUTH_LOCKOUT_THRESHOLD"),
+        lockout_duration=timedelta(minutes=positive_int(settings, "AIEOS_AUTH_LOCKOUT_MINUTES")),
     )
 
 

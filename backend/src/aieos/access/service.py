@@ -78,6 +78,17 @@ def roles_of(session: Session, user_id: uuid.UUID) -> set[str]:
     return set(session.scalars(select(UserRoleRow.role_code).where(UserRoleRow.user_id == user_id)))
 
 
+def active_admins(session: Session) -> list[uuid.UUID]:
+    """Tài khoản có role `ADMIN` và `status = 'ACTIVE'` (SRS-IAM-09, SRS-IAM-10; cùng định nghĩa với INV-11)."""
+    rows = session.execute(
+        text(
+            "SELECT ur.user_id FROM access.user_role ur JOIN identity.user_account u ON u.id = ur.user_id "
+            "WHERE ur.role_code = 'ADMIN' AND u.status = 'ACTIVE' ORDER BY ur.user_id"
+        )
+    )
+    return [row.user_id for row in rows]
+
+
 def effective_permissions(session: Session, user_id: uuid.UUID) -> set[str]:
     """Permission hiệu lực (chưa xét phạm vi): quyền nền của role + assignment còn hiệu lực. Phạm vi: T-108."""
     rows = session.execute(
