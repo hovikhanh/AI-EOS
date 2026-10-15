@@ -4,7 +4,7 @@
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
 **Cập nhật lần cuối:** 15/10/2026 (T-010, T-106 `DONE`)
-**Commit tham chiếu:** `f1ce538` (`main`, PR #21 — T-102); T-010: PR #22 (branch `feat/T-010-notifications`, CI run `38696839691` xanh); T-106: PR #23 xếp chồng trên #22 (branch `feat/T-106-admin-cli`, CI run `38697852135` xanh)
+**Commit tham chiếu:** `aa1061b` (`main`, PR #22 — T-010); T-106: PR #23 (branch `feat/T-106-admin-cli`, CI run `38697852135` xanh)
 **Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 11/13 task `DONE`; P1: T-101, T-102, T-106, T-107 `DONE`. Kế hoạch đã được duyệt (D-46). **7 task đủ điều kiện bắt đầu:** T-003, T-103, T-104, T-108, T-204, T-301, T-401.
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
@@ -175,7 +175,7 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 
 ## 5. Việc nên làm tiếp theo (sau khi có quyết định)
 
-1. Merge PR #22 (T-010) rồi PR #23 (T-106, xếp chồng) khi CDA đồng ý.
+1. Merge PR #23 (T-106) khi CI xanh (CDA đồng ý 15/10/2026).
    Đường găng demo (D-58): T-103 (MFA — ADMIN cần MFA để dùng hệ thống) → T-108 → T-111.
 2. Tiếp theo đường găng demo: **T-101** → **T-102** (đăng nhập) → T-107 → T-108; **T-003** song song.
 3. T-013 khi T-003 xong → T-605 về sau.
@@ -187,7 +187,7 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 - PR #21 (T-102) merge → `f1ce538`, CI `main` xanh.
 - T-010: migration `0006` + module `notify` (service, API-NOT-01/02, phân trang cursor ở `platform`); `scripts/ci.sh` local rc 0 (248 passed); 4 đột biến → test đỏ. PR #22, CI run `38696839691` xanh (248 passed, 0 skipped) → T-010 `DONE`. Chi tiết: Implementation_Plan §10, §24.
 - T-106: `identity/admin.py` + `app/admin_cli.py`, `access.api.active_admins`, tiến trình loader `admin-cli`, `AIEOS_PASSWORD_MIN_LENGTH`; `scripts/ci.sh` local rc 0 (259 passed); 8 đột biến → test đỏ (đột biến bỏ advisory lock ban đầu không bị bắt → viết lại test tranh chấp có barrier). PR #23 (base `feat/T-010-notifications`), CI run `38697852135` xanh (259 passed, 0 skipped) → T-106 `DONE`. Chi tiết: Implementation_Plan §10, §25.
-- CDA đã điền OPEN_DECISIONS mục 0 trong working tree (chưa commit) — chờ xử lý riêng.
+- PR #22 (T-010) merge → `aa1061b`. CDA đã điền OPEN_DECISIONS mục 0 trong working tree (chưa commit) — CDA quyết định sau trong PR tài liệu riêng; không xử lý trong PR task. CDA chấp nhận các lựa chọn kỹ thuật của T-010/T-106; `recover-admin` giữ chỉ khôi phục ADMIN `ACTIVE` (`[CẦN XÁC NHẬN]`, Implementation_Plan §25).
 
 **Phiên 15/10/2026 (lần 8) — T-102:**
 - PR #20 (T-107) merge → `7429117`, CI `main` run `38685297396` xanh.
