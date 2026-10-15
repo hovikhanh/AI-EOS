@@ -133,7 +133,7 @@ class TransactionRow(Base):
     no_eligible_approver: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     ai_assisted: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     ai_action_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("ai.action.id"))  # 0013 (T-301)
-    source_document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK capture.source_document: T-202
+    source_document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("capture.source_document.id"))
     idempotency_key: Mapped[str] = mapped_column(Text)
     request_hash: Mapped[bytes] = mapped_column(BYTEA)
     version: Mapped[int] = mapped_column(Integer, server_default=text("1"))

@@ -274,6 +274,7 @@ Chỉ ghi task đã bắt đầu (ID trong dấu `` ` `` để không trùng v�
 | `T-505` | `DONE` | 15/10/2026 | Branch `feat/T-505-work-task`, PR #33. Migration `0011` (`work.task`). Module `work`: API-WORK-01/03/04/05, phạm vi theo đơn vị owner (T-108/T-201), `overdue`/`completed_on_time` giờ Việt Nam, thông báo `TASK_ASSIGNED`, audit BUSINESS; `org.api.user_unit_path`. Test `backend/tests/test_work.py` (8). 8 đột biến: 7 bị bắt + 1 lớp trùng | Bằng chứng CI: PR #33, run `38752643215` (`success`). TC-WRK-01…05 `PASSED`; TC-ACC-03 phần task, TC-NTF-01 phần giao task (thành phần). |
 | `T-401` | `DONE` | 15/10/2026 | Branch `feat/T-401-finance-tables`, PR #34. Migration `0012` (`finance.reporting_period` không chồng lấn + không mở lại, `transaction`, `transaction_event` append-only, `approval_delegation` dự trữ); INV-01…07 (CHECK, UNIQUE có điều kiện, trigger `AE020`…`AE025`). Test `backend/tests/test_finance_schema.py` (8). 8 đột biến → test đỏ | Bằng chứng CI: PR #34, run `38755214148` (`success`). TC-FIN-01…04 `PASSED` (mức CSDL). |
 | `T-301` | `DONE` | 15/10/2026 | Branch `feat/T-301-ai-tables`, PR #35. Migration `0013` (`ai.tool` + seed 12 tool, `autonomy_policy` + seed SRS-AIC-03, `kill_switch` singleton, `setting`, `action`, `call_log`, `feedback`; INV-12 CHECK + trigger `AE030`, `AE031`; FK `ai_action_id`). Test `backend/tests/test_ai_schema.py` (5). 7 đột biến → test đỏ. Q-53 | Bằng chứng CI: PR #35, run `38757933594` (`success`). DoD "CHECK trần có hiệu lực" đạt. |
+| `T-202` | `DONE` | 15/10/2026 | Branch `feat/T-202-capture-tables`, PR #36. Migration `0014` (11 bảng `capture.*`; CHECK theo Database_Design §6; `uncertainty_reason` theo SRS-CAP-13; FK `source_document_id` cho org/task/giao dịch; `use_alter` cắt vòng FK). Test `backend/tests/test_capture_schema.py` (4). 6 đột biến → test đỏ | Bằng chứng CI: PR #36, run `38760592674` (`success`). |
 
 ## 11. Kế hoạch chi tiết T-002 (chưa triển khai)
 
@@ -695,4 +696,12 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - INV-12: CHECK trần trên `ai.tool` + trigger hai chiều (`AE030`); INV-13: kill switch singleton (seed `enabled = false`); tool tài chính: người xác nhận ≠ người khởi tạo (`AE031`); L3: hạn hoàn tác ≥ 24 giờ (BR-11). `ai.setting.draft_expiry_days = 30` (K5).
 - `ai.call_log`: CHECK chỉ provider local cho `SENSITIVE`/`PERSONAL` (Database_Design §5) — xung đột với ngoại lệ demo D-50 → **Q-53** `[CẦN XÁC NHẬN]`, cần trước phần demo DeepSeek của T-205.
 - Test `backend/tests/test_ai_schema.py` (5). 7 đột biến → test đỏ.
+
+## 38. Ghi chú triển khai T-202 (15/10/2026)
+
+- Migration `0014` (M-07): 11 bảng `capture.*` theo Database_Design §6; model ở `capture/models.py`. Chưa có API (upload T-203, trích xuất T-206, review T-208/T-209, import T-210).
+- Theo SRS (nguồn cao hơn Database_Design — CLAUDE.md §3): `extracted_field.uncertainty_reason` (SRS-CAP-13). Lựa chọn của agent: UNIQUE `(extraction_id, field_key)`; review đang mở có `decision`/`finished_at` NULL; `extraction.status` không CHECK vì tài liệu chưa liệt kê giá trị; kích thước/trang chỉ CHECK ≥ 0 (giới hạn 50 MB/300 trang là cấu hình, kiểm khi upload — T-203).
+- Không seed loại tài liệu/schema: danh mục MVP và trường trích xuất chờ 2B (T-207 cấu hình).
+- Khóa ngoại `source_document_id` của `org.org_unit`, `org.employee`, `work.task`, `finance.transaction`; model `org` dùng `use_alter` để cắt vòng khóa ngoại (tài liệu → tài khoản → nhân viên → tài liệu) — nếu không, so khớp model ↔ schema (TC-MIG-01) bỏ qua các khóa ngoại trong vòng.
+- Test `backend/tests/test_capture_schema.py` (4). 6 đột biến → test đỏ (một đột biến ban đầu lọt vì test tạo hai vi phạm cùng lúc — đã sửa).
 

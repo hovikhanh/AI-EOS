@@ -34,7 +34,10 @@ class OrgUnitRow(Base):
     head_employee_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("org.employee.id", use_alter=True, name="fk_org_unit_head_employee_id_employee")
     )
-    source_document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK capture.source_document: T-202
+    source_document_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("capture.source_document.id", use_alter=True, name="fk_org_unit_source_document_id_source_document"),
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     version: Mapped[int] = mapped_column(Integer, server_default=text("1"))
 
@@ -57,6 +60,9 @@ class EmployeeRow(Base):
     org_unit_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("org.org_unit.id"))
     manager_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("org.employee.id"))
     status: Mapped[str] = mapped_column(Text, server_default=text("'ACTIVE'"))
-    source_document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK capture.source_document: T-202
+    source_document_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey("capture.source_document.id", use_alter=True, name="fk_employee_source_document_id_source_document"),
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     version: Mapped[int] = mapped_column(Integer, server_default=text("1"))
