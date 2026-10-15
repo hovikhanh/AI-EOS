@@ -203,6 +203,9 @@ Ghi chính thức bản ghi từ form (C1) đi qua endpoint của module đích 
 | API-ORG-02 | GET | `/org/employees` | `org.directory.read` | Danh bạ (chỉ trường không nhạy cảm) | UC-06, US-DC-007 |
 | API-ORG-03 | GET | `/lineage/{resource_type}/{resource_id}` | `data.read` trên đối tượng | Nguồn gốc: bản ghi, người nhập, tài liệu, trang | FR-DF-04, US-DC-011, UX-03 |
 
+**API-ORG-01** (T-201) → `200 { "items": [{ "id", "name", "code", "parent_id", "head_employee_id" }] }` — danh sách phẳng, client dựng cây theo `parent_id`.
+**API-ORG-02** (T-201) `?q=&org_unit_id=&limit=&cursor=` → `{ "items": [{ "id", "full_name", "title", "org_unit_id", "org_unit_name", "manager_id", "manager_name" }], "next_cursor" }` — chỉ nhân viên đang làm (`ACTIVE`), sắp theo họ tên; `q` tìm trong họ tên (không phân biệt hoa thường). Chỉ trường danh bạ (SRS-ACC-11).
+
 ---
 
 ## 6. Finance — `finance`

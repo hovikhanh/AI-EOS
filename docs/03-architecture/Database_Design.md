@@ -242,7 +242,8 @@ Index claim: `(run_after, id) WHERE status = 'QUEUED'`; index reaper: `(lease_ex
 
 ### `org.org_unit`, `org.employee`
 - `org_unit`: `id`, `name`, `code UNIQUE NULL`, `parent_id` FK self, `head_employee_id` NULL, `source_document_id` NULL, `version`.
-- `employee`: `id`, `full_name`, `title`, `org_unit_id`, `manager_id` FK self, `status`, `source_document_id`, `version`. **Chỉ các trường danh bạ** theo US-DC-007/BRD §3.4 (họ tên, chức danh, phòng ban, quản lý trực tiếp). Trường nhân sự nhạy cảm (CCCD, lương, sức khỏe) **không có trong MVP**; nếu bổ sung phải ở bảng riêng `org.employee_sensitive` với quyền `hr.profile.read`/`hr.salary.read` (R6).
+- `employee`: `id`, `full_name`, `title`, `org_unit_id`, `manager_id` FK self, `status`, `source_document_id`, `version`.
+- Migration `0010` (T-201): `status` CHECK `ACTIVE`/`INACTIVE` (`[CẦN XÁC NHẬN]` danh sách giá trị); trigger chặn vòng trong cây đơn vị (`AE004`) và quan hệ quản lý (`AE005`); không trỏ chính nó (CHECK); `code` UNIQUE; khóa ngoại `org_unit.head_employee_id` → `employee`, `identity.user_account.employee_id` → `employee`; `source_document_id` chưa có khóa ngoại (bảng `capture.source_document` ở T-202); `aieos_app` không DELETE. **Chỉ các trường danh bạ** theo US-DC-007/BRD §3.4 (họ tên, chức danh, phòng ban, quản lý trực tiếp). Trường nhân sự nhạy cảm (CCCD, lương, sức khỏe) **không có trong MVP**; nếu bổ sung phải ở bảng riêng `org.employee_sensitive` với quyền `hr.profile.read`/`hr.salary.read` (R6).
 
 ### `capture.document_type`, `capture.extraction_schema`
 - `document_type`: `code PK`, `name`, `phase` CHECK in (`MVP`,`PHASE2`), `target_module`, `enabled` (Phase 2 luôn `false` trong MVP — D-17), `auto_commit_enabled boolean default false` (BR-05).

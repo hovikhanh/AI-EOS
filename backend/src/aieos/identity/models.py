@@ -59,7 +59,7 @@ class UserAccountRow(Base):
     mfa_last_step: Mapped[int | None] = mapped_column(BigInteger)  # bước TOTP đã dùng gần nhất (0007, T-103)
     failed_login_count: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    employee_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK org.employee thêm ở T-201
+    employee_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("org.employee.id"))  # 0010 (T-201)
     created_by: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey(_USER_FK))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

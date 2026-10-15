@@ -654,3 +654,13 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - CI: workflow `postgres:18.6` (CDA đồng ý 15/10/2026), `timeout-minutes` 45.
 - Chưa làm: backup/WAL (T-605), giám sát tuổi chữ ký ≤ 90 ngày (D-45 — vận hành), đường ra cho provider AI cloud (D-50, T-204/T-205).
 
+## 34. Ghi chú triển khai T-201 (15/10/2026)
+
+- Hướng chọn: CDA yêu cầu "tiếp tục triển khai" mà chưa chọn giữa T-201 và T-204/T-205; agent chọn T-201 (đường găng nghiệp vụ, đủ điều kiện, không phụ thuộc mục 0 OPEN_DECISIONS; T-204/T-205 chờ D-50).
+- Vị trí: module `org` (`models.py`, `service.py`, `router.py`, `api.py`); migration `0010` (M-06); `app/asgi.py` gắn `build_org_router` và `PermissionGuard(org=OrgDirectoryScope())`.
+- API-ORG-01 (cây đơn vị, danh sách phẳng) và API-ORG-02 (danh bạ, cursor theo họ tên) với `org.directory.read` (mọi role). Chỉ trường danh bạ: họ tên, chức danh, đơn vị, quản lý trực tiếp (SRS-ACC-11, R6); nhân viên `INACTIVE` không hiện.
+- **Phạm vi MANAGER (T-108):** `OrgDirectoryScope.managed_units` = đơn vị mà nhân viên gắn với tài khoản (`user_account.employee_id`) **làm trưởng** (`org_unit.head_employee_id`) + mọi đơn vị cấp dưới. Lựa chọn của agent theo tối thiểu quyền — chỉ là thành viên đơn vị không cho phạm vi MANAGER trên đơn vị đó. `[CẦN XÁC NHẬN]` nếu CDA muốn "đơn vị của MANAGER" là đơn vị người đó trực thuộc.
+- `employee.status` `ACTIVE`/`INACTIVE`: Database_Design chỉ ghi `status` — `[CẦN XÁC NHẬN]` danh sách giá trị.
+- Chưa có API ghi đơn vị/nhân viên và chưa có cách gắn tài khoản ↔ nhân viên qua API: dữ liệu vào qua import nhân sự (T-210, `hr.import`, write gateway). Hàm ghi trong `org.api` (`create_unit`, `create_employee`, `set_parent`, `set_head`) dành cho T-210 và test. Trước T-210, demo không có dữ liệu danh bạ (danh sách trống).
+- Test `backend/tests/test_org.py` (5): TC-ACC-09 (5 role, đúng 7 trường), lọc/tìm/phân trang, trigger chống vòng, phạm vi MANAGER chạy cùng `scope_filter` (T-108), khóa ngoại tài khoản ↔ nhân viên. 7 đột biến → test đỏ.
+

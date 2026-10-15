@@ -1,8 +1,8 @@
 """Ứng dụng API (composition root, D-42): `uvicorn --factory aieos.app.asgi:create_app` (server: T-013).
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
-xác thực (T-102) → router (auth, MFA T-103, step-up T-104, quản trị T-109, lời mời T-105, thông báo T-010) →
-kiểm tra readiness.
+xác thực (T-102) → router (auth, MFA T-103, step-up T-104, quản trị T-109, lời mời T-105, thông báo T-010,
+danh bạ T-201) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -33,6 +33,7 @@ from aieos.identity.api import (
     parse_totp_key,
 )
 from aieos.notify.api import build_notify_router
+from aieos.org.api import OrgDirectoryScope, build_org_router
 from aieos.platform.api import (
     API_PREFIX,
     CsrfConfig,
@@ -111,7 +112,9 @@ def create_app() -> FastAPI:
     authenticator = Authenticator(factory, auth_config)
     mfa = MfaService(authenticator, totp_key)
     users = UserAdmin(authenticator)
-    guard = PermissionGuard(factory, authenticator.require_session, require_step_up=authenticator.require_step_up)
+    guard = PermissionGuard(
+        factory, authenticator.require_session, org=OrgDirectoryScope(), require_step_up=authenticator.require_step_up
+    )
     return create_api(
         {"database": lambda: database_ready(engine), "storage": storage.is_ready},
         (
@@ -122,6 +125,7 @@ def create_app() -> FastAPI:
             build_invitation_router(InvitationService(authenticator, users, invite_ttl), guard),
             build_access_admin_router(guard, authenticator.revoke_sessions),
             build_notify_router(factory, authenticator.require_session),
+            build_org_router(guard),
         ),
         csrf=csrf,
     )
