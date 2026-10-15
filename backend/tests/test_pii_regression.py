@@ -243,12 +243,22 @@ def test_audit_row_in_database_has_no_original_values(engine: Engine) -> None:  
 
 
 @pytest.mark.db
-def test_database_errors_do_not_echo_parameters(engine: Engine) -> None:  # 8: exception từ tầng CSDL
+def test_database_error_logged_without_original_values(engine: Engine, log_stream: io.StringIO) -> None:  # 8, 9
+    """Lỗi CSDL: SQLAlchemy không kèm tham số (`hide_parameters`). PostgreSQL vẫn đưa giá trị dòng vào DETAIL của lỗi
+    ("Failing row contains …") — ứng dụng không xóa được trong đối tượng exception, nên kênh lộ ra ngoài là log:
+    traceback ghi qua `JsonFormatter` phải không còn giá trị gốc."""
     with pytest.raises(Exception) as info, engine.begin() as conn:
         conn.execute(
             text(
                 "INSERT INTO audit.event (category, actor_type, action, outcome, reason) VALUES ('X', :a, :b, :c, :r)"
             ),
-            {"a": "USER", "b": "x", "c": "SUCCESS", "r": f"CCCD {CCCD}"},
+            {"a": "USER", "b": "x", "c": "SUCCESS", "r": f"CCCD {CCCD}, STK {ACCOUNT}"},
         )
-    assert CCCD not in str(info.value)
+    assert "SQL parameters hidden" in str(info.value)
+    try:
+        raise info.value
+    except Exception:
+        logging.getLogger("aieos.test.pii").exception("request_failed", extra={"path": "/api/v1/x"})
+    record = line(log_stream)
+    assert not leaks(CCCD, log_stream.getvalue()) and not leaks(ACCOUNT, log_stream.getvalue())
+    assert "INSERT INTO audit.event" in record["exc"]  # câu SQL vẫn còn để chẩn đoán
