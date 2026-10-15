@@ -8,21 +8,17 @@ import { useStepUp } from "@/auth/reauth";
 import { useMe } from "@/auth/session";
 import { Card, ErrorNotice, Field, Loading } from "@/components/form";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 import { formText } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 import { useRoles } from "./UsersPage";
 
 const ASSIGNMENTS_KEY = ["admin", "assignments"] as const;
 const SCOPES = ["COMPANY", "ORG_UNIT", "DOCUMENT_TYPE", "REVIEW_QUEUE"] as const;
-const SCOPE_LABEL: Record<(typeof SCOPES)[number], string> = {
-  COMPANY: "Toàn công ty",
-  ORG_UNIT: "Đơn vị",
-  DOCUMENT_TYPE: "Loại tài liệu",
-  REVIEW_QUEUE: "Hàng chờ review",
-};
 
 function CreateAssignmentForm({ users }: { users: User[] }) {
   const me = useMe().data;
+  const { t } = useI18n();
   const rolesData = useRoles().data;
   const stepUp = useStepUp();
   const queryClient = useQueryClient();
@@ -59,34 +55,34 @@ function CreateAssignmentForm({ users }: { users: User[] }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2" aria-label="Giao quyền">
+    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2" aria-label={t.assignments.createTitle}>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">Người nhận</span>
+        <span className="mb-1 block font-medium">{t.assignments.recipient}</span>
         <select
           className="h-9 w-full rounded-md border border-input bg-background px-2"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           required
         >
-          <option value="">— Chọn —</option>
+          <option value="">{t.common.choose}</option>
           {users
             .filter((u) => u.id !== me?.id && u.status !== "DISABLED")
             .map((u) => (
               <option key={u.id} value={u.id}>
-                {u.display_name} ({u.roles.join(", ") || "chưa có role"})
+                {u.display_name} ({u.roles.join(", ") || t.common.noRole})
               </option>
             ))}
         </select>
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">Permission</span>
+        <span className="mb-1 block font-medium">{t.assignments.permission}</span>
         <select name="permission" className="h-9 w-full rounded-md border border-input bg-background px-2" required>
           <option value="">
             {target
               ? eligible.length
-                ? "— Chọn —"
-                : "Role của người này không đủ điều kiện"
-              : "Chọn người nhận trước"}
+                ? t.common.choose
+                : t.assignments.notEligible
+              : t.assignments.chooseRecipientFirst}
           </option>
           {eligible.map((p) => (
             <option key={p} value={p}>
@@ -96,7 +92,7 @@ function CreateAssignmentForm({ users }: { users: User[] }) {
         </select>
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium">Phạm vi</span>
+        <span className="mb-1 block font-medium">{t.assignments.scope}</span>
         <select
           className="h-9 w-full rounded-md border border-input bg-background px-2"
           value={scope}
@@ -104,28 +100,27 @@ function CreateAssignmentForm({ users }: { users: User[] }) {
         >
           {SCOPES.map((s) => (
             <option key={s} value={s}>
-              {SCOPE_LABEL[s]}
+              {t.assignments.scopes[s]}
             </option>
           ))}
         </select>
       </label>
-      {scope !== "COMPANY" ? <Field label="Mã phạm vi" id="scope-id" name="scope_id" required /> : <div />}
-      <Field label="Hiệu lực đến (tùy chọn)" id="valid-to" name="valid_to" type="datetime-local" />
-      <Field label="Lý do" id="assign-reason" name="reason" required />
-      <p className="text-sm text-muted-foreground sm:col-span-2">
-        Lưu xong, mọi phiên đăng nhập của người nhận sẽ bị thu hồi.
-      </p>
+      {scope !== "COMPANY" ? <Field label={t.assignments.scopeId} id="scope-id" name="scope_id" required /> : <div />}
+      <Field label={t.assignments.validTo} id="valid-to" name="valid_to" type="datetime-local" />
+      <Field label={t.common.reason} id="assign-reason" name="reason" required />
+      <p className="text-sm text-muted-foreground sm:col-span-2">{t.assignments.sessionsRevoked}</p>
       <div className="sm:col-span-2">
         <ErrorNotice error={create.error} />
       </div>
       <Button type="submit" disabled={create.isPending || !target} className="sm:justify-self-start">
-        Giao quyền
+        {t.assignments.submit}
       </Button>
     </form>
   );
 }
 
 export function AssignmentsPage() {
+  const { t } = useI18n();
   const stepUp = useStepUp();
   const queryClient = useQueryClient();
   const users = useQuery({
@@ -144,18 +139,20 @@ export function AssignmentsPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">Quyền được giao</h1>
-      <Card title="Giao quyền">{users.data ? <CreateAssignmentForm users={users.data.items} /> : <Loading />}</Card>
-      <Card title="Danh sách">
+      <h1 className="text-2xl font-semibold">{t.assignments.title}</h1>
+      <Card title={t.assignments.createTitle}>
+        {users.data ? <CreateAssignmentForm users={users.data.items} /> : <Loading />}
+      </Card>
+      <Card title={t.common.list}>
         <ErrorNotice error={revoke.error} />
         {assignments.isPending ? (
           <Loading />
         ) : assignments.isError ? (
           <ErrorNotice error={assignments.error} />
         ) : assignments.data.items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có quyền nào được giao.</p>
+          <p className="text-sm text-muted-foreground">{t.assignments.empty}</p>
         ) : (
-          <ul aria-label="Danh sách quyền được giao">
+          <ul aria-label={t.assignments.listLabel}>
             {assignments.data.items.map((a) => (
               <li
                 key={a.id}
@@ -166,15 +163,15 @@ export function AssignmentsPage() {
                     {names.get(a.user_id) ?? a.user_id} · {a.permission}
                   </p>
                   <p className="text-muted-foreground">
-                    {SCOPE_LABEL[a.scope_type]}
-                    {a.scope_id ? ` ${a.scope_id}` : ""} · đến {a.valid_to ? formatDateTime(a.valid_to) : "không hạn"} ·{" "}
-                    {a.reason}
-                    {a.revoked_at ? ` · đã thu hồi ${formatDateTime(a.revoked_at)}` : ""}
+                    {t.assignments.scopes[a.scope_type]}
+                    {a.scope_id ? ` ${a.scope_id}` : ""} ·{" "}
+                    {t.assignments.until(a.valid_to ? formatDateTime(a.valid_to) : null)} · {a.reason}
+                    {a.revoked_at ? ` · ${t.assignments.revokedAt(formatDateTime(a.revoked_at))}` : ""}
                   </p>
                 </div>
                 {a.revoked_at ? null : (
                   <Button size="sm" variant="outline" onClick={() => revoke.mutate(a.id)}>
-                    Thu hồi
+                    {t.assignments.revoke}
                   </Button>
                 )}
               </li>
