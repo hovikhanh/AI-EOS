@@ -19,11 +19,11 @@ from sqlalchemy.orm import Session, sessionmaker
 from aieos.access.api import active_admins, grant_role, roles_of
 from aieos.audit.api import ActorType, AuditEvent, Category, Outcome, record
 from aieos.identity.auth import hash_password
+from aieos.identity.stepup import password_problem
 from aieos.notify.api import notify
 from aieos.platform.api import transaction
 
 ADMIN_LOCK_KEY = 0x41454F53_00000002  # advisory lock `admin-membership` — trùng migration 0005 (test đối chiếu)
-MAX_PASSWORD_LENGTH = 1024
 MAX_EMAIL_LENGTH = 320
 ADMIN_RECOVERED = "ADMIN_RECOVERED"
 
@@ -33,10 +33,9 @@ class AdminCommandError(Exception):
 
 
 def check_password(password: str, min_length: int) -> None:
-    if len(password) < min_length:
-        raise AdminCommandError(f"Mật khẩu phải có ít nhất {min_length} ký tự (AIEOS_PASSWORD_MIN_LENGTH)")
-    if len(password) > MAX_PASSWORD_LENGTH:
-        raise AdminCommandError(f"Mật khẩu dài quá {MAX_PASSWORD_LENGTH} ký tự")
+    problem = password_problem(password, min_length)
+    if problem:
+        raise AdminCommandError(f"{problem} (AIEOS_PASSWORD_MIN_LENGTH)" if len(password) < min_length else problem)
 
 
 def _check_email(email: str) -> str:

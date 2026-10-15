@@ -213,24 +213,31 @@ class MfaService:
             user = self._user(session, principal.user_id)
             if not user.mfa_enabled:
                 raise ApiError("INVALID_STATE", "Tài khoản chưa đăng ký MFA")
-            secret = decrypt_secret(self.key, principal.user_id, user.mfa_secret_enc)
-            step = match_step(secret, code.strip(), self.clock(), user.mfa_last_step)
-            if step is not None:
-                session.execute(
-                    text("UPDATE identity.user_account SET mfa_last_step = :s WHERE id = :i"),
-                    {"s": step, "i": principal.user_id},
-                )
-                method = "TOTP"
-            elif self._use_recovery_code(session, principal.user_id, code):
-                method = "RECOVERY_CODE"
-            else:
+            method = self.use_code(session, user, code)
+            if method is None:
                 audit_security(session, "auth.mfa.verify", Outcome.DENIED, principal.user_id, "INVALID_CODE")
-                method = None
-            if method is not None:
+            else:
                 token = self.auth.rotate_session(session, principal, ip=ip, user_agent=user_agent)
                 audit_security(session, "auth.mfa.verify", Outcome.SUCCESS, principal.user_id, method)
                 return MfaResult(token)
         raise ApiError("INVALID_CREDENTIALS")
+
+    def use_code(self, session: Session, user: Any, code: str) -> str | None:
+        """Kiểm mã của `user` (dòng `_user`, MFA đã bật): TOTP chưa dùng hoặc mã khôi phục chưa dùng → đánh dấu đã dùng,
+        trả `TOTP`/`RECOVERY_CODE`; sai → None. Dùng cho xác minh MFA và xác thực lại (T-104)."""
+        secret = decrypt_secret(self.key, user.id, user.mfa_secret_enc)
+        step = match_step(secret, code.strip(), self.clock(), user.mfa_last_step)
+        if step is not None:
+            session.execute(
+                text("UPDATE identity.user_account SET mfa_last_step = :s WHERE id = :i"), {"s": step, "i": user.id}
+            )
+            return "TOTP"
+        if self._use_recovery_code(session, user.id, code):
+            return "RECOVERY_CODE"
+        return None
+
+    def user_for_update(self, session: Session, user_id: uuid.UUID) -> Any:
+        return self._user(session, user_id)
 
     @staticmethod
     def _use_recovery_code(session: Session, user_id: uuid.UUID, code: str) -> bool:

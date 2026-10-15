@@ -62,6 +62,8 @@ SETTINGS = AuthSettings(
     rate_limit_window=timedelta(seconds=60),
     lockout_threshold=10,
     lockout_duration=timedelta(minutes=15),
+    reauth=timedelta(minutes=5),
+    password_min_length=12,
 )
 UNIT_A, UNIT_A1, UNIT_B = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
 TREE = {UNIT_A: {UNIT_A, UNIT_A1}, UNIT_A1: {UNIT_A1}, UNIT_B: {UNIT_B}}

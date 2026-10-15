@@ -12,6 +12,8 @@
 - **MFA (SRS-IAM-04, SRS-IAM-05):** tài khoản có role `ADMIN` hoặc đã bật MFA → session chờ MFA (`mfa_verified=false`),
   chỉ gọi được API MFA (T-103, `mfa.py`) và đăng xuất; endpoint khác trả `401 MFA_REQUIRED`. Xác minh/đăng ký MFA
   xong → `rotate_session` (ID mới, ADR-006).
+- **Step-up (T-104, SRS-IAM-08):** `require_step_up` — session đủ MFA và `reauth_at` trong `AIEOS_REAUTH_MINUTES`,
+  nếu không → `401 REAUTH_REQUIRED`. Xác thực lại và đổi mật khẩu ở `stepup.py`.
 - **Audit (ADR-010, SRS-AUD-02):** `SECURITY` cho đăng nhập thành công/bị từ chối/bị chặn và đăng xuất; không ghi
   email, mật khẩu, token.
 """
@@ -19,7 +21,7 @@
 import secrets
 import uuid
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from argon2 import PasswordHasher
@@ -56,6 +58,8 @@ class AuthSettings:
     rate_limit_window: timedelta
     lockout_threshold: int
     lockout_duration: timedelta
+    reauth: timedelta  # AIEOS_REAUTH_MINUTES (T-104)
+    password_min_length: int  # AIEOS_PASSWORD_MIN_LENGTH (D-58)
 
 
 @dataclass(frozen=True)
@@ -66,6 +70,7 @@ class Principal:
     session_id: uuid.UUID
     mfa_verified: bool
     mfa_required: bool
+    reauth_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -254,14 +259,14 @@ class Authenticator:
                     "FROM identity.user_account u "
                     "WHERE s.token_hash = :h AND s.user_id = u.id AND s.revoked_at IS NULL "
                     "AND s.idle_expires_at > now() AND s.absolute_expires_at > now() AND u.status = 'ACTIVE' "
-                    "RETURNING s.id, s.user_id, s.mfa_verified, u.mfa_enabled"
+                    "RETURNING s.id, s.user_id, s.mfa_verified, s.reauth_at, u.mfa_enabled"
                 ),
                 {"h": hash_token(token), "idle": self.settings.idle.total_seconds()},
             ).one_or_none()
             if row is None:
                 raise ApiError("UNAUTHENTICATED")
             needs_mfa = mfa_required(session, row.user_id, row.mfa_enabled)
-        principal = Principal(row.user_id, row.id, row.mfa_verified, needs_mfa)
+        principal = Principal(row.user_id, row.id, row.mfa_verified, needs_mfa, row.reauth_at)
         if needs_mfa and not principal.mfa_verified and not allow_pending_mfa:
             raise ApiError("MFA_REQUIRED")
         return principal
@@ -270,9 +275,39 @@ class Authenticator:
         """Dependency FastAPI: session đầy đủ (đã xác minh MFA nếu bắt buộc) — SRS-GEN-01."""
         return self.authenticate(request.cookies.get(SESSION_COOKIE))
 
+    def require_step_up(self, request: Request) -> Principal:
+        """Dependency cho thao tác `STEP-UP` (SRS-IAM-08): đã xác thực lại trong `AIEOS_REAUTH_MINUTES`."""
+        principal = self.require_session(request)
+        if not self.recently_reauthenticated(principal):
+            raise ApiError("REAUTH_REQUIRED")
+        return principal
+
+    def recently_reauthenticated(self, principal: Principal) -> bool:
+        with transaction(self.factory) as session:
+            fresh = session.execute(
+                text(
+                    "SELECT 1 FROM identity.session WHERE id = :i AND reauth_at IS NOT NULL "
+                    "AND reauth_at > now() - make_interval(secs => :w)"
+                ),
+                {"i": principal.session_id, "w": self.settings.reauth.total_seconds()},
+            ).first()
+        return fresh is not None
+
     def require_session_allow_pending(self, request: Request) -> Principal:
         """Dependency cho API MFA và đăng xuất: chấp nhận session chờ MFA (SRS-IAM-04)."""
         return self.authenticate(request.cookies.get(SESSION_COOKIE), allow_pending_mfa=True)
+
+    @staticmethod
+    def revoke_sessions(session: Session, user_id: uuid.UUID, *, keep: uuid.UUID | None = None) -> int:
+        """Thu hồi mọi session còn hiệu lực của `user_id` (trừ `keep`) — SRS-IAM-11; trả số session bị thu hồi."""
+        result = session.execute(
+            text(
+                "UPDATE identity.session SET revoked_at = now() WHERE user_id = :u AND revoked_at IS NULL "
+                "AND (CAST(:k AS uuid) IS NULL OR id <> :k) RETURNING id"
+            ),
+            {"u": user_id, "k": keep},
+        )
+        return len(result.all())
 
     def logout(self, principal: Principal) -> None:
         with transaction(self.factory) as session:

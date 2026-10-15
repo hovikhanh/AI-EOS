@@ -1,7 +1,7 @@
 """Ứng dụng API (composition root, D-42): `uvicorn --factory aieos.app.asgi:create_app` (server: T-013).
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
-xác thực (T-102) → router (auth, MFA T-103, thông báo T-010) → kiểm tra readiness.
+xác thực (T-102) → router (auth, MFA T-103, step-up T-104, thông báo T-010) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -19,8 +19,10 @@ from aieos.identity.api import (
     AuthSettings,
     MfaKeyError,
     MfaService,
+    StepUpService,
     build_auth_router,
     build_mfa_router,
+    build_stepup_router,
     parse_totp_key,
 )
 from aieos.notify.api import build_notify_router
@@ -73,6 +75,8 @@ def auth_settings(settings: Settings) -> AuthSettings:
         rate_limit_window=timedelta(seconds=positive_int(settings, "AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS")),
         lockout_threshold=positive_int(settings, "AIEOS_AUTH_LOCKOUT_THRESHOLD"),
         lockout_duration=timedelta(minutes=positive_int(settings, "AIEOS_AUTH_LOCKOUT_MINUTES")),
+        reauth=timedelta(minutes=positive_int(settings, "AIEOS_REAUTH_MINUTES")),
+        password_min_length=positive_int(settings, "AIEOS_PASSWORD_MIN_LENGTH"),
     )
 
 
@@ -96,11 +100,13 @@ def create_app() -> FastAPI:
     engine = create_app_engine(settings)
     factory = make_session_factory(engine)
     authenticator = Authenticator(factory, auth_config)
+    mfa = MfaService(authenticator, totp_key)
     return create_api(
         {"database": lambda: database_ready(engine), "storage": storage.is_ready},
         (
             build_auth_router(authenticator, csrf_key),
-            build_mfa_router(authenticator, MfaService(authenticator, totp_key)),
+            build_mfa_router(authenticator, mfa),
+            build_stepup_router(authenticator, StepUpService(authenticator, mfa)),
             build_notify_router(factory, authenticator.require_session),
         ),
         csrf=csrf,

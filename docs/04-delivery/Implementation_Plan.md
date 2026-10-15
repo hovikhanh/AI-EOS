@@ -585,3 +585,13 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - `PermissionGuard` chưa gắn vào router nào của `create_app` (chưa có endpoint cần permission nghiệp vụ); T-109, T-201… dùng khi thêm route.
 - TC-ACC-03: không chạy đủ kịch bản ở T-108 (task/mục tiêu, `org.*` chưa có) — Q-52 → D-59: task chủ T-505, phần mục tiêu ở T-502; T-108 giữ bằng chứng thành phần (`scope_filter` trên bảng thử).
 
+## 28. Ghi chú triển khai T-104 (15/10/2026)
+
+- Vị trí: `identity/stepup.py` (`StepUpService.reauth`, `change_password`, `password_problem`), `Authenticator.require_step_up`, `Authenticator.revoke_sessions` (dùng lại ở T-109 cho đổi role/khóa tài khoản — SRS-IAM-11, TC-ACC-08), `MfaService.use_code` (dùng chung cho xác minh MFA và reauth); router `build_stepup_router` (API-AUTH-05, API-AUTH-09).
+- Step-up (SRS-IAM-08): `reauth_at` gắn với **session** (reauth ở session này không mở khóa session khác); hiệu lực `AIEOS_REAUTH_MINUTES` (biến đã có, nay đọc vào `AuthSettings`). Route `STEP-UP` dùng dependency `require_step_up` (T-105, T-109… dùng khi thêm route; `PermissionGuard` kết hợp được bằng cách thêm dependency này).
+- Reauth: luôn kiểm Argon2 trước, tài khoản đã bật MFA phải kèm mã TOTP chưa dùng hoặc mã khôi phục; sai → `401 INVALID_CREDENTIALS` không phân biệt lý do (lý do chỉ ở audit: `INVALID_PASSWORD`/`INVALID_CODE`). Giới hạn thử D-57 theo IP + tài khoản. Sai reauth **không** tính vào khóa tạm (SRS-IAM-07 chỉ nói đăng nhập) — lựa chọn của agent, đã có rate limit.
+- Đổi mật khẩu: không yêu cầu mật khẩu cũ trong body vì đã qua reauth trong cửa sổ; không kiểm trùng mật khẩu cũ/lịch sử (tài liệu không yêu cầu); session hiện tại giữ nguyên, session khác bị thu hồi (API_Specification API-AUTH-09).
+- `AuthSettings` thêm `reauth`, `password_min_length` (đọc từ `AIEOS_REAUTH_MINUTES`, `AIEOS_PASSWORD_MIN_LENGTH`; sai → api thoát mã 2). CLI T-106 dùng chung `password_problem`.
+- TC-IAM-08 chủ T-104; phần đổi mật khẩu của TC-AUD-02 (chủ T-105, D-55) là bằng chứng thành phần.
+- D-59 (CDA, 15/10/2026): TC-ACC-03 → chủ T-505, phần mục tiêu ở T-502 (đóng Q-52).
+
