@@ -9,9 +9,10 @@ from types import ModuleType
 from sqlalchemy import MetaData
 
 import aieos.audit.api
+import aieos.jobs.api
 from aieos.platform.api import Base
 
-MODULE_APIS: tuple[ModuleType, ...] = (aieos.audit.api,)
+MODULE_APIS: tuple[ModuleType, ...] = (aieos.audit.api, aieos.jobs.api)
 
 
 def metadata() -> MetaData:

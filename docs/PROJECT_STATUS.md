@@ -3,9 +3,9 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 15/10/2026 (T-008 `DONE`; D-55)
-**Commit tham chiếu:** `99e477c` (`main`, PR #15); T-008: PR #16 (branch `feat/T-008-audit-append-only`, CI run `38678659141` xanh)
-**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 8/13 task `DONE`. Kế hoạch đã được duyệt (D-46). **5 task đủ điều kiện bắt đầu:** T-003, T-007, T-009, T-010, T-101.
+**Cập nhật lần cuối:** 15/10/2026 (T-009 đang review; D-56)
+**Commit tham chiếu:** `1101438` (`main`, PR #16 — T-008); T-009 trên branch `feat/T-009-job-queue`
+**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 8/13 task `DONE`. Kế hoạch đã được duyệt (D-46). T-009 đang review. **4 task đủ điều kiện bắt đầu:** T-003, T-007, T-010, T-101.
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
 
@@ -13,10 +13,10 @@ Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột 
 
 - Tổng task: **83** (thêm T-308, T-513 theo D-49)
 - DONE: **8** — T-001, T-002, T-004, T-005, T-006, T-008, T-011, T-012 (T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; ngày 15/10/2026)
-- IN_REVIEW: **0**
+- IN_REVIEW: **1** — T-009
 - BLOCKED: **10** — T-407, T-604, T-901…T-908
-- TODO: **65** (`READY` 57, `PARTIAL` 8; chưa bắt đầu)
-- Task đủ điều kiện bắt đầu ngay: **5** — T-003, T-007, T-009, T-010, T-101
+- TODO: **64** (`READY` 56, `PARTIAL` 8; chưa bắt đầu)
+- Task đủ điều kiện bắt đầu ngay: **4** — T-003, T-007, T-010, T-101
 - Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend
 - Test case: **206** (199 + TC-FE-01…07); **9 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03), 197 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
@@ -52,7 +52,7 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | T-006 | DONE | Log, correlation ID, health; run `38544809935` (D-44, 15/10/2026) |
 | T-007 | TODO | READY · **đủ điều kiện bắt đầu** · HTTP: CSRF, problem+json, idempotency, ETag, rate limit |
 | T-008 | DONE | Audit append-only: migration `0002`, trigger INV-14, `audit.api.record`/`record_separately`; run `38678659141`; TC-AUD-03 `PASSED` (15/10/2026) |
-| T-009 | TODO | READY · **đủ điều kiện bắt đầu** · Job queue |
+| T-009 | IN_REVIEW | Job queue: migration `0003`, claim `SKIP LOCKED`, lease, reaper, backoff, scheduler, registry `job_class`, lệnh `worker`; chờ CI của PR; chủ TC-JOB-01…04, 06 (TC-JOB-05 → T-203, D-56) |
 | T-010 | TODO | READY · **đủ điều kiện bắt đầu** · Thông báo in-app |
 | T-011 | DONE | Storage adapter; run `38544080219` (D-44, 15/10/2026) |
 | T-012 | DONE | Nền tảng frontend; run `38536047844`; TC-FE-01…07 `PASSED` (D-47, 15/10/2026) |
@@ -175,12 +175,17 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 
 ## 5. Việc nên làm tiếp theo (sau khi có quyết định)
 
-1. Merge PR #16 (T-008) khi CDA đồng ý.
-2. Tiếp theo đường găng: **T-009** (job queue — cần cho T-013, T-110, T-203, T-204), **T-007** (HTTP — cần cho T-102) → **T-101** → **T-010**; **T-003** song song.
+1. Hoàn tất PR T-009 (CI xanh → TC-JOB-01…04, 06 `PASSED` → T-009 `DONE`).
+2. Tiếp theo đường găng: **T-007** (HTTP — cần cho T-102) → **T-101** → **T-010**; **T-003** song song.
 3. Sau T-008: T-009 → T-013 (khi T-003 xong) → T-605 về sau.
 4. CDA điền OPEN_DECISIONS mục 0 trước khi tới T-204 (D-50) và T-108 (TC-ACC-10).
 
 ## 6. Ghi chú phiên gần nhất
+
+**Phiên 15/10/2026 (lần 4) — T-009:**
+- PR #16 (T-008) merge → `1101438`, CI `main` run `38679074230` xanh.
+- D-56 (CDA): TC-JOB-05 chủ T-203; tham số kỹ thuật queue `PROPOSED` (lease 300 s, backoff, poll 1 s, reaper/scheduler 30 s); lịch chỉ `interval`, không chạy bù; tách M-05.
+- T-009: code + test; `scripts/ci.sh` local rc 0 (PostgreSQL 18.6, 177 passed); 9 đột biến → test đỏ. Chi tiết: Implementation_Plan §10, §19.
 
 **Phiên 15/10/2026 (lần 3) — T-008:**
 - PR #15 (tài liệu D-44…D-54) merge → `99e477c`, CI `main` run `38676541858` xanh.

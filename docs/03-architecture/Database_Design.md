@@ -1,7 +1,7 @@
 # AI-EOS — Database Design (Stage 2C)
 
 > Phiên bản: 1.2 · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — đang hiện thực theo migration** · Thay đổi: §12
-> Schema thiết kế. **Đã có migration** (15/10/2026): `0001` (M-01, schema + quyền role, T-005), `0002` (M-04 `audit.event` + INV-14, T-008); phần còn lại vẫn là đề xuất. Hiện trạng: [PROJECT_STATUS](../PROJECT_STATUS.md).
+> Schema thiết kế. **Đã có migration** (15/10/2026): `0001` (M-01, schema + quyền role, T-005), `0002` (M-04 `audit.event` + INV-14, T-008), `0003` (phần `jobs` của M-05, T-009); phần còn lại vẫn là đề xuất. Hiện trạng: [PROJECT_STATUS](../PROJECT_STATUS.md).
 > Nguồn: ADR-004, ADR-005, ADR-007…ADR-010; Architecture §3–§8. Nhãn nguồn như Architecture (`SOURCE`, `CDA`, `CDA_DIRECTIVE`, `ARCHITECTURE_DECISION`, `[CẦN XÁC NHẬN]`).
 
 ## 1. Nguyên tắc
@@ -233,7 +233,7 @@ Job bị chặn do kill switch: `jobs.job.status = 'CANCELLED'`, `last_error_cod
 Index claim: `(run_after, id) WHERE status = 'QUEUED'`; index reaper: `(lease_expires_at) WHERE status = 'RUNNING'`.
 
 ### `jobs.schedule`
-`id`, `kind`, `job_class` (kế thừa từ `kind`), `interval/cron text`, `next_run_at`, `may_write boolean` (= `job_class <> 'ORCHESTRATION'`), `enabled`, `last_run_at`, `last_skipped_at`, `last_skip_reason`. Job sinh từ lịch có `idempotency_key = schedule_id || ':' || slot`.
+`id`, `kind`, `job_class` (kế thừa từ `kind`), `interval` (kiểu `interval`; MVP không hỗ trợ cron — D-56), `next_run_at`, `may_write boolean` (= `job_class <> 'ORCHESTRATION'`), `enabled`, `last_run_at`, `last_skipped_at`, `last_skip_reason`. Job sinh từ lịch có `idempotency_key = schedule_id || ':' || slot`.
 
 ## 6. Capture, org, goals, work, knowledge
 
