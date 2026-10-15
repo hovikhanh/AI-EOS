@@ -533,4 +533,5 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - T-201 (danh bạ, 15/10/2026): dòng F3 (Task T-108, T-201, T-506), UC-06 giữ trạng thái — cần T-506 (biên bản họp → task). SRS-ACC-11 (TC-ACC-09 `PASSED`) không có dòng riêng trong ma trận.
 - T-505 (task, 15/10/2026): dòng có T-505 trong cột Task giữ trạng thái — cần thêm task giao diện/tổng quan (T-509), biên bản họp (T-506).
 - T-401 (bảng finance, 15/10/2026): dòng có T-401 giữ trạng thái — cần API giao dịch/kỳ (T-402…T-406).
+- T-301 (bảng ai, 15/10/2026): dòng có T-301 giữ trạng thái — cần write gateway và API AI (T-302…T-308).
 - T-111 (frontend, 15/10/2026): dòng UX-08 (Task T-108, T-111) và UX-37 (T-111) giữ trạng thái — dòng đang `PROPOSED` (yêu cầu UX chưa xác nhận); đã có code ẩn mục không quyền và định dạng ngày Việt Nam, chưa có tiếng Anh (UX-37, T-607). UX-09 (đổi ngữ cảnh đa vai trò) chưa làm.
