@@ -3,24 +3,24 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 15/10/2026 (T-111 `DONE`)
-**Commit tham chiếu:** `57eb61d` (`main`, PR #29 — T-003); T-111: PR #30 (branch `feat/T-111-frontend-shell`, CI run `38719094857` xanh)
-**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 12/13 task `DONE`; P1: T-101…T-109, T-111 `DONE`. Kế hoạch đã được duyệt (D-46). **7 task đủ điều kiện bắt đầu:** T-013, T-112, T-201, T-204, T-301, T-401, T-607.
+**Cập nhật lần cuối:** 15/10/2026 (T-013 `DONE` — demo đầu-cuối qua HTTPS)
+**Commit tham chiếu:** `2457914` (`main`, PR #30 — T-111); T-013: PR #31 (branch `feat/T-013-compose-integration`, CI run `38722522003` xanh)
+**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 13/13 task `DONE`; P1: T-101…T-109, T-111 `DONE`. Kế hoạch đã được duyệt (D-46). **6 task đủ điều kiện bắt đầu:** T-112, T-201, T-204, T-301, T-401, T-607.
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
 
 ## 1. Tóm tắt nhanh
 
 - Tổng task: **83** (thêm T-308, T-513 theo D-49)
-- DONE: **22** — T-001…T-012, T-101…T-109, T-111 (T-111 run `38719094857`; T-003 run `38712655012`; T-105 run `38710976904`; T-109 run `38708289449`; T-104 run `38705903816`; T-108 run `38703355287`, phần có căn cứ — team/mục tiêu cha chưa làm; T-103 run `38700993783`; T-106 run `38697852135`; T-010 run `38696839691`; T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
+- DONE: **23** — T-001…T-013, T-101…T-109, T-111 (T-013 run `38722522003`; T-111 run `38719094857`; T-003 run `38712655012`; T-105 run `38710976904`; T-109 run `38708289449`; T-104 run `38705903816`; T-108 run `38703355287`, phần có căn cứ — team/mục tiêu cha chưa làm; T-103 run `38700993783`; T-106 run `38697852135`; T-010 run `38696839691`; T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
 - IN_REVIEW: **0**
 - BLOCKED: **10** — T-407, T-604, T-901…T-908
-- TODO: **51** (`READY` 44, `PARTIAL` 7; chưa bắt đầu)
-- Task đủ điều kiện bắt đầu ngay: **7** — T-013, T-112, T-201, T-204, T-301, T-401, T-607
-- Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend; đăng nhập/session (T-102); MFA TOTP API-AUTH-02/03/04 (T-103); policy `authorize()` + bắt buộc khai báo quyền cho route (T-108); step-up + đổi mật khẩu API-AUTH-05/09 (T-104); API quản trị tài khoản/role/assignment API-ADM-01, 04…09 (T-109); tạo tài khoản + lời mời API-ADM-02/03, API-AUTH-08 (T-105); cấu hình Docker Compose + Caddy TLS (T-003, chưa chạy — T-013); frontend: đăng nhập, MFA, lời mời, quản trị người dùng/quyền (T-111); thông báo in-app API-NOT-01/02 (T-010); CLI `bootstrap-admin`/`recover-admin` (T-106)
-- Test case: **206** (199 + TC-FE-01…07); **41 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…08, TC-IAM-11, TC-IAM-12; TC-IAM-09, TC-IAM-10; TC-ACC-01, TC-ACC-02, TC-ACC-04…08; TC-AUD-01, TC-AUD-02), 165 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
+- TODO: **50** (`READY` 43, `PARTIAL` 7; chưa bắt đầu)
+- Task đủ điều kiện bắt đầu ngay: **6** — T-112, T-201, T-204, T-301, T-401, T-607
+- Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend; đăng nhập/session (T-102); MFA TOTP API-AUTH-02/03/04 (T-103); policy `authorize()` + bắt buộc khai báo quyền cho route (T-108); step-up + đổi mật khẩu API-AUTH-05/09 (T-104); API quản trị tài khoản/role/assignment API-ADM-01, 04…09 (T-109); tạo tài khoản + lời mời API-ADM-02/03, API-AUTH-08 (T-105); Docker Compose chạy được qua HTTPS, demo đầu-cuối tự động trong CI (T-003, T-013); frontend: đăng nhập, MFA, lời mời, quản trị người dùng/quyền (T-111); thông báo in-app API-NOT-01/02 (T-010); CLI `bootstrap-admin`/`recover-admin` (T-106)
+- Test case: **206** (199 + TC-FE-01…07); **42 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…08, TC-IAM-11, TC-IAM-12; TC-IAM-09, TC-IAM-10; TC-ACC-01, TC-ACC-02, TC-ACC-04…08; TC-AUD-01, TC-AUD-02; TC-NFR-01), 164 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
-- CI: `scripts/ci.sh` 19 bước (thêm `compose`, T-003); branch protection `main` (required check `ci`, bắt buộc PR, `enforce_admins`, 0 approval — D-54 chưa áp dụng)
+- CI: `scripts/ci.sh` 20 bước (thêm `compose` T-003, `compose-smoke` T-013); PostgreSQL CI `18.6`; branch protection `main` (required check `ci`, bắt buộc PR, `enforce_admins`, 0 approval — D-54 chưa áp dụng)
 
 ## 2. Việc đang bị block (Blockers)
 
@@ -56,7 +56,7 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | T-010 | DONE | Thông báo in-app: `notify.notification` (revision `0006`), `notify.api.notify`, API-NOT-01/02; run `38696839691`; bằng chứng thành phần TC-NTF-01 (chủ T-510) |
 | T-011 | DONE | Storage adapter; run `38544080219` (D-44, 15/10/2026) |
 | T-012 | DONE | Nền tảng frontend; run `38536047844`; TC-FE-01…07 `PASSED` (D-47, 15/10/2026) |
-| T-013 | TODO | READY · **đủ điều kiện bắt đầu** · Compose tích hợp (Dockerfile, `up`, healthcheck, TC-NFR-01) |
+| T-013 | DONE | Dockerfile backend/proxy, `uvicorn`, init CSDL + secret, mọi service healthy, demo đầu-cuối qua HTTPS (`compose-smoke`); run `38722522003`; TC-NFR-01 `PASSED` |
 
 ### P1 – Identity và Access
 
@@ -175,13 +175,17 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 
 ## 5. Việc nên làm tiếp theo (sau khi có quyết định)
 
-1. Merge PR #30 (T-111) khi CDA đồng ý.
-   Đường găng demo: T-013 (Dockerfile + `docker compose up`, ghim CI `postgres:18.6`) → demo đầu-cuối qua HTTPS. T-201 (`org.*`) mở phạm vi MANAGER.
+1. Merge PR #31 (T-013) khi CDA đồng ý. **Demo đăng nhập đầu-cuối đã chạy được** — hướng dẫn: `infra/README.md`.
+   Tiếp theo (cần CDA chọn hướng): T-201 (`org.*`, mở phạm vi MANAGER) → nghiệp vụ; T-204/T-205 (AI) chờ các điểm D-50 ở mục 0 OPEN_DECISIONS.
 2. **T-003** song song (reverse proxy HTTPS — cookie `Secure` cần HTTPS để demo trên trình duyệt).
 3. T-013 khi T-003 xong → T-605 về sau.
 4. CDA điền OPEN_DECISIONS mục 0 trước khi tới T-204 (D-50) và T-108 (TC-ACC-10).
 
 ## 6. Ghi chú phiên gần nhất
+
+**Phiên 15/10/2026 (lần 17) — T-013:**
+- PR #30 (T-111) merge → `2457914`, CI `main` xanh.
+- T-013: Dockerfile backend (thêm `uvicorn` còn thiếu) và proxy (đóng gói frontend), init CSDL + secret, healthcheck worker/scanner-updater, `scripts/compose_smoke.py` (demo đầu-cuối qua HTTPS + TC-NFR-01) trong `ci.sh`; CI `postgres:18.6`. Smoke local 1 phút 44 giây; kiểm âm `api` có đường ra → lỗi. PR #31, CI run `38722522003` xanh (pytest 307, vitest 62, compose-smoke 0 lỗi) → T-013 `DONE`; TC-NFR-01 `PASSED`. Chi tiết: Implementation_Plan §10, §33.
 
 **Phiên 15/10/2026 (lần 16) — T-111:**
 - PR #29 (T-003) merge → `57eb61d`, CI `main` xanh. CDA: DeepSeek/đường ra internet xử lý ở T-204/T-205; đồng ý ghim CI `postgres:18.6` (làm cùng T-013).
