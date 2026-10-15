@@ -7,6 +7,7 @@ Lỗi chỉ in loại lỗi, không in thông điệp gốc (có thể chứa ch
 import argparse
 import sys
 
+from aieos.app.metadata import metadata
 from aieos.platform.api import Process, load_settings_or_exit, run_migrations
 
 
@@ -19,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "migrate":
         settings = load_settings_or_exit(Process.MIGRATE)
         try:
-            revision = run_migrations(settings)
+            revision = run_migrations(settings, metadata())
         except Exception as error:  # chỉ in loại lỗi để không lộ chuỗi kết nối
             print(f"Migration thất bại: {type(error).__name__}", file=sys.stderr)
             return 1
