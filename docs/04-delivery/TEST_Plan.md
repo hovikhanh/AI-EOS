@@ -338,7 +338,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-JOB-05` | **T-203** | D-56 | T-009 (cơ chế kiểm tra quyền lúc chạy, authorizer giả lập) | `NOT RUN` |
 | `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `PASSED` — run `38680383606` (T-009, PR #17; quét tĩnh + ca vi phạm) |
 | `TC-NTF-01` | **T-510** (tổng) | D-58 — tách phần (R5): T-304 bản nháp AI, T-403 giao dịch chờ duyệt, T-505 giao task | T-010 (đúng người nhận, link nội bộ — run `38696839691`), T-304, T-403, T-505 | `NOT RUN` |
-| `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `NOT RUN` |
+| `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `PASSED` — run `38708289449` (T-109, PR #27; `test_audit_success_denied_failed`) |
 | `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `NOT RUN` |
 | `TC-AUD-03` | **T-008** | duy nhất (D-55) | — | `PASSED` — run `38678659141` (T-008, PR #16; `test_app_role_cannot_modify_audit`) |
 | `TC-AUD-04` | **T-110** | duy nhất | — | `NOT RUN` |
@@ -358,11 +358,11 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_effective_permissions_base_union_valid_assignments`) |
 | `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_undeclared_route_denied`, `test_out_of_scope_object_by_id_is_404`) |
 | `TC-ACC-03` | **T-505** (tổng) | D-59 — tách phần (R5): T-505 danh sách task, T-502 danh sách mục tiêu | T-108 (`scope_filter` trên bảng thử, run `38703355287`), T-502 | `NOT RUN` |
-| `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
-| `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
-| `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
-| `TC-ACC-07` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
-| `TC-ACC-08` | **T-109** | D-44 (bảng 65 TC) | T-104 | `NOT RUN` |
+| `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_admin_plus_cfo_rejected_by_api_and_database`) |
+| `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_self_role_and_assignment_change_rejected`) |
+| `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_two_admins_removing_each_other_keeps_one`) |
+| `TC-ACC-07` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_assignment_requires_eligible_role`) |
+| `TC-ACC-08` | **T-109** | D-44 (bảng 65 TC) | T-104 | `PASSED` — run `38708289449` (T-109, PR #27; `test_role_change_revokes_target_sessions`) |
 | `TC-ACC-09` | **T-201** | D-44 (bảng 65 TC) | T-108 | `NOT RUN` |
 | `TC-ACC-10` | Chưa có `[CẦN XÁC NHẬN]` (theo R1 đề xuất T-108; SRS-ACC-04 còn PROPOSED) | — | — | `NOT RUN` |
 | `TC-FILE-01` | **T-203** | duy nhất | — | `NOT RUN` |

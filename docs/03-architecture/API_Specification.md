@@ -54,7 +54,7 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 | Giá trị | Ý nghĩa |
 | --- | --- |
 | `DESIGNED` | Đã thiết kế ở 2C, chưa có code |
-| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`); API-AUTH-05, API-AUTH-09 (T-104, run `38705903816`) |
+| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`); API-AUTH-05, API-AUTH-09 (T-104, run `38705903816`); API-ADM-01, API-ADM-04…09 (T-109, run `38708289449`) |
 | `SKELETON` | Chỉ khung; chi tiết chờ 2B (D-24) |
 | `DEFERRED` | Ngoài MVP |
 
