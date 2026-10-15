@@ -8,6 +8,9 @@
   mã OTP/MFA, session, credential, tên biến secret — cùng quy tắc với log của T-006) và các trường nơi gọi khai báo
   trong `masked_fields` (trường nhạy cảm theo nghiệp vụ, SEC-DC-02) bị thay bằng `***`; trong chuỗi còn lại, đoạn dữ
   liệu cá nhân phát hiện theo quy tắc (CCCD, số tài khoản, điện thoại, email…) bị thay bằng `•••` (T-112).
+- Trường văn bản tự do khác — `reason` (người dùng nhập), `user_agent` (client gửi), `resource_id` — cũng được che
+  theo nội dung trước khi ghi (Q-55, quyết định CDA 16/10/2026). Mã hệ thống (`action`, `resource_type`, `ai_agent`),
+  ID dạng UUID và `correlation_id` (đã kiểm định dạng ở `platform.web`) không bị đổi, nên truy vết nghiệp vụ giữ nguyên.
 - Không có hàm sửa hay xóa audit; CSDL cũng chặn (INV-14, migration 0002).
 """
 
@@ -104,9 +107,13 @@ def mask_changes(changes: Mapping[str, Any] | None, masked_fields: frozenset[str
     return redact(walk(changes))
 
 
-def record(session: Session, event: AuditEvent) -> int:
-    """Ghi sự kiện trong transaction hiện hành của `session`; trả về `id`. Không commit."""
-    values = {
+def _masked(value: str | None) -> str | None:
+    return mask_pii(value) if value is not None else None
+
+
+def audit_row_values(event: AuditEvent) -> dict[str, Any]:
+    """Giá trị cột sẽ ghi cho `event`, đã che (hàm thuần — `record` dùng, test kiểm không cần CSDL)."""
+    return {
         "category": event.category.value,
         "actor_type": event.actor_type.value,
         "actor_user_id": event.actor_user_id,
@@ -115,14 +122,19 @@ def record(session: Session, event: AuditEvent) -> int:
         "autonomy_level": event.autonomy_level.value if event.autonomy_level else None,
         "action": event.action,
         "resource_type": event.resource_type,
-        "resource_id": event.resource_id,
+        "resource_id": _masked(event.resource_id),
         "outcome": event.outcome.value,
-        "reason": event.reason,
+        "reason": _masked(event.reason),
         "changes": mask_changes(event.changes, event.masked_fields),
         "correlation_id": event.correlation_id if event.correlation_id is not None else CORRELATION_ID.get(),
         "request_ip": event.request_ip,
-        "user_agent": event.user_agent,
+        "user_agent": _masked(event.user_agent),
     }
+
+
+def record(session: Session, event: AuditEvent) -> int:
+    """Ghi sự kiện trong transaction hiện hành của `session`; trả về `id`. Không commit."""
+    values = audit_row_values(event)
     return session.execute(insert(AuditEventRow).values(**values).returning(AuditEventRow.id)).scalar_one()
 
 

@@ -77,7 +77,9 @@ def to_url(secret: Secret) -> URL:
 
 
 def create_db_engine(secret: Secret, **kwargs: Any) -> Engine:
-    return create_engine(to_url(secret), pool_pre_ping=True, **kwargs)
+    # hide_parameters: thông điệp lỗi SQLAlchemy không kèm giá trị tham số (có thể chứa dữ liệu cá nhân — Q-55);
+    # câu SQL và loại lỗi vẫn còn để chẩn đoán.
+    return create_engine(to_url(secret), pool_pre_ping=True, hide_parameters=True, **kwargs)
 
 
 def create_app_engine(settings: Settings) -> Engine:

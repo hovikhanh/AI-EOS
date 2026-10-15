@@ -6,6 +6,10 @@
   hoặc là tên biến secret (T-004) bị thay bằng `***`; giá trị `Secret` luôn hiển thị `***`.
 - Không log header, body hay query string của request (xem `platform.web`); logger `httpx`, `httpcore` chỉ từ WARNING
   (chúng ghi URL đầy đủ ở INFO).
+- Che theo **nội dung** (Q-55, quyết định CDA 16/10/2026): `message`, mọi chuỗi trong `extra` (kể cả lồng nhau),
+  traceback và stack đi qua `platform.privacy.mask_pii` — dữ liệu cá nhân phát hiện được thay bằng `•••`. Cấu trúc
+  JSON, tên lớp lỗi, tên hàm và số dòng trong traceback giữ nguyên. Heuristic không bắt được mọi dữ liệu cá nhân:
+  nơi gọi vẫn không được log prompt, câu trả lời AI, nội dung tài liệu hay payload (CLAUDE.md §6).
 """
 
 import json
@@ -18,6 +22,7 @@ from datetime import UTC, datetime
 from typing import IO, Any
 
 from aieos.platform.config import Secret, is_secret_name
+from aieos.platform.privacy import mask_pii
 
 REDACTED = "***"
 CORRELATION_ID: ContextVar[str | None] = ContextVar("aieos_correlation_id", default=None)
@@ -48,21 +53,34 @@ def redact(value: Any, key: str | None = None) -> Any:
     return str(value)
 
 
+def _mask_content(value: Any) -> Any:
+    """Che dữ liệu cá nhân trong mọi chuỗi của giá trị đã `redact` (dict/list lồng nhau)."""
+    if isinstance(value, str):
+        return mask_pii(value)
+    if isinstance(value, dict):
+        return {k: _mask_content(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_mask_content(v) for v in value]
+    return value
+
+
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
             "ts": datetime.fromtimestamp(record.created, UTC).isoformat(timespec="milliseconds"),
             "level": record.levelname,
             "logger": record.name,
-            "message": record.getMessage(),
+            "message": mask_pii(record.getMessage()),
             "correlation_id": CORRELATION_ID.get(),
         }
         for key, value in vars(record).items():
             if key not in _STANDARD_ATTRS and key not in payload:
-                payload[key] = redact(value, key)
+                payload[key] = _mask_content(redact(value, key))
         if record.exc_info:
             payload["exc_type"] = record.exc_info[0].__name__ if record.exc_info[0] else None
-            payload["exc"] = self.formatException(record.exc_info)
+            payload["exc"] = mask_pii(self.formatException(record.exc_info))
+        if record.stack_info:
+            payload["stack"] = mask_pii(self.formatStack(record.stack_info))
         return json.dumps(payload, ensure_ascii=False, default=str)
 
 
