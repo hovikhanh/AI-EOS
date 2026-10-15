@@ -524,9 +524,9 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-PERF-01` | **T-604** | duy nhất | — | `NOT RUN` |
 | `TC-PERF-02` | **T-604** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-01` | **T-013** | duy nhất | — | `PASSED` — run `38722522003` (T-013, PR #31; `scripts/compose_smoke.py`: theo dõi kết nối trong netns `proxy`/`api`/`worker`/`db`/`scanner` suốt luồng demo + phép thử chủ động, đối chứng `scanner-updater`; giới hạn ở Implementation_Plan §33) |
-| `TC-NFR-02` | **T-607** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-02` | **T-607** | duy nhất | — | `NOT RUN` — phần giao diện vi/en đạt ở T-607 (run `38770889365`, `t607.test.tsx`); phần AI trả lời theo ngôn ngữ câu hỏi chờ T-306 |
 | `TC-NFR-03` | **T-608** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-04` | **T-204** | duy nhất | — | `NOT RUN` — phần khởi động và sẵn sàng khi không có provider đạt ở T-204 (run `38766763685`, `test_app_runs_without_any_provider`); nhập tay tài chính, review thủ công chưa có (T-403, T-208) |
-| `TC-NFR-05` | **T-607** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-05` | **T-607** | duy nhất | — | `NOT RUN` — phần tự động đạt ở T-607 (run `38770889365`: axe 0 vi phạm, tương phản token, bàn phím chính); chờ kiểm bàn phím thủ công toàn bộ (người kiểm) |
 | `TC-NFR-06` | **T-606** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-07` | **T-207** | duy nhất | — | `NOT RUN` |
