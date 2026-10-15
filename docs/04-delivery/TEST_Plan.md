@@ -352,8 +352,8 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-08` | **T-104** | D-44 (bảng 65 TC) | T-109 | `NOT RUN` |
 | `TC-IAM-09` | **T-105** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-10` | **T-105** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-11` | **T-106** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-12` | **T-106** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-11` | **T-106** | duy nhất | — | `PASSED` — run `38697852135` (T-106, PR #23; `test_bootstrap_refused_when_active_admin`, `test_bootstrap_creates_first_admin`) |
+| `TC-IAM-12` | **T-106** | duy nhất | — | `PASSED` — run `38697852135` (T-106, PR #23; `test_recover_requires_confirm_then_resets_and_notifies`) |
 | `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |
 | `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `NOT RUN` |
 | `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `NOT RUN` |
