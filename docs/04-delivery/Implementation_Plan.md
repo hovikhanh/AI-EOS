@@ -696,3 +696,11 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - `ai.call_log`: CHECK chỉ provider local cho `SENSITIVE`/`PERSONAL` (Database_Design §5) — xung đột với ngoại lệ demo D-50 → **Q-53** `[CẦN XÁC NHẬN]`, cần trước phần demo DeepSeek của T-205.
 - Test `backend/tests/test_ai_schema.py` (5). 7 đột biến → test đỏ.
 
+## 38. Ghi chú triển khai T-202 (15/10/2026)
+
+- Migration `0014` (M-07): 11 bảng `capture.*` theo Database_Design §6; model ở `capture/models.py`. Chưa có API (upload T-203, trích xuất T-206, review T-208/T-209, import T-210).
+- Theo SRS (nguồn cao hơn Database_Design — CLAUDE.md §3): `extracted_field.uncertainty_reason` (SRS-CAP-13). Lựa chọn của agent: UNIQUE `(extraction_id, field_key)`; review đang mở có `decision`/`finished_at` NULL; `extraction.status` không CHECK vì tài liệu chưa liệt kê giá trị; kích thước/trang chỉ CHECK ≥ 0 (giới hạn 50 MB/300 trang là cấu hình, kiểm khi upload — T-203).
+- Không seed loại tài liệu/schema: danh mục MVP và trường trích xuất chờ 2B (T-207 cấu hình).
+- Khóa ngoại `source_document_id` của `org.org_unit`, `org.employee`, `work.task`, `finance.transaction`; model `org` dùng `use_alter` để cắt vòng khóa ngoại (tài liệu → tài khoản → nhân viên → tài liệu) — nếu không, so khớp model ↔ schema (TC-MIG-01) bỏ qua các khóa ngoại trong vòng.
+- Test `backend/tests/test_capture_schema.py` (4). 6 đột biến → test đỏ (một đột biến ban đầu lọt vì test tạo hai vi phạm cùng lúc — đã sửa).
+

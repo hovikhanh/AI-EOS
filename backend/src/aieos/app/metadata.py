@@ -11,6 +11,7 @@ from sqlalchemy import MetaData
 import aieos.access.api
 import aieos.ai.api
 import aieos.audit.api
+import aieos.capture.api
 import aieos.finance.api
 import aieos.identity.api
 import aieos.jobs.api
@@ -23,6 +24,7 @@ MODULE_APIS: tuple[ModuleType, ...] = (
     aieos.access.api,
     aieos.ai.api,
     aieos.audit.api,
+    aieos.capture.api,
     aieos.finance.api,
     aieos.identity.api,
     aieos.jobs.api,

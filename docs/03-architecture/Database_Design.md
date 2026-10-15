@@ -279,6 +279,8 @@ Index claim: `(run_after, id) WHERE status = 'QUEUED'`; index reaper: `(lease_ex
 - `extracted_field`: `id`, `extraction_id`, `field_key`, `value jsonb`, `normalized_value jsonb`, `confidence numeric(4,3) CHECK 0..1`, `page_no`, `bbox jsonb`, `source_text`, `critical boolean`, `reviewed_value jsonb`, `corrected boolean` (FR-DC-12, FR-LRN-01).
 - `extraction_review`: `id`, `extraction_id`, `reviewer_id`, `decision` CHECK in (`APPROVE`,`REJECT`,`REASSIGN`,`CHANGE_TYPE`,`SPLIT`,`MERGE`), `reason` (bắt buộc với REJECT), `started_at`, `finished_at` (đo MET-04).
 
+Migration `0014` (T-202): `extracted_field` thêm `uncertainty_reason` (SRS-CAP-13 "lý do không chắc"), UNIQUE `(extraction_id, field_key)`; `extraction_review.decision` NULL khi đang review, `(decision IS NULL) = (finished_at IS NULL)`, lý do bắt buộc khi `REJECT`; `document_type`: Phase 2 không bật được (D-17); một schema `ACTIVE` mỗi loại; `extraction.status` chưa có danh sách giá trị → không CHECK; khóa ngoại `source_document_id` của `org.*`, `work.task`, `finance.transaction` → `source_document`.
+
 ### `capture.review_queue`
 `id`, `name`, `document_type_code` NULL, `org_unit_id` NULL, `sla_hours` NULL (`[CẦN XÁC NHẬN]` — GAP-18). Người xử lý xác định qua `access.assignment` (`REVIEW_QUEUE`).
 
