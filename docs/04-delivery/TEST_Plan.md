@@ -320,7 +320,7 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 
 ## 12. Task chủ và trạng thái từng test case (D-44)
 
-Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột; "D-55" = sửa task chủ TC-AUD-01/02; "D-56" = sửa task chủ TC-JOB-05; "D-58" = sửa task chủ TC-NTF-01 (15/10/2026). TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
+Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột; "D-55" = sửa task chủ TC-AUD-01/02; "D-56" = sửa task chủ TC-JOB-05; "D-58" = sửa task chủ TC-NTF-01 (15/10/2026); "D-59" = sửa task chủ TC-ACC-03 (15/10/2026). TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
 
 | TC | Task chủ | Căn cứ | Bằng chứng thành phần | Trạng thái |
 | --- | --- | --- | --- | --- |
@@ -357,7 +357,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |
 | `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_effective_permissions_base_union_valid_assignments`) |
 | `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_undeclared_route_denied`, `test_out_of_scope_object_by_id_is_404`) |
-| `TC-ACC-03` | **T-108** — Q-52 `[CẦN XÁC NHẬN]` (task/mục tiêu, `org.*` phụ thuộc T-108) | duy nhất | T-108 bằng chứng thành phần: `scope_filter` trên bảng thử, run `38703355287` | `NOT RUN` |
+| `TC-ACC-03` | **T-505** (tổng) | D-59 — tách phần (R5): T-505 danh sách task, T-502 danh sách mục tiêu | T-108 (`scope_filter` trên bảng thử, run `38703355287`), T-502 | `NOT RUN` |
 | `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
 | `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
 | `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |

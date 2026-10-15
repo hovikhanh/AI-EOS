@@ -69,7 +69,7 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | T-105 | TODO | READY · Lời mời; chờ T-108, T-103, T-104 (D-55) |
 | T-106 | DONE | CLI `bootstrap-admin`/`recover-admin` (tiến trình `admin-cli`, `AIEOS_PASSWORD_MIN_LENGTH`); run `38697852135`; TC-IAM-11, TC-IAM-12 `PASSED` |
 | T-107 | DONE | Bảng `access.*` (migration `0005`), seed theo Architecture §6, INV-09/10/11, điều kiện assignment, service role/assignment; run `38684667496` |
-| T-108 | DONE | Phần có căn cứ: `authorize()`, phạm vi theo role/assignment, `scope_filter`, `PermissionGuard`, route không khai báo quyền → 403; run `38703355287`; TC-ACC-01, TC-ACC-02 `PASSED`. Chưa làm: "team" (SRS-ACC-04), mục tiêu cha. TC-ACC-03 → Q-52 |
+| T-108 | DONE | Phần có căn cứ: `authorize()`, phạm vi theo role/assignment, `scope_filter`, `PermissionGuard`, route không khai báo quyền → 403; run `38703355287`; TC-ACC-01, TC-ACC-02 `PASSED`. Chưa làm: "team" (SRS-ACC-04), mục tiêu cha. TC-ACC-03 → chủ T-505 (D-59) |
 | T-109 | TODO | READY · API quản trị; chờ T-104 |
 | T-110 | TODO | READY · Audit, trang tình trạng; chờ T-109; TC-FIN-14 cần thêm T-401 hoặc T-402 (OPEN_DECISIONS 0.2) |
 | T-111 | TODO | READY · Frontend app shell; chờ T-102…T-109 |
