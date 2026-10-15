@@ -9,6 +9,7 @@ import signal
 import threading
 from types import FrameType
 
+import aieos.app.metadata  # noqa: F401 — nạp model mọi module (khóa ngoại liên module)
 from aieos.jobs.api import JobRegistry, Worker
 from aieos.platform.api import (
     Process,

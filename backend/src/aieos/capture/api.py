@@ -4,6 +4,17 @@ T-202: bảng `capture.*` (migration 0014). Upload + quét mã độc: T-203; tr
 import: T-210.
 """
 
-import aieos.capture.models  # noqa: F401 — đăng ký model vào metadata (TC-MIG-01)
+import uuid
 
-__all__: list[str] = []
+from sqlalchemy import exists, select
+from sqlalchemy.orm import Session
+
+from aieos.capture.models import SourceDocumentRow
+
+
+def document_exists(session: Session, document_id: uuid.UUID) -> bool:
+    """Tài liệu nguồn có tồn tại (module ghi `source_document_id` kiểm trước để trả 422 thay vì lỗi khóa ngoại)."""
+    return bool(session.scalar(select(exists().where(SourceDocumentRow.id == document_id))))
+
+
+__all__ = ["document_exists"]

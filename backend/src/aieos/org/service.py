@@ -156,6 +156,20 @@ def subtree(session: Session, unit_ids: Iterable[uuid.UUID]) -> frozenset[uuid.U
     return frozenset(r.id for r in rows)
 
 
+def unit_path(session: Session, unit_id: uuid.UUID | None) -> frozenset[uuid.UUID]:
+    """Đơn vị và mọi đơn vị cấp trên (`access.api.Resource.org_units`); rỗng khi `unit_id` là None."""
+    if unit_id is None:
+        return frozenset()
+    rows = session.execute(
+        text(
+            "WITH RECURSIVE up(id, parent_id) AS (SELECT id, parent_id FROM org.org_unit WHERE id = :u "
+            "UNION SELECT p.id, p.parent_id FROM org.org_unit p JOIN up ON p.id = up.parent_id) SELECT id FROM up"
+        ),
+        {"u": unit_id},
+    )
+    return frozenset(r.id for r in rows)
+
+
 def user_unit_path(session: Session, user_id: uuid.UUID) -> frozenset[uuid.UUID]:
     """Đơn vị của nhân viên gắn với tài khoản và mọi đơn vị cấp trên (`access.api.Resource.org_units`); rỗng nếu tài
     khoản chưa gắn nhân viên hoặc nhân viên chưa có đơn vị."""

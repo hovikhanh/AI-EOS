@@ -2,7 +2,7 @@
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
 xác thực (T-102) → router (auth, MFA T-103, step-up T-104, quản trị T-109, lời mời T-105, thông báo T-010,
-danh bạ T-201, task T-505) → kiểm tra readiness.
+danh bạ T-201, task T-505, mục tiêu T-501) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -14,7 +14,9 @@ from datetime import timedelta
 
 from fastapi import FastAPI
 
+import aieos.app.metadata  # noqa: F401 — nạp model mọi module: khóa ngoại liên module cần đủ bảng (T-501)
 from aieos.access.api import PermissionGuard, build_access_admin_router
+from aieos.goals.api import build_goals_router
 from aieos.identity.api import (
     ACCEPT_INVITATION_PATH,
     LOGIN_PATH,
@@ -128,6 +130,7 @@ def create_app() -> FastAPI:
             build_notify_router(factory, authenticator.require_session),
             build_org_router(guard),
             build_work_router(guard),
+            build_goals_router(guard),
         ),
         csrf=csrf,
     )

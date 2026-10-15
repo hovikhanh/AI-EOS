@@ -14,6 +14,7 @@ import sqlalchemy
 from sqlalchemy import Engine
 from sqlalchemy.engine import URL, make_url
 
+import aieos.app.metadata  # noqa: F401 — như composition root: đủ model để khóa ngoại liên module phân giải được
 from aieos.platform.api import ROLES, Secret, provision_roles_sql, upgrade
 
 NOT_RUN = "PostgreSQL: NOT RUN — chưa xác minh (thiếu AIEOS_TEST_DATABASE_URL)"
