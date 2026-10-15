@@ -23,11 +23,11 @@ function lastCall(): [string, RequestInit] {
 }
 
 describe("apiFetch", () => {
-  it("gọi /api với credentials include và trả JSON", async () => {
+  it("gọi /api/v1 với credentials include và trả JSON", async () => {
     fetchMock.mockResolvedValue(Response.json({ ok: true }));
     await expect(apiFetch("/auth/me")).resolves.toEqual({ ok: true });
     const [url, init] = lastCall();
-    expect(url).toBe("/api/auth/me");
+    expect(url).toBe("/api/v1/auth/me"); // tiền tố API_Specification §1 (T-111)
     expect(init.credentials).toBe("include");
     expect(new Headers(init.headers).get("Accept")).toBe("application/json");
   });

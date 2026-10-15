@@ -529,3 +529,4 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - T-109 (API quản trị, 15/10/2026): dòng UX-09 (Task T-107, T-109; TC-ACC-04 `PASSED`) giữ trạng thái — yêu cầu là giao diện đổi ngữ cảnh đa vai trò (cần frontend T-111) và dòng đang `PROPOSED`.
 - T-105 (lời mời, 15/10/2026): không dòng nào trong ma trận có cột Task chứa T-105 (SRS-IAM-01…03 truy vết qua D-22 A1) → không trạng thái requirement nào thay đổi.
 - T-003 (Compose cấu hình, 15/10/2026): dòng NFR-04 (Task T-003, T-013; TC-NFR-01) giữ trạng thái — cần T-013 (chạy service) và TC-NFR-01.
+- T-111 (frontend, 15/10/2026): dòng UX-08 (Task T-108, T-111) và UX-37 (T-111) giữ trạng thái — dòng đang `PROPOSED` (yêu cầu UX chưa xác nhận); đã có code ẩn mục không quyền và định dạng ngày Việt Nam, chưa có tiếng Anh (UX-37, T-607). UX-09 (đổi ngữ cảnh đa vai trò) chưa làm.

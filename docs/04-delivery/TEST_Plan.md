@@ -504,14 +504,14 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-PRV-05` | **T-204** | duy nhất | — | `NOT RUN` |
 | `TC-PRV-06` | **T-204** | duy nhất | — | `NOT RUN` |
 | `TC-PRV-07` | **T-204** | D-44 (bảng 65 TC) | T-205 | `NOT RUN` |
-| `TC-E2E-01` | **T-608** | D-44 (bảng 65 TC) | T-111 | `NOT RUN` |
+| `TC-E2E-01` | **T-608** | D-44 (bảng 65 TC) | T-111 (màn hình FL-01…03, test thành phần — run `38719094857`) | `NOT RUN` |
 | `TC-E2E-02` | **T-608** | D-44 (bảng 65 TC) | T-212 | `NOT RUN` |
 | `TC-E2E-03` | **T-608** | D-44 (bảng 65 TC) | T-409 | `NOT RUN` |
 | `TC-E2E-04` | **T-608** | D-44 (bảng 65 TC) | T-504 | `NOT RUN` |
 | `TC-E2E-05` | **T-608** | D-44 (bảng 65 TC) | T-509 | `NOT RUN` |
 | `TC-E2E-06` | **T-608** | duy nhất | — | `NOT RUN` |
-| `TC-FE-01` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
-| `TC-FE-02` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-01` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012); test chỉnh cho app shell ở T-111, vẫn xanh — run `38719094857` |
+| `TC-FE-02` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012); test chỉnh tiền tố `/api/v1` ở T-111, vẫn xanh — run `38719094857` |
 | `TC-FE-03` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
 | `TC-FE-04` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
 | `TC-FE-05` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
