@@ -1,8 +1,10 @@
 """T-006: log JSON, correlation ID, che dữ liệu nhạy cảm, health (ADR-012, API-SYS-01, API-SYS-02, SRS-GEN-05)."""
 
+import base64
 import io
 import json
 import logging
+import os
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -224,7 +226,7 @@ def api_env(monkeypatch: pytest.MonkeyPatch, storage: Path, database_url: str) -
     for name, value in {
         "AIEOS_DATABASE_URL": database_url,
         "AIEOS_CSRF_KEY": "k",
-        "AIEOS_TOTP_ENCRYPTION_KEY": "k",
+        "AIEOS_TOTP_ENCRYPTION_KEY": base64.b64encode(os.urandom(32)).decode(),  # khóa ngẫu nhiên mỗi lần chạy
         "AIEOS_STORAGE_PATH": str(storage),
         "AIEOS_ALLOWED_ORIGINS": "https://aieos.local",
         "AIEOS_SESSION_IDLE_MINUTES": "1",

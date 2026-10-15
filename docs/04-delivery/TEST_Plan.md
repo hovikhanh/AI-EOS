@@ -347,8 +347,8 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-03` | **T-102** | duy nhất | — | `PASSED` — run `38686690047` (T-102, PR #21; `test_unknown_email_and_wrong_password_indistinguishable`) |
 | `TC-IAM-04` | **T-102** | duy nhất | — | `PASSED` — run `38686690047` (T-102, PR #21; `test_rate_limit_and_lockout`) |
 | `TC-IAM-05` | **T-102** | D-44 (bảng 65 TC) | T-101 | `PASSED` — run `38686690047` (T-102, PR #21; `test_idle_and_absolute_expiry`) |
-| `TC-IAM-06` | **T-103** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-07` | **T-103** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-06` | **T-103** | duy nhất | — | `PASSED` — run `38700993783` (T-103, PR #24; `test_enrolled_admin_without_mfa_gets_mfa_required_everywhere`) |
+| `TC-IAM-07` | **T-103** | duy nhất | — | `PASSED` — run `38700993783` (T-103, PR #24; `test_unenrolled_admin_can_only_enroll_and_logout`) |
 | `TC-IAM-08` | **T-104** | D-44 (bảng 65 TC) | T-109 | `NOT RUN` |
 | `TC-IAM-09` | **T-105** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-10` | **T-105** | duy nhất | — | `NOT RUN` |

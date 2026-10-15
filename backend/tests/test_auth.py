@@ -6,9 +6,11 @@ TC-IAM-05 (`test_idle_and_absolute_expiry`), TC-GEN-06 (`test_every_endpoint_req
 TC-AUD-02 (chủ T-105, D-55): `test_login_audit_and_logs_have_no_secrets`.
 """
 
+import base64
 import hashlib
 import io
 import logging
+import os
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -115,7 +117,8 @@ def test_login_sets_secure_session_cookie(env: Env) -> None:
     """TC-IAM-01: đăng nhập đúng (role không cần MFA) → session mới, cookie `__Host-` Secure HttpOnly SameSite=Lax."""
     user = env.user("an@example.com")
     response = login(env.client, "An@Example.com")
-    assert response.status_code == 200 and response.json() == {"mfa_required": False}
+    body = response.json()
+    assert response.status_code == 200 and (body["mfa_required"], body["mfa_enrolled"]) == (False, False)
     cookie = response.headers["set-cookie"]
     assert cookie.startswith(f"{SESSION_COOKIE}=")
     for attribute in ("Secure", "HttpOnly", "SameSite=lax", "Path=/"):
@@ -291,12 +294,14 @@ def test_idle_and_absolute_expiry(env: Env) -> None:
 def test_admin_session_pending_mfa(env: Env) -> None:
     """SRS-IAM-04/05: ADMIN → session chờ MFA; chỉ đăng xuất (và API MFA — T-103) được phép."""
     env.user("quantri@example.com", roles=("ADMIN",))
-    assert login(env.client, "quantri@example.com").json() == {"mfa_required": True}
+    body = login(env.client, "quantri@example.com").json()
+    assert (body["mfa_required"], body["mfa_enrolled"]) == (True, False)
     for path in ("/api/v1/auth/me", "/api/v1/probe/private"):
         response = env.client.get(path)
         assert response.status_code == 401 and response.json()["code"] == "MFA_REQUIRED"
     token = env.client.cookies[SESSION_COOKIE]
-    logout = env.client.post("/api/v1/auth/logout", headers={"X-CSRF-Token": csrf_token(KEY, token)})
+    assert body["csrf_token"] == csrf_token(KEY, token)  # session chờ MFA lấy token CSRF từ response đăng nhập (T-103)
+    logout = env.client.post("/api/v1/auth/logout", headers={"X-CSRF-Token": body["csrf_token"]})
     assert logout.status_code == 204
 
 
@@ -356,7 +361,7 @@ def api_env(monkeypatch: pytest.MonkeyPatch, storage: Path, database_url: str) -
     for name, value in {
         "AIEOS_DATABASE_URL": database_url,
         "AIEOS_CSRF_KEY": "k",
-        "AIEOS_TOTP_ENCRYPTION_KEY": "k",
+        "AIEOS_TOTP_ENCRYPTION_KEY": base64.b64encode(os.urandom(32)).decode(),  # khóa ngẫu nhiên mỗi lần chạy
         "AIEOS_STORAGE_PATH": str(storage),
         "AIEOS_ALLOWED_ORIGINS": ORIGIN,
         "AIEOS_SESSION_IDLE_MINUTES": "30",

@@ -54,7 +54,7 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 | Giá trị | Ý nghĩa |
 | --- | --- |
 | `DESIGNED` | Đã thiết kế ở 2C, chưa có code |
-| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`) |
+| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`) |
 | `SKELETON` | Chỉ khung; chi tiết chờ 2B (D-24) |
 | `DEFERRED` | Ngoài MVP |
 
@@ -76,7 +76,11 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 
 Không có endpoint đăng ký công khai. Bootstrap và khôi phục ADMIN chỉ qua CLI (A2, A6).
 
-**API-AUTH-01** request `{ "email": "...", "password": "..." }` → `200 { "mfa_required": true|false }` + cookie; `401 INVALID_CREDENTIALS`; `429 RATE_LIMITED`; `423 ACCOUNT_LOCKED` chỉ trả **sau khi** mật khẩu đúng (tránh dò tài khoản).
+**API-AUTH-03** (T-103) chỉ tài khoản bắt buộc MFA (role `ADMIN`; MFA cho role khác DEFERRED — D-30), session chờ MFA được phép → `200 { "secret": "<base32>", "otpauth_uri": "otpauth://totp/..." }`; gọi lại thay secret tạm; đã bật MFA → `409 INVALID_STATE` (đặt lại MFA qua `recover-admin`); role khác → `403 FORBIDDEN`.
+**API-AUTH-04** (T-103) `{ "code": "123456" }` → `200 { "recovery_codes": [10 mã] }` (chỉ trả một lần) + cookie session mới (đã xác minh MFA); mã sai → `401 INVALID_CREDENTIALS`; không có secret tạm → `409 INVALID_STATE`; rate limit.
+**API-AUTH-02** (T-103) `{ "code": "<TOTP 6 số | mã khôi phục>" }` → `204` + cookie session mới; mã sai/đã dùng → `401 INVALID_CREDENTIALS`; chưa đăng ký MFA hoặc session đã xác minh → `409 INVALID_STATE`; rate limit. Sau khi xoay session, lấy `csrf_token` mới qua `GET /auth/me`.
+
+**API-AUTH-01** request `{ "email": "...", "password": "..." }` → `200 { "mfa_required": true|false, "mfa_enrolled": true|false, "csrf_token": "..." }` + cookie (T-103 bổ sung `mfa_enrolled` — frontend chọn màn đăng ký hay nhập mã — và `csrf_token` của session mới, vì session chờ MFA không gọi được `GET /auth/me` mà vẫn phải gửi `X-CSRF-Token` cho API MFA; thay đổi bổ sung, tương thích); `401 INVALID_CREDENTIALS`; `429 RATE_LIMITED`; `423 ACCOUNT_LOCKED` chỉ trả **sau khi** mật khẩu đúng (tránh dò tài khoản).
 
 ---
 

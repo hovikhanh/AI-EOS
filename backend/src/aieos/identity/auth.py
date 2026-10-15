@@ -10,7 +10,8 @@
   `Path=/`); CSDL lưu SHA-256 (INV-16). Mỗi lần đăng nhập tạo session **mới** và thu hồi session cũ gửi kèm request
   (chống session fixation, TC-IAM-02). Hết hạn nhàn rỗi (trượt) và tuyệt đối theo cấu hình.
 - **MFA (SRS-IAM-04, SRS-IAM-05):** tài khoản có role `ADMIN` hoặc đã bật MFA → session chờ MFA (`mfa_verified=false`),
-  chỉ gọi được API MFA (T-103) và đăng xuất; endpoint khác trả `401 MFA_REQUIRED`.
+  chỉ gọi được API MFA (T-103, `mfa.py`) và đăng xuất; endpoint khác trả `401 MFA_REQUIRED`. Xác minh/đăng ký MFA
+  xong → `rotate_session` (ID mới, ADR-006).
 - **Audit (ADR-010, SRS-AUD-02):** `SECURITY` cho đăng nhập thành công/bị từ chối/bị chặn và đăng xuất; không ghi
   email, mật khẩu, token.
 """
@@ -71,9 +72,10 @@ class Principal:
 class LoginResult:
     token: str
     mfa_required: bool
+    mfa_enrolled: bool
 
 
-def _audit(
+def audit_security(
     session: Session, action: str, outcome: Outcome, user_id: uuid.UUID | None, reason: str | None = None
 ) -> None:
     event = AuditEvent(
@@ -89,7 +91,7 @@ def _audit(
     record(session, event)
 
 
-def _mfa_required(session: Session, user_id: uuid.UUID, mfa_enabled: bool) -> bool:
+def mfa_required(session: Session, user_id: uuid.UUID, mfa_enabled: bool) -> bool:
     return mfa_enabled or "ADMIN" in roles_of(session, user_id)
 
 
@@ -124,14 +126,14 @@ class Authenticator:
             if row is None or not password_ok:
                 self._count_failure(session, row)
                 self._attempt(session, email_hash, ip, success=False)
-                _audit(session, "auth.login", Outcome.DENIED, row.id if row else None, "INVALID_CREDENTIALS")
+                audit_security(session, "auth.login", Outcome.DENIED, row.id if row else None, "INVALID_CREDENTIALS")
                 error = ApiError("INVALID_CREDENTIALS")
             elif row.status == "LOCKED" or row.locked:  # chỉ báo khóa khi mật khẩu đúng (API-AUTH-01)
                 self._attempt(session, email_hash, ip, success=False)
-                _audit(session, "auth.login", Outcome.DENIED, row.id, "ACCOUNT_LOCKED")
+                audit_security(session, "auth.login", Outcome.DENIED, row.id, "ACCOUNT_LOCKED")
                 error = ApiError("ACCOUNT_LOCKED")
             elif row.status != "ACTIVE":
-                _audit(session, "auth.login", Outcome.DENIED, row.id, "INVALID_CREDENTIALS")
+                audit_security(session, "auth.login", Outcome.DENIED, row.id, "INVALID_CREDENTIALS")
                 error = ApiError("INVALID_CREDENTIALS")
             else:
                 return self._start_session(session, row, password, email_hash, ip, old_token, user_agent)
@@ -167,7 +169,7 @@ class Authenticator:
     def _record_failure(self, email_hash: bytes, ip: str | None, reason: str, outcome: Outcome) -> None:
         with transaction(self.factory) as session:
             self._attempt(session, email_hash, ip, success=False)
-            _audit(session, "auth.login", outcome, None, reason)
+            audit_security(session, "auth.login", outcome, None, reason)
 
     def _start_session(
         self,
@@ -192,12 +194,22 @@ class Authenticator:
             ),
             {"id": row.id, "ph": new_hash},
         )
-        mfa_required = _mfa_required(session, row.id, row.mfa_enabled)
+        needs_mfa = mfa_required(session, row.id, row.mfa_enabled)
         token = new_token()
-        self._insert_session(session, row.id, token, mfa_verified=not mfa_required, ip=ip, user_agent=user_agent)
+        self._insert_session(session, row.id, token, mfa_verified=not needs_mfa, ip=ip, user_agent=user_agent)
         self._attempt(session, email_hash, ip, success=True)
-        _audit(session, "auth.login", Outcome.SUCCESS, row.id)
-        return LoginResult(token=token, mfa_required=mfa_required)
+        audit_security(session, "auth.login", Outcome.SUCCESS, row.id)
+        return LoginResult(token=token, mfa_required=needs_mfa, mfa_enrolled=row.mfa_enabled)
+
+    def rotate_session(self, session: Session, principal: Principal, *, ip: str | None, user_agent: str | None) -> str:
+        """Sau khi xác minh/đăng ký MFA: thu hồi session hiện tại, tạo session mới đã xác minh MFA (ADR-006)."""
+        session.execute(
+            text("UPDATE identity.session SET revoked_at = now() WHERE id = :i AND revoked_at IS NULL"),
+            {"i": principal.session_id},
+        )
+        token = new_token()
+        self._insert_session(session, principal.user_id, token, mfa_verified=True, ip=ip, user_agent=user_agent)
+        return token
 
     def _insert_session(
         self,
@@ -248,9 +260,9 @@ class Authenticator:
             ).one_or_none()
             if row is None:
                 raise ApiError("UNAUTHENTICATED")
-            mfa_required = _mfa_required(session, row.user_id, row.mfa_enabled)
-        principal = Principal(row.user_id, row.id, row.mfa_verified, mfa_required)
-        if mfa_required and not principal.mfa_verified and not allow_pending_mfa:
+            needs_mfa = mfa_required(session, row.user_id, row.mfa_enabled)
+        principal = Principal(row.user_id, row.id, row.mfa_verified, needs_mfa)
+        if needs_mfa and not principal.mfa_verified and not allow_pending_mfa:
             raise ApiError("MFA_REQUIRED")
         return principal
 
@@ -268,7 +280,7 @@ class Authenticator:
                 text("UPDATE identity.session SET revoked_at = now() WHERE id = :i AND revoked_at IS NULL"),
                 {"i": principal.session_id},
             )
-            _audit(session, "auth.logout", Outcome.SUCCESS, principal.user_id)
+            audit_security(session, "auth.logout", Outcome.SUCCESS, principal.user_id)
 
     def me(self, principal: Principal) -> dict[str, Any]:
         with transaction(self.factory) as session:
@@ -295,6 +307,8 @@ __all__ = [
     "Authenticator",
     "LoginResult",
     "Principal",
+    "audit_security",
     "hash_password",
+    "mfa_required",
     "verify_password",
 ]

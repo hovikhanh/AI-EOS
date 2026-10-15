@@ -523,3 +523,4 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - T-107 (bảng `access.*`, 15/10/2026): dòng UX-09 (Task T-107, T-109) giữ trạng thái — cần T-109 (giao diện/API quản trị quyền).
 - T-010 (thông báo in-app, 15/10/2026): dòng F1, F4 (cột Task có T-010) giữ trạng thái — cần các task còn lại của dòng; SRS-NTF-01/02 không có dòng riêng trong ma trận.
 - T-106 (CLI bootstrap/recover ADMIN, 15/10/2026): không dòng nào trong ma trận có cột Task chứa T-106 (SRS-IAM-09/10 truy vết qua D-22 A2/A6) → không trạng thái requirement nào thay đổi.
+- T-103 (MFA TOTP, 15/10/2026): không dòng nào trong ma trận có cột Task chứa T-103 (SRS-IAM-05 truy vết qua ADR-006, A2) → không trạng thái requirement nào thay đổi.
