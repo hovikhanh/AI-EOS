@@ -16,10 +16,10 @@ import sqlalchemy
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import DBAPIError
 
+from aieos.app.metadata import metadata
 from aieos.platform.api import (
     ROLES,
     SCHEMAS,
-    Base,
     DatabaseConfigError,
     Secret,
     compare_schema,
@@ -172,17 +172,19 @@ def test_model_matches_schema(database: ProvisionedDatabase) -> None:
     migrate_to_head(database)
     owner = database.engine("aieos_owner")
     with owner.connect() as conn:
-        assert compare_schema(conn, Base.metadata) == []
+        assert compare_schema(conn, metadata()) == []
     owner.dispose()
 
 
 @pytest.mark.db
-def test_downgrade_one_step_then_upgrade_again(database: ProvisionedDatabase) -> None:
+def test_downgrade_to_base_then_upgrade_again(database: ProvisionedDatabase) -> None:
     migrate_to_head(database)
     owner = database.engine("aieos_owner")
     with owner.begin() as conn:
-        downgrade(conn, "-1")
-        assert current_revision(conn) is None
+        revisions = [rev.revision for rev in script_directory().walk_revisions()]  # head → đầu chuỗi
+        for expected in [*revisions[1:], None]:
+            downgrade(conn, "-1")
+            assert current_revision(conn) == expected
         left = conn.execute(text("SELECT count(*) FROM pg_namespace WHERE nspname = ANY(:s)"), {"s": list(SCHEMAS)})
         assert left.scalar_one() == 0
         upgrade(conn, "head")
