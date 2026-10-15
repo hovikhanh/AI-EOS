@@ -21,7 +21,7 @@
 Mọi request `POST`/`PUT`/`PATCH`/`DELETE` phải có header `X-CSRF-Token` khớp session và header `Origin` khớp host; sai → `403 CSRF_FAILED`. Token lấy từ `GET /auth/me`.
 
 ### 1.4. Phân quyền
-Mỗi endpoint ghi permission theo Architecture §6. Không đủ quyền → `403 FORBIDDEN`; đối tượng ngoài phạm vi đọc → `404 NOT_FOUND` (không lộ sự tồn tại). Mọi lần từ chối với thao tác nhạy cảm được audit.
+Mỗi endpoint ghi permission theo Architecture §6. Không đủ quyền → `403 FORBIDDEN`; đối tượng ngoài phạm vi đọc → `404 NOT_FOUND` (không lộ sự tồn tại). Mọi lần từ chối với thao tác nhạy cảm được audit. Trong code, mọi route khai báo quyền (`PUBLIC`, `AUTHENTICATED` hoặc mã permission); route không khai báo bị từ chối `403 FORBIDDEN` (T-108).
 
 ### 1.5. Lỗi
 Định dạng `application/problem+json`:

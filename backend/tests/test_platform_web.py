@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 
 from aieos.app.asgi import create_app
 from aieos.platform.api import (
+    AUTHENTICATED,
     CORRELATION_ID,
     REDACTED,
     CsrfConfig,
@@ -22,6 +23,7 @@ from aieos.platform.api import (
     configure_logging,
     create_api,
     csrf_token,
+    declare,
     redact,
 )
 from tests.conftest import ProvisionedDatabase, migrate_to_head
@@ -125,7 +127,7 @@ def client_for(checks: dict[str, Any], routers: tuple[APIRouter, ...] = ()) -> T
 def test_request_log_never_contains_headers_cookie_body_or_query(log_stream: io.StringIO) -> None:
     router = APIRouter()
 
-    @router.post("/echo")
+    @router.post("/echo", **declare(AUTHENTICATED))
     def echo() -> dict[str, str]:
         return {"ok": "1"}
 
@@ -199,7 +201,7 @@ def test_not_ready_without_details(failing: Any, log_stream: io.StringIO) -> Non
 def test_unhandled_error_has_no_stack_trace(log_stream: io.StringIO) -> None:
     router = APIRouter()
 
-    @router.get("/hong")
+    @router.get("/hong", **declare(AUTHENTICATED))
     def broken() -> None:
         raise RuntimeError("bi-mat-noi-bo")
 

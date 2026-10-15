@@ -24,8 +24,10 @@ from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from aieos.platform.api import (
+    AUTHENTICATED,
     ERROR_CATALOG,
     PROBLEM_MEDIA_TYPE,
+    PUBLIC,
     SESSION_COOKIE,
     ApiError,
     CsrfConfig,
@@ -36,6 +38,7 @@ from aieos.platform.api import (
     create_api,
     create_db_engine,
     csrf_token,
+    declare,
     etag,
     make_session_factory,
     parse_allowed_origins,
@@ -99,17 +102,17 @@ def counter_router() -> tuple[APIRouter, list[str]]:
     calls: list[str] = []
     router = APIRouter()
 
-    @router.post("/probe/write")
+    @router.post("/probe/write", **declare(AUTHENTICATED))
     def write() -> dict[str, str]:
         calls.append("write")
         return {"ok": "1"}
 
-    @router.post("/probe/public")
+    @router.post("/probe/public", **declare(PUBLIC))
     def public() -> dict[str, str]:
         calls.append("public")
         return {"ok": "1"}
 
-    @router.get("/probe/read")
+    @router.get("/probe/read", **declare(AUTHENTICATED))
     def read() -> dict[str, str]:
         return {"ok": "1"}
 
@@ -143,7 +146,7 @@ def test_csrf_ok_but_foreign_origin_rejected(counter_router: tuple[APIRouter, li
 @pytest.mark.parametrize("method", ["put", "patch", "delete"])
 def test_every_unsafe_method_checked(method: str) -> None:
     router = APIRouter()
-    router.add_api_route("/probe/x", lambda: {"ok": "1"}, methods=[method.upper()])
+    router.add_api_route("/probe/x", lambda: {"ok": "1"}, methods=[method.upper()], **declare(AUTHENTICATED))
     c = client(router)
     assert_problem(getattr(c, method)("/api/v1/probe/x", headers={"Origin": ORIGIN}), 403, "CSRF_FAILED")
     assert getattr(c, method)("/api/v1/probe/x", headers=safe_headers()).status_code == 200
@@ -204,13 +207,13 @@ def versioned_router() -> APIRouter:
     router = APIRouter()
     state = {"version": 3}
 
-    @router.patch("/probe/item")
+    @router.patch("/probe/item", **declare(AUTHENTICATED))
     def update(body: Patch, if_match: str | None = Header(default=None)) -> JSONResponse:
         check_version(state["version"], require_if_match(if_match))
         state["version"] += 1
         return JSONResponse({"name": body.name}, headers={"ETag": etag(state["version"])})
 
-    @router.get("/probe/boom")
+    @router.get("/probe/boom", **declare(AUTHENTICATED))
     def boom() -> None:
         raise RuntimeError("SELECT * FROM finance.transaction -- /srv/app/secret.py mat-khau")
 
@@ -315,7 +318,7 @@ def idempotent_app(database: ProvisionedDatabase) -> Iterator[tuple[TestClient, 
     slow = threading.Event()
     router = APIRouter()
 
-    @router.post("/probe/items", status_code=201)
+    @router.post("/probe/items", status_code=201, **declare(AUTHENTICATED))
     async def create_item(request: Request) -> JSONResponse:
         key = require_idempotency_key(request.headers.get("idempotency-key"))
         actor = request.headers["x-test-user"]
@@ -448,7 +451,7 @@ def test_rate_limited_response_has_retry_after() -> None:
     limiter = RateLimiter(1, timedelta(seconds=30))
     router = APIRouter()
 
-    @router.post("/probe/login")
+    @router.post("/probe/login", **declare(PUBLIC))
     def login() -> dict[str, str]:
         limiter.hit("ip:test")
         return {"ok": "1"}

@@ -3,22 +3,22 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 15/10/2026 (T-103 `DONE`)
-**Commit tham chiếu:** `86d5a32` (`main`, PR #23 — T-106); T-103: PR #24 (branch `feat/T-103-mfa-totp`, CI run `38700993783` xanh)
-**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 11/13 task `DONE`; P1: T-101, T-102, T-103, T-106, T-107 `DONE`. Kế hoạch đã được duyệt (D-46). **6 task đủ điều kiện bắt đầu:** T-003, T-104, T-108, T-204, T-301, T-401.
+**Cập nhật lần cuối:** 15/10/2026 (T-108 `DONE` — phần có căn cứ)
+**Commit tham chiếu:** `6590c6d` (`main`, PR #24 — T-103); T-108: PR #25 (branch `feat/T-108-access-policy`, CI run `38703355287` xanh)
+**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 11/13 task `DONE`; P1: T-101, T-102, T-103, T-106, T-107, T-108 `DONE`. Kế hoạch đã được duyệt (D-46). **7 task đủ điều kiện bắt đầu:** T-003, T-104, T-112, T-201, T-204, T-301, T-401.
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
 
 ## 1. Tóm tắt nhanh
 
 - Tổng task: **83** (thêm T-308, T-513 theo D-49)
-- DONE: **16** — T-001, T-002, T-004, T-005, T-006, T-007, T-008, T-009, T-010, T-011, T-012, T-101, T-102, T-103, T-106, T-107 (T-103 run `38700993783`; T-106 run `38697852135`; T-010 run `38696839691`; T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
+- DONE: **17** — T-001, T-002, T-004, T-005, T-006, T-007, T-008, T-009, T-010, T-011, T-012, T-101, T-102, T-103, T-106, T-107, T-108 (T-108 run `38703355287`, phần có căn cứ — team/mục tiêu cha chưa làm; T-103 run `38700993783`; T-106 run `38697852135`; T-010 run `38696839691`; T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
 - IN_REVIEW: **0**
 - BLOCKED: **10** — T-407, T-604, T-901…T-908
-- TODO: **57** (`READY` 49, `PARTIAL` 8; chưa bắt đầu)
-- Task đủ điều kiện bắt đầu ngay: **6** — T-003, T-104, T-108, T-204, T-301, T-401
-- Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend; đăng nhập/session (T-102); MFA TOTP API-AUTH-02/03/04 (T-103); thông báo in-app API-NOT-01/02 (T-010); CLI `bootstrap-admin`/`recover-admin` (T-106)
-- Test case: **206** (199 + TC-FE-01…07); **29 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…07, TC-IAM-11, TC-IAM-12), 177 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
+- TODO: **56** (`READY` 49, `PARTIAL` 7; chưa bắt đầu)
+- Task đủ điều kiện bắt đầu ngay: **7** — T-003, T-104, T-112, T-201, T-204, T-301, T-401
+- Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend; đăng nhập/session (T-102); MFA TOTP API-AUTH-02/03/04 (T-103); policy `authorize()` + bắt buộc khai báo quyền cho route (T-108); thông báo in-app API-NOT-01/02 (T-010); CLI `bootstrap-admin`/`recover-admin` (T-106)
+- Test case: **206** (199 + TC-FE-01…07); **31 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…07, TC-IAM-11, TC-IAM-12; TC-ACC-01, TC-ACC-02), 175 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
 - CI: `scripts/ci.sh` 18 bước; branch protection `main` (required check `ci`, bắt buộc PR, `enforce_admins`, 0 approval — D-54 chưa áp dụng)
 
@@ -69,17 +69,17 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | T-105 | TODO | READY · Lời mời; chờ T-108, T-103, T-104 (D-55) |
 | T-106 | DONE | CLI `bootstrap-admin`/`recover-admin` (tiến trình `admin-cli`, `AIEOS_PASSWORD_MIN_LENGTH`); run `38697852135`; TC-IAM-11, TC-IAM-12 `PASSED` |
 | T-107 | DONE | Bảng `access.*` (migration `0005`), seed theo Architecture §6, INV-09/10/11, điều kiện assignment, service role/assignment; run `38684667496` |
-| T-108 | TODO | PARTIAL (định nghĩa "team" PROPOSED) · **đủ điều kiện bắt đầu** · `authorize()` |
-| T-109 | TODO | READY · API quản trị; chờ T-108, T-104 |
+| T-108 | DONE | Phần có căn cứ: `authorize()`, phạm vi theo role/assignment, `scope_filter`, `PermissionGuard`, route không khai báo quyền → 403; run `38703355287`; TC-ACC-01, TC-ACC-02 `PASSED`. Chưa làm: "team" (SRS-ACC-04), mục tiêu cha. TC-ACC-03 → Q-52 |
+| T-109 | TODO | READY · API quản trị; chờ T-104 |
 | T-110 | TODO | READY · Audit, trang tình trạng; chờ T-109; TC-FIN-14 cần thêm T-401 hoặc T-402 (OPEN_DECISIONS 0.2) |
 | T-111 | TODO | READY · Frontend app shell; chờ T-102…T-109 |
-| T-112 | TODO | READY (R6 đã quyết) · Che dữ liệu cá nhân; chờ T-108 |
+| T-112 | TODO | READY (R6 đã quyết) · **đủ điều kiện bắt đầu** · Che dữ liệu cá nhân |
 
 ### P2 – Org và Data Capture
 
 | Task | Trạng thái | Ghi chú ngắn |
 |------|------------|--------------|
-| T-201 | TODO | READY · `org.*`; chờ T-108 |
+| T-201 | TODO | READY · **đủ điều kiện bắt đầu** · `org.*` (cài `OrgScope` cho T-108) |
 | T-202 | TODO | READY · Bảng `capture.*`; chờ T-201 |
 | T-203 | TODO | READY · Upload, quét mã độc; chờ T-202; chủ TC-JOB-05 (D-56) |
 | T-204 | TODO | READY · **đủ điều kiện bắt đầu** · Provider adapter + giả lập (cần làm rõ D-50 trước — OPEN_DECISIONS 0.1) |
@@ -175,13 +175,17 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 
 ## 5. Việc nên làm tiếp theo (sau khi có quyết định)
 
-1. Merge PR #24 (T-103) khi CDA đồng ý.
-   Đường găng demo: T-108 (`PARTIAL` — định nghĩa "team" của TC-ACC-10 còn mở, chỉ làm phần có căn cứ) → T-104 → T-109 → T-111.
+1. Merge PR #25 (T-108) khi CDA đồng ý.
+   Đường găng demo: T-104 (reauth, đổi mật khẩu) → T-109 (API quản trị) → T-105 (lời mời) → T-111 (frontend). T-201 (`org.*`) mở phạm vi MANAGER.
 2. **T-003** song song (reverse proxy HTTPS — cookie `Secure` cần HTTPS để demo trên trình duyệt).
 3. T-013 khi T-003 xong → T-605 về sau.
 4. CDA điền OPEN_DECISIONS mục 0 trước khi tới T-204 (D-50) và T-108 (TC-ACC-10).
 
 ## 6. Ghi chú phiên gần nhất
+
+**Phiên 15/10/2026 (lần 11) — T-108:**
+- PR #24 (T-103) merge → `6590c6d`, CI `main` xanh.
+- T-108 (phần có căn cứ, CDA cho bỏ qua "team"): `access/policy.py` + khai báo quyền bắt buộc ở `platform/web.py`; mọi route hiện có đã khai báo. `scripts/ci.sh` local rc 0 (280 passed); 10 đột biến → test đỏ. PR #25, CI run `38703355287` xanh (280 passed, 0 skipped) → T-108 `DONE`. Q-52 mới: task chủ TC-ACC-03 (không chạy đủ ở T-108). Chi tiết: Implementation_Plan §10, §27.
 
 **Phiên 15/10/2026 (lần 10) — T-103:**
 - PR #23 (T-106) merge → `86d5a32` (đồng bộ `main` vào nhánh, không force-push), CI `main` xanh.

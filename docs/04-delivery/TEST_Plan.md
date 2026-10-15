@@ -355,9 +355,9 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-11` | **T-106** | duy nhất | — | `PASSED` — run `38697852135` (T-106, PR #23; `test_bootstrap_refused_when_active_admin`, `test_bootstrap_creates_first_admin`) |
 | `TC-IAM-12` | **T-106** | duy nhất | — | `PASSED` — run `38697852135` (T-106, PR #23; `test_recover_requires_confirm_then_resets_and_notifies`) |
 | `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |
-| `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `NOT RUN` |
-| `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `NOT RUN` |
-| `TC-ACC-03` | **T-108** | duy nhất | — | `NOT RUN` |
+| `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_effective_permissions_base_union_valid_assignments`) |
+| `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_undeclared_route_denied`, `test_out_of_scope_object_by_id_is_404`) |
+| `TC-ACC-03` | **T-108** — Q-52 `[CẦN XÁC NHẬN]` (task/mục tiêu, `org.*` phụ thuộc T-108) | duy nhất | T-108 bằng chứng thành phần: `scope_filter` trên bảng thử, run `38703355287` | `NOT RUN` |
 | `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
 | `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
 | `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
