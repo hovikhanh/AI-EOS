@@ -320,7 +320,7 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 
 ## 12. Task chủ và trạng thái từng test case (D-44)
 
-Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột; "D-55" = sửa task chủ TC-AUD-01/02 (15/10/2026). TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
+Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột; "D-55" = sửa task chủ TC-AUD-01/02; "D-56" = sửa task chủ TC-JOB-05 (15/10/2026). TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
 
 | TC | Task chủ | Căn cứ | Bằng chứng thành phần | Trạng thái |
 | --- | --- | --- | --- | --- |
@@ -331,12 +331,12 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-GEN-05` | **T-007** | D-44 (bảng 65 TC) | T-006, T-603 | `NOT RUN` |
 | `TC-GEN-06` | **T-102** | D-44 (bảng 65 TC) | T-007 | `NOT RUN` |
 | `TC-GEN-07` | **T-111** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-01` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-02` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-03` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-04` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-05` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `NOT RUN` |
+| `TC-JOB-01` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_concurrent_claim_single_winner`) |
+| `TC-JOB-02` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_reaper_requeues_then_dead`) |
+| `TC-JOB-03` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_crash_before_commit_yields_single_result, test_stale_worker_cannot_commit_after_reap`) |
+| `TC-JOB-04` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_enqueue_rolled_back_with_business_change`) |
+| `TC-JOB-05` | **T-203** | D-56 | T-009 (cơ chế kiểm tra quyền lúc chạy, authorizer giả lập) | `NOT RUN` |
+| `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `PASSED` — run `38680383606` (T-009, PR #17; quét tĩnh + ca vi phạm) |
 | `TC-NTF-01` | **T-010** | duy nhất | — | `NOT RUN` |
 | `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `NOT RUN` |
 | `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `NOT RUN` |

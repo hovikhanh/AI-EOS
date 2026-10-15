@@ -519,3 +519,4 @@ FR-DF-02, FR-HM-06, FR-HM-07, FR-LRN-02, SEC-DC-05 — lý do ở SRS §17. Khô
 - D-44, D-47: T-005, T-006, T-011, T-012 `DONE` (Implementation_Plan §10). TC đã `PASSED`: TC-MIG-01 (T-005), TC-FE-01…07 (T-012). Dòng NFR-03 giữ trạng thái: TC-MIG-02, TC-DR-01/02 thuộc T-605, RPO/RTO chưa đo.
 - D-51: câu hỏi nghiệp vụ Q-28…Q-42 (trừ Q-40) đã trả lời toàn bộ hoặc một phần; trạng thái dòng requirement **không** tự đổi theo — cần rà riêng từng dòng `NEEDS_CONFIRMATION` liên quan (FR-HM, MET, UX, SC) ở lần cập nhật sau.
 - T-008 (audit append-only, 15/10/2026): dòng FR-DC-05 (Task T-008, T-209) giữ trạng thái — cần cả T-209 (audit thay đổi thủ công trên form) mới có thể `IMPLEMENTED`. D-55: TC-AUD-01 chủ T-109, TC-AUD-02 chủ T-105.
+- T-009 (job queue, 15/10/2026): dòng FR-DF-05 (Task T-009, T-507) giữ trạng thái — cần cả T-507 và danh mục sự kiện nghiệp vụ chưa đặc tả (SRS §17: "Một phần"). D-56: TC-JOB-05 chủ T-203.
