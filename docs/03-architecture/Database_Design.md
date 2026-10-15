@@ -173,6 +173,8 @@ Trigger `trg_assignment_eligibility`: từ chối nếu không có role nào c�
 
 Danh mục tool: các tool READ/WRITE của Domain 22 trong BRD §3.9 (`upload_document`, `classify_document`, `extract_document`, `validate_extraction`, `submit_extraction_for_review`, `approve_extraction`, `commit_extraction`, `import_table`, `search_documents`, `get_source_document`) và các tool đích BRD nêu ví dụ (`create_task`, `record_kpi_measurement`). Tool đích khác cho loại tài liệu MVP (tạo Objective/KR/KPI, đơn vị/nhân sự, knowledge item, bản nháp tài chính) là `ARCHITECTURE_DECISION`, tham số chờ 2B. `create_invoice` thuộc Phase 2.
 
+Migration `0013` (T-301): `risk_level` cho phép NULL = chưa phân loại (tài liệu chưa có giá trị từng tool; `commit_extraction` kế thừa từ tool đích — BR-09); seed 12 tool trên với `enabled = false` (bật khi có handler qua write gateway, T-302), `max_autonomy_level = 3`; trigger `AE030` (policy vượt trần / hạ trần dưới policy), `AE031` (tool tài chính tự duyệt).
+
 ### `ai.autonomy_policy`
 `id`, `tool_name` FK, `role_code` FK NULL (NULL = mọi role), `value_threshold numeric` NULL (`[CẦN XÁC NHẬN]` — D-16, không có giá trị mặc định), `level smallint CHECK (level BETWEEN 0 AND 3)`, `updated_by`, `updated_at`, `reason`, `version`. Trigger kiểm tra `level <= ai.tool.max_autonomy_level`.
 

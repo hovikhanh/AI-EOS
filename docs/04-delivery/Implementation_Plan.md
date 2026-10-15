@@ -273,6 +273,7 @@ Chỉ ghi task đã bắt đầu (ID trong dấu `` ` `` để không trùng v�
 | `T-201` | `DONE` | 15/10/2026 | Branch `feat/T-201-org-directory`, PR #32. Migration `0010` (`org.org_unit`, `org.employee` chỉ trường danh bạ; trigger chống vòng `AE004`/`AE005`; FK `user_account.employee_id`). Module `org`: API-ORG-01 (cây đơn vị), API-ORG-02 (danh bạ `ACTIVE`, tìm/lọc/cursor), `OrgDirectoryScope` (MANAGER = đơn vị làm trưởng + cấp dưới) gắn vào `PermissionGuard`; hàm ghi cho T-210. Test `backend/tests/test_org.py` (5). 7 đột biến → test đỏ | Bằng chứng CI: PR #32, run `38737949724` (`success`; pytest 312, vitest 62, compose-smoke 0 lỗi). TC-ACC-09 `PASSED`. |
 | `T-505` | `DONE` | 15/10/2026 | Branch `feat/T-505-work-task`, PR #33. Migration `0011` (`work.task`). Module `work`: API-WORK-01/03/04/05, phạm vi theo đơn vị owner (T-108/T-201), `overdue`/`completed_on_time` giờ Việt Nam, thông báo `TASK_ASSIGNED`, audit BUSINESS; `org.api.user_unit_path`. Test `backend/tests/test_work.py` (8). 8 đột biến: 7 bị bắt + 1 lớp trùng | Bằng chứng CI: PR #33, run `38752643215` (`success`). TC-WRK-01…05 `PASSED`; TC-ACC-03 phần task, TC-NTF-01 phần giao task (thành phần). |
 | `T-401` | `DONE` | 15/10/2026 | Branch `feat/T-401-finance-tables`, PR #34. Migration `0012` (`finance.reporting_period` không chồng lấn + không mở lại, `transaction`, `transaction_event` append-only, `approval_delegation` dự trữ); INV-01…07 (CHECK, UNIQUE có điều kiện, trigger `AE020`…`AE025`). Test `backend/tests/test_finance_schema.py` (8). 8 đột biến → test đỏ | Bằng chứng CI: PR #34, run `38755214148` (`success`). TC-FIN-01…04 `PASSED` (mức CSDL). |
+| `T-301` | `DONE` | 15/10/2026 | Branch `feat/T-301-ai-tables`, PR #35. Migration `0013` (`ai.tool` + seed 12 tool, `autonomy_policy` + seed SRS-AIC-03, `kill_switch` singleton, `setting`, `action`, `call_log`, `feedback`; INV-12 CHECK + trigger `AE030`, `AE031`; FK `ai_action_id`). Test `backend/tests/test_ai_schema.py` (5). 7 đột biến → test đỏ. Q-53 | Bằng chứng CI: PR #35, run `38757933594` (`success`). DoD "CHECK trần có hiệu lực" đạt. |
 
 ## 11. Kế hoạch chi tiết T-002 (chưa triển khai)
 
@@ -685,4 +686,13 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Lựa chọn của agent: `currency` CHECK 3 chữ in hoa (Database_Design chỉ ghi `char(3)`); `reporting_period` CHECK `CLOSED` ⇔ có `closed_by`/`closed_at`; `hold_reason` chỉ nhận `PERIOD_CLOSED` (giá trị MVP — ADR-009 Amendment 1).
 - Danh mục (`category`) là văn bản tự do (Q-42, D-51); độ dài kỳ chưa ràng buộc (mặc định tháng — `[CẦN XÁC NHẬN]` ở Database_Design).
 - Test `backend/tests/test_finance_schema.py` (8) chạy bằng role ứng dụng như tấn công qua SQL. 8 đột biến (gỡ từng bất biến) → test đỏ.
+
+## 37. Ghi chú triển khai T-301 (15/10/2026)
+
+- Migration `0013` (M-10): `ai.tool`, `autonomy_policy`, `kill_switch`, `setting`, `action`, `call_log`, `feedback`; model ở `ai/models.py`; khóa ngoại `work.task.ai_action_id`, `finance.transaction.ai_action_id` → `ai.action`.
+- Tool Registry: 12 tool theo Database_Design §5 (10 tool Domain 22 BRD §3.9 + `create_task`, `record_kpi_measurement`); `operation_type` theo BR-09 và tên tool; trần chung L3 (không tool nào tài chính); `enabled = false` cho tới khi có handler (T-302); `risk_level` NULL vì tài liệu chưa phân loại từng tool (không tự đặt); `params_schema` chờ 2B. Tool đích MVP khác (Objective/KR/KPI, đơn vị/nhân sự, knowledge item, bản nháp tài chính — `ARCHITECTURE_DECISION`) chưa seed vì chưa có tham số.
+- Policy mặc định chỉ seed khi SRS-AIC-03 nói rõ: tool READ → L0, `create_task` (task nội bộ) → L3. Tool WRITE tài liệu và `record_kpi_measurement` chưa có policy — T-302 xử lý trường hợp thiếu policy.
+- INV-12: CHECK trần trên `ai.tool` + trigger hai chiều (`AE030`); INV-13: kill switch singleton (seed `enabled = false`); tool tài chính: người xác nhận ≠ người khởi tạo (`AE031`); L3: hạn hoàn tác ≥ 24 giờ (BR-11). `ai.setting.draft_expiry_days = 30` (K5).
+- `ai.call_log`: CHECK chỉ provider local cho `SENSITIVE`/`PERSONAL` (Database_Design §5) — xung đột với ngoại lệ demo D-50 → **Q-53** `[CẦN XÁC NHẬN]`, cần trước phần demo DeepSeek của T-205.
+- Test `backend/tests/test_ai_schema.py` (5). 7 đột biến → test đỏ.
 

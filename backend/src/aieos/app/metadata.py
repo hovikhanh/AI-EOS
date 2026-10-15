@@ -9,6 +9,7 @@ from types import ModuleType
 from sqlalchemy import MetaData
 
 import aieos.access.api
+import aieos.ai.api
 import aieos.audit.api
 import aieos.finance.api
 import aieos.identity.api
@@ -20,6 +21,7 @@ from aieos.platform.api import Base
 
 MODULE_APIS: tuple[ModuleType, ...] = (
     aieos.access.api,
+    aieos.ai.api,
     aieos.audit.api,
     aieos.finance.api,
     aieos.identity.api,
