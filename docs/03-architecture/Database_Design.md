@@ -365,7 +365,7 @@ Append-only: `id bigint`, `transaction_id`, `from_status`, `to_status`, `actor_i
 | INV-05 | Không xóa giao dịch, lịch sử, audit | Không cấp DELETE cho `aieos_app`; trigger chặn DELETE | D-13, D-15 |
 | INV-06 | Chuyển trạng thái hợp lệ (gồm `PENDING_APPROVAL → ON_HOLD`, `ON_HOLD → CANCELLED/REJECTED`; không có `ON_HOLD → POSTED`) | Trigger kiểm tra cặp (from, to) theo ADR-009 | ADR-009 |
 | INV-07 | Gửi duyệt và ghi sổ chỉ vào kỳ `OPEN` | Trigger khi `status → PENDING_APPROVAL` hoặc `→ POSTED`: kỳ `OPEN` (cùng `SELECT … FOR SHARE` ở ứng dụng) | CDA-F1, CDA-F2, D-37 |
-| INV-08 | Idempotency | UNIQUE `(created_by, idempotency_key)`; `ai.action`, `jobs.job` tương tự | ADR-005, ADR-009 |
+| INV-08 | Idempotency | UNIQUE `(created_by, idempotency_key)`; `ai.action`, `jobs.job` tương tự. Bảng có endpoint `IDEMPOTENT` lưu thêm dấu vân tay request (vd. `request_hash`) để trả `IDEMPOTENCY_KEY_REUSED` khi khác nội dung (SRS-GEN-03; cơ chế `platform.api.run_idempotent`, T-007) | ADR-005, ADR-009 |
 | INV-09 | Không tự cấp quyền | CHECK `granted_by <> user_id` trên `user_role`, `assignment` | A5 |
 | INV-10 | Không `ADMIN` + `CFO` | Trigger trên `user_role` | R7 |
 | INV-11 | Còn ít nhất một ADMIN hoạt động | Trigger + advisory lock ở ứng dụng | A4 |

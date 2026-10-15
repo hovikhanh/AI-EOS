@@ -1,6 +1,6 @@
 # AI-EOS — API Specification (Stage 2C)
 
-> Phiên bản: 1.3 (15/10/2026, D-52) · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — chưa triển khai** · Thay đổi: §11
+> Phiên bản: 1.4 (15/10/2026, T-007) · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — chưa triển khai** · Thay đổi: §11
 > Trạng thái endpoint: mục 1.10. Từ 15/10/2026 (D-52) endpoint có code và test xanh trong CI ghi `IMPLEMENTED` (hiện: API-SYS-01, API-SYS-02); còn lại `DESIGNED`. OpenAPI sinh từ code (ADR-002) và được contract test đối chiếu với tài liệu này (ADR-013).
 > Từ 1.1, endpoint đối chiếu với [SRS](../02-requirements/SRS.md) (Stage 2B). Sales Pipeline Lite vẫn `SKELETON` (Q-38).
 > Liên quan: [Architecture.md](Architecture.md), [Database_Design.md](Database_Design.md), ADR-006…ADR-011.
@@ -286,6 +286,7 @@ Request `{ "reason": "Nhập sai số tiền" }` → `201` bút toán đảo `DR
 | `SELF_APPROVAL_FORBIDDEN` | 403 | Tự duyệt tài chính |
 | `SELF_ROLE_CHANGE` | 403 | Tự đổi role |
 | `NOT_FOUND` | 404 | Không tồn tại hoặc ngoài phạm vi |
+| `METHOD_NOT_ALLOWED` | 405 | Phương thức không hỗ trợ trên đường dẫn (T-007) |
 | `INVALID_STATE` | 409 | Chuyển trạng thái không hợp lệ |
 | `PERIOD_CLOSED`, `NO_OPEN_PERIOD`, `PERIOD_OVERLAP`, `PERIOD_HAS_PENDING` | 409 | Kỳ báo cáo |
 | `ALREADY_REVERSED` | 409 | Đã có bút toán đảo |
@@ -301,12 +302,14 @@ Request `{ "reason": "Nhập sai số tiền" }` → `201` bút toán đảo `DR
 | `ACCOUNT_LOCKED` | 423 | Khóa tạm |
 | `ROLE_COMBINATION_FORBIDDEN`, `ASSIGNMENT_NOT_ELIGIBLE`, `AUTONOMY_CAP_EXCEEDED`, `CANNOT_REVERSE_REVERSAL`, `CRITICAL_FIELDS_NOT_REVIEWED`, `AUTO_COMMIT_CRITERIA_NOT_MET`, `TOO_MANY_FILES` | 422 | Vi phạm quy tắc |
 | `RATE_LIMITED` | 429 | Quá tốc độ |
+| `INTERNAL_ERROR` | 500 | Lỗi không lường trước; body không có chi tiết nội bộ, chỉ `correlation_id` (SRS-GEN-05, T-007) |
 | `AI_UNAVAILABLE` | 503 | Provider lỗi hết fallback; luồng thủ công vẫn chạy (BR-21) |
 
 ## 11. Thay đổi phiên bản
 
 | Phiên bản | Thay đổi | Lý do | Loại |
 | --- | --- | --- | --- |
+| 1.4 | §10 thêm `METHOD_NOT_ALLOWED` (405), `INTERNAL_ERROR` (500) — mã cho lỗi định tuyến và lỗi không lường trước ở hạ tầng HTTP | T-007 | Không phá vỡ |
 | 1.3 | §1.10 thêm trạng thái `IMPLEMENTED`; API-SYS-01, API-SYS-02 → `IMPLEMENTED` | D-52 | Không phá vỡ |
 | 1.0 | Thiết kế ban đầu | Stage 2C | — |
 | 1.2 | AMD-01: API-FIN-08 (bỏ nhãn PROPOSED), API-FIN-09/11 thêm `ON_HOLD`, lỗi `PERIOD_CLOSED` của API-FIN-10 dẫn tới `ON_HOLD`. AMD-02: thêm API-INS-03; API-INS-01 thêm `ai_paused`, `official`. API-GOAL-04 dùng `goals.activate` (D-39). API-SALES-01 ghi D-40 | D-37…D-40 | Thay đổi có kiểm soát |

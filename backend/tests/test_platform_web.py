@@ -15,13 +15,16 @@ from aieos.app.asgi import create_app
 from aieos.platform.api import (
     CORRELATION_ID,
     REDACTED,
+    CsrfConfig,
     Secret,
     configure_logging,
     create_api,
+    csrf_token,
     redact,
 )
 from tests.conftest import ProvisionedDatabase, migrate_to_head
 
+TEST_CSRF = CsrfConfig(Secret("khoa-csrf-test"), frozenset({"https://aieos.local"}))
 LIVE = "/api/v1/health/live"
 READY = "/api/v1/health/ready"
 SECRETS = {
@@ -114,7 +117,7 @@ def test_configure_logging_is_idempotent() -> None:
 
 
 def client_for(checks: dict[str, Any], routers: tuple[APIRouter, ...] = ()) -> TestClient:
-    return TestClient(create_api(checks, routers), raise_server_exceptions=False)
+    return TestClient(create_api(checks, routers, csrf=TEST_CSRF), raise_server_exceptions=False)
 
 
 def test_request_log_never_contains_headers_cookie_body_or_query(log_stream: io.StringIO) -> None:
@@ -126,14 +129,15 @@ def test_request_log_never_contains_headers_cookie_body_or_query(log_stream: io.
 
     client = client_for({}, (router,))
     client.cookies.set("__Host-aieos_session", "sess-cookie-456")
+    real_csrf = csrf_token(TEST_CSRF.key, "sess-cookie-456")  # T-007: token CSRF hợp lệ cũng không được vào log
     response = client.post(
         f"/api/v1/echo?token={SECRETS['query_token']}",
-        headers={"Authorization": SECRETS["authorization"], "X-CSRF-Token": SECRETS["csrf"]},
+        headers={"Authorization": SECRETS["authorization"], "X-CSRF-Token": real_csrf, "Origin": "https://aieos.local"},
         json={"password": SECRETS["password"]},
     )
     assert response.status_code == 200
     text = log_stream.getvalue()
-    for value in [*SECRETS.values(), "sess-cookie-456"]:
+    for value in [*SECRETS.values(), "sess-cookie-456", real_csrf]:
         assert value not in text
     request_log = [r for r in records(log_stream) if r["message"] == "request"]
     assert request_log == [
@@ -209,7 +213,7 @@ def test_api_docs_not_exposed(path: str) -> None:
 
 
 def test_openapi_available_in_code() -> None:
-    paths = create_api({}).openapi()["paths"]
+    paths = create_api({}, csrf=TEST_CSRF).openapi()["paths"]
     assert {LIVE, READY} <= set(paths)
 
 
