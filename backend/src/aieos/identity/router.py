@@ -3,6 +3,8 @@ API-AUTH-07 `GET /auth/me`. T-103: API-AUTH-02 `POST /auth/mfa/verify`, API-AUTH
 `POST /auth/mfa/enroll/confirm` — nhận session chờ MFA; xác minh/xác nhận xong đặt cookie session mới.
 T-104: API-AUTH-05 `POST /auth/reauth`, API-AUTH-09 `POST /auth/password` (`STEP-UP`). T-109: API-ADM-01
 `GET /admin/users`, API-ADM-04 `PATCH /admin/users/{id}`, API-ADM-05 `PUT /admin/users/{id}/roles` (`PermissionGuard`).
+T-105: API-ADM-02 `POST /admin/users`, API-ADM-03 `POST /admin/users/{id}/invitations`, API-AUTH-08
+`POST /auth/invitations/accept` (công khai).
 
 Router mỏng (ADR-002): kiểm tra đầu vào → gọi `Authenticator` → trả response. `POST /auth/login` là đường dẫn công khai
 (API_Specification §1.2): composition root miễn token CSRF cho đường dẫn này, vẫn kiểm `Origin` (T-007).
@@ -15,13 +17,15 @@ from typing import Annotated, Any, Literal
 from fastapi import APIRouter, Depends, Header, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
-from aieos.access.api import Actor, PermissionGuard
+from aieos.access.api import Actor, PermissionGuard, authorize
 from aieos.identity.auth import Authenticator, Principal
+from aieos.identity.invitations import Invitation, InvitationService
 from aieos.identity.mfa import MfaService
 from aieos.identity.stepup import StepUpService
 from aieos.identity.users import UserAdmin, UserView
 from aieos.platform.api import (
     AUTHENTICATED,
+    IDEMPOTENCY_HEADER,
     PAGE_DEFAULT_LIMIT,
     PAGE_MAX_LIMIT,
     PUBLIC,
@@ -33,10 +37,13 @@ from aieos.platform.api import (
     decode_cursor,
     encode_cursor,
     etag,
+    request_fingerprint,
+    require_idempotency_key,
     require_if_match,
 )
 
 LOGIN_PATH = "/auth/login"
+ACCEPT_INVITATION_PATH = "/auth/invitations/accept"
 
 
 class LoginBody(BaseModel):
@@ -254,5 +261,87 @@ def build_user_admin_router(admin: UserAdmin, guard: PermissionGuard) -> APIRout
             actor=actor.user_id, user_id=user_id, roles=set(body.roles), reason=body.reason, expected_version=expected
         )
         return _user_response(view, response)
+
+    return router
+
+
+class CreateUserBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(min_length=3, max_length=320)
+    display_name: str = Field(min_length=1, max_length=200)
+    roles: list[str] = Field(default_factory=list, max_length=10)
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+class InvitationOut(BaseModel):
+    link: str  # hiển thị một lần
+    expires_at: datetime
+
+
+class CreatedUserOut(BaseModel):
+    user: UserOut
+    invitation: InvitationOut | None
+
+
+class AcceptBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(min_length=1, max_length=200)
+    password: str = Field(min_length=1, max_length=4096)  # độ dài thật kiểm ở service (D-58)
+
+
+def _invitation_out(invitation: Invitation) -> InvitationOut:
+    return InvitationOut(link=invitation.link, expires_at=invitation.expires_at)
+
+
+def build_invitation_router(invitations: InvitationService, guard: PermissionGuard) -> APIRouter:
+    router = APIRouter(tags=["admin"])
+    actor_dep = Annotated[Actor, Depends(guard.actor)]
+
+    @router.post(
+        "/admin/users", status_code=201, response_model=CreatedUserOut, **guard.route("user.manage", step_up=True)
+    )
+    def create_user(
+        body: CreateUserBody,
+        actor: actor_dep,
+        response: Response,
+        key: Annotated[str | None, Header(alias=IDEMPOTENCY_HEADER)] = None,
+    ) -> CreatedUserOut:
+        idempotency_key = require_idempotency_key(key)
+        if body.roles and not authorize(actor, "role.assign").allowed:
+            raise ApiError("FORBIDDEN", "Gán role cần quyền role.assign")
+        fingerprint = request_fingerprint("POST", "/admin/users", body.model_dump_json().encode(), str(actor.user_id))
+        created = invitations.create_user(
+            actor=actor.user_id,
+            email=body.email,
+            display_name=body.display_name,
+            roles=set(body.roles),
+            reason=body.reason,
+            idempotency_key=idempotency_key,
+            fingerprint=fingerprint,
+        )
+        response.headers["ETag"] = etag(created.user.version)
+        response.headers["Cache-Control"] = "no-store"  # link mời chỉ hiển thị một lần
+        return CreatedUserOut(
+            user=UserOut(**created.user.__dict__),
+            invitation=_invitation_out(created.invitation) if created.invitation else None,
+        )
+
+    @router.post(
+        "/admin/users/{user_id}/invitations",
+        status_code=201,
+        response_model=InvitationOut,
+        **guard.route("user.manage", step_up=True),
+    )
+    def reissue(user_id: uuid.UUID, actor: actor_dep, response: Response) -> InvitationOut:
+        response.headers["Cache-Control"] = "no-store"
+        return _invitation_out(invitations.reissue(actor=actor.user_id, user_id=user_id))
+
+    @router.post(ACCEPT_INVITATION_PATH, status_code=204, **declare(PUBLIC))
+    def accept(body: AcceptBody, request: Request) -> Response:
+        ip, _ = _client(request)
+        invitations.accept(body.token, body.password, ip=ip)
+        return Response(status_code=204)
 
     return router

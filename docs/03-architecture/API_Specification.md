@@ -54,7 +54,7 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 | Giá trị | Ý nghĩa |
 | --- | --- |
 | `DESIGNED` | Đã thiết kế ở 2C, chưa có code |
-| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`); API-AUTH-05, API-AUTH-09 (T-104, run `38705903816`); API-ADM-01, API-ADM-04…09 (T-109, run `38708289449`) |
+| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`); API-NOT-01, API-NOT-02 (T-010, run `38696839691`); API-AUTH-02, API-AUTH-03, API-AUTH-04 (T-103, run `38700993783`); API-AUTH-05, API-AUTH-09 (T-104, run `38705903816`); API-ADM-01, API-ADM-04…09 (T-109, run `38708289449`); API-ADM-02, API-ADM-03, API-AUTH-08 (T-105, run `38710976904`) |
 | `SKELETON` | Chỉ khung; chi tiết chờ 2B (D-24) |
 | `DEFERRED` | Ngoài MVP |
 
@@ -103,6 +103,11 @@ Không có endpoint đăng ký công khai. Bootstrap và khôi phục ADMIN ch�
 | API-ADM-11 | GET | `/admin/system-health` | `system.health.read` | — | Trạng thái worker, queue, job DEAD, giao dịch thiếu người duyệt, kill switch (số tác vụ chuyển nháp, job bị chặn, lịch bị bỏ qua), cảnh báo "chưa có người quản lý kỳ", "không có kỳ mở", "hàng chờ review không có người" | UX §4.1, ADR-012, SRS-FIN-12 |
 
 **API-ADM-05** request `{ "roles": ["MANAGER"], "reason": "..." }` → `200` user mới, `ETag`; lỗi: `403 SELF_ROLE_CHANGE`, `409 LAST_ADMIN`, `412 VERSION_CONFLICT`, `422 ROLE_COMBINATION_FORBIDDEN`, `401 REAUTH_REQUIRED`.
+
+Chi tiết T-105:
+- **API-ADM-02** `{ "email", "display_name", "roles": [...], "reason" }` + `Idempotency-Key` → `201 { "user": {…}, "invitation": { "link": "/invite#token=…", "expires_at" } }`, `Cache-Control: no-store`. Link chỉ trả **một lần**: gọi lại cùng khóa + cùng nội dung → `201` cùng `user`, `invitation: null` (token chỉ lưu hash — dùng API-ADM-03 để cấp lại). Có `roles` thì cần thêm `role.assign`. Email đã có → `422` (trường `email`); `ADMIN`+`CFO` → `422 ROLE_COMBINATION_FORBIDDEN`. Token đặt trong fragment (`#`) để không tới máy chủ/log khi mở trang; trang `/invite` thuộc frontend (T-111). Hạn: `AIEOS_INVITE_TTL_HOURS`.
+- **API-ADM-03** → `201 { "link", "expires_at" }`; thu hồi lời mời còn hiệu lực; tài khoản không còn `INVITED` → `409 INVALID_STATE`.
+- **API-AUTH-08** (công khai, miễn CSRF token, vẫn kiểm `Origin`) `{ "token", "password" }` → `204` (tài khoản `ACTIVE`; đăng nhập lại qua API-AUTH-01); mật khẩu không đạt `AIEOS_PASSWORD_MIN_LENGTH` → `422` (kiểm trước token); token sai/hết hạn/đã dùng/đã thu hồi → `400 INVITATION_INVALID` cùng nội dung; rate limit theo IP và token.
 
 Chi tiết T-109:
 - User (API-ADM-01/04/05): `{ "id", "email", "display_name", "status", "roles": [...], "mfa_enabled", "created_at", "version" }`; `ETag` = `"<version>"` (tăng khi đổi trạng thái hoặc role). API-ADM-01 phân trang cursor §1.8 (mới nhất trước).

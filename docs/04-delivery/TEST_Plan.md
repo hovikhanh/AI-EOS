@@ -339,7 +339,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `PASSED` — run `38680383606` (T-009, PR #17; quét tĩnh + ca vi phạm) |
 | `TC-NTF-01` | **T-510** (tổng) | D-58 — tách phần (R5): T-304 bản nháp AI, T-403 giao dịch chờ duyệt, T-505 giao task | T-010 (đúng người nhận, link nội bộ — run `38696839691`), T-304, T-403, T-505 | `NOT RUN` |
 | `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `PASSED` — run `38708289449` (T-109, PR #27; `test_audit_success_denied_failed`) |
-| `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `NOT RUN` |
+| `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `PASSED` — run `38710976904` (T-105, PR #28; `test_audit_and_logs_have_no_secrets_end_to_end`) |
 | `TC-AUD-03` | **T-008** | duy nhất (D-55) | — | `PASSED` — run `38678659141` (T-008, PR #16; `test_app_role_cannot_modify_audit`) |
 | `TC-AUD-04` | **T-110** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-01` | **T-102** | duy nhất | — | `PASSED` — run `38686690047` (T-102, PR #21; `test_login_sets_secure_session_cookie`) |
@@ -350,8 +350,8 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-06` | **T-103** | duy nhất | — | `PASSED` — run `38700993783` (T-103, PR #24; `test_enrolled_admin_without_mfa_gets_mfa_required_everywhere`) |
 | `TC-IAM-07` | **T-103** | duy nhất | — | `PASSED` — run `38700993783` (T-103, PR #24; `test_unenrolled_admin_can_only_enroll_and_logout`) |
 | `TC-IAM-08` | **T-104** | D-44 (bảng 65 TC) | T-109 | `PASSED` — run `38705903816` (T-104, PR #26; `test_step_up_requires_reauth_and_password_change_revokes_other_sessions`) |
-| `TC-IAM-09` | **T-105** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-10` | **T-105** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-09` | **T-105** | duy nhất | — | `PASSED` — run `38710976904` (T-105, PR #28; `test_unusable_invitations_all_rejected_alike`) |
+| `TC-IAM-10` | **T-105** | duy nhất | — | `PASSED` — run `38710976904` (T-105, PR #28; `test_concurrent_accept_single_winner`) |
 | `TC-IAM-11` | **T-106** | duy nhất | — | `PASSED` — run `38697852135` (T-106, PR #23; `test_bootstrap_refused_when_active_admin`, `test_bootstrap_creates_first_admin`) |
 | `TC-IAM-12` | **T-106** | duy nhất | — | `PASSED` — run `38697852135` (T-106, PR #23; `test_recover_requires_confirm_then_resets_and_notifies`) |
 | `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |

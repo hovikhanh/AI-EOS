@@ -4,16 +4,19 @@ T-101: bảng và hàm băm token (INV-16). T-102: đăng nhập, session, đăn
 router của module khác (SRS-GEN-01). T-106: `bootstrap_admin`, `recover_admin` cho CLI. T-103: MFA TOTP (`MfaService`,
 `build_mfa_router`). T-104: xác thực lại, đổi mật khẩu (`StepUpService`, `build_stepup_router`,
 `Authenticator.require_step_up`, `Authenticator.revoke_sessions`). T-109: quản trị tài khoản (`UserAdmin`,
-`build_user_admin_router`). Lời mời: T-105.
+`build_user_admin_router`). T-105: tạo tài khoản + lời mời (`InvitationService`, `build_invitation_router`).
 """
 
 import aieos.identity.models  # noqa: F401 — đăng ký model vào metadata (TC-MIG-01)
 from aieos.identity.admin import AdminCommandError, bootstrap_admin, check_password, recover_admin
 from aieos.identity.auth import Authenticator, AuthSettings, LoginResult, Principal, hash_password, verify_password
+from aieos.identity.invitations import InvitationService
 from aieos.identity.mfa import MfaKeyError, MfaService, parse_totp_key
 from aieos.identity.router import (
+    ACCEPT_INVITATION_PATH,
     LOGIN_PATH,
     build_auth_router,
+    build_invitation_router,
     build_mfa_router,
     build_stepup_router,
     build_user_admin_router,
@@ -23,6 +26,8 @@ from aieos.identity.tokens import TOKEN_BYTES, hash_email, hash_token, new_token
 from aieos.identity.users import UserAdmin
 
 __all__ = [
+    "ACCEPT_INVITATION_PATH",
+    "InvitationService",
     "LOGIN_PATH",
     "TOKEN_BYTES",
     "AdminCommandError",
@@ -36,6 +41,7 @@ __all__ = [
     "Principal",
     "bootstrap_admin",
     "build_auth_router",
+    "build_invitation_router",
     "build_mfa_router",
     "build_stepup_router",
     "build_user_admin_router",
