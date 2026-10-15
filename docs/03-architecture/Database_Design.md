@@ -352,6 +352,8 @@ Không có chuyển `CLOSED → OPEN` trong MVP (trigger chặn).
 | version | int |
 | created_at, updated_at | |
 
+Migration `0012` (T-401): mã SQLSTATE riêng — `AE020` mở lại kỳ đã khóa, `AE021` INV-03, `AE022` INV-04, `AE023` INV-05/append-only, `AE024` INV-06 (bản ghi mới phải `DRAFT`), `AE025` INV-07 (kỳ phải `OPEN` và chứa `transaction_date`). Chồng lấn kỳ: `EXCLUDE USING gist (daterange(start_date, end_date, '[]') WITH &&)` (SQLSTATE `23P01`). `request_hash` 32 byte (SHA-256); `aieos_app` chỉ SELECT/INSERT trên `transaction_event`.
+
 ### `finance.transaction_event`
 Append-only: `id bigint`, `transaction_id`, `from_status`, `to_status`, `actor_id`, `reason`, `occurred_at`, `correlation_id`.
 

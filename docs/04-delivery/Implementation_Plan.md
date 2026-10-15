@@ -677,3 +677,11 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Chưa làm: tổng quan thực thi của CEO theo đơn vị (SRS-WRK-10 — số task, trễ, đúng hạn; T-509), giao diện task (frontend), liên kết mục tiêu có khóa ngoại (`objective_id` — T-501), nguồn tài liệu (T-202/T-506).
 - TC-ACC-03 (chủ T-505 tổng, D-59): phần task đạt ở `test_listing_follows_role_scope`; phần mục tiêu thuộc T-502 → chưa ghi PASS.
 
+## 36. Ghi chú triển khai T-401 (15/10/2026)
+
+- Migration `0012` (M-09): `finance.reporting_period`, `finance.transaction`, `finance.transaction_event` (append-only), `finance.approval_delegation` (dự trữ F6, không seed); model ở `finance/models.py`. Chưa có API (kỳ: T-402; giao dịch: T-403…T-406).
+- Bất biến ở CSDL theo Database_Design §8: INV-01 (CHECK người duyệt/từ chối ≠ người tạo/gửi), INV-02 (UNIQUE có điều kiện), INV-03…07 (trigger `finance.transaction_guard`, `finance.no_delete`, `finance.period_no_reopen`); bảng chuyển trạng thái INV-06 lấy từ Architecture §7.1 (ADR-009 + Amendment 1). INV-07 kiểm thêm `transaction_date` nằm trong kỳ ("kỳ của ngày giao dịch" — Architecture §7.1).
+- Lựa chọn của agent: `currency` CHECK 3 chữ in hoa (Database_Design chỉ ghi `char(3)`); `reporting_period` CHECK `CLOSED` ⇔ có `closed_by`/`closed_at`; `hold_reason` chỉ nhận `PERIOD_CLOSED` (giá trị MVP — ADR-009 Amendment 1).
+- Danh mục (`category`) là văn bản tự do (Q-42, D-51); độ dài kỳ chưa ràng buộc (mặc định tháng — `[CẦN XÁC NHẬN]` ở Database_Design).
+- Test `backend/tests/test_finance_schema.py` (8) chạy bằng role ứng dụng như tấn công qua SQL. 8 đột biến (gỡ từng bất biến) → test đỏ.
+

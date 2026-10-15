@@ -10,6 +10,7 @@ from sqlalchemy import MetaData
 
 import aieos.access.api
 import aieos.audit.api
+import aieos.finance.api
 import aieos.identity.api
 import aieos.jobs.api
 import aieos.notify.api
@@ -20,6 +21,7 @@ from aieos.platform.api import Base
 MODULE_APIS: tuple[ModuleType, ...] = (
     aieos.access.api,
     aieos.audit.api,
+    aieos.finance.api,
     aieos.identity.api,
     aieos.jobs.api,
     aieos.notify.api,
