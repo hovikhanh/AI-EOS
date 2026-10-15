@@ -1,7 +1,7 @@
 """Ứng dụng API (composition root, D-42): `uvicorn --factory aieos.app.asgi:create_app` (server: T-013).
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
-xác thực (T-102) → router (auth, MFA T-103, step-up T-104, thông báo T-010) → kiểm tra readiness.
+xác thực (T-102) → router (auth, MFA T-103, step-up T-104, quản trị T-109, thông báo T-010) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -13,6 +13,7 @@ from datetime import timedelta
 
 from fastapi import FastAPI
 
+from aieos.access.api import PermissionGuard, build_access_admin_router
 from aieos.identity.api import (
     LOGIN_PATH,
     Authenticator,
@@ -20,9 +21,11 @@ from aieos.identity.api import (
     MfaKeyError,
     MfaService,
     StepUpService,
+    UserAdmin,
     build_auth_router,
     build_mfa_router,
     build_stepup_router,
+    build_user_admin_router,
     parse_totp_key,
 )
 from aieos.notify.api import build_notify_router
@@ -101,12 +104,15 @@ def create_app() -> FastAPI:
     factory = make_session_factory(engine)
     authenticator = Authenticator(factory, auth_config)
     mfa = MfaService(authenticator, totp_key)
+    guard = PermissionGuard(factory, authenticator.require_session, require_step_up=authenticator.require_step_up)
     return create_api(
         {"database": lambda: database_ready(engine), "storage": storage.is_ready},
         (
             build_auth_router(authenticator, csrf_key),
             build_mfa_router(authenticator, mfa),
             build_stepup_router(authenticator, StepUpService(authenticator, mfa)),
+            build_user_admin_router(UserAdmin(authenticator), guard),
+            build_access_admin_router(guard, authenticator.revoke_sessions),
             build_notify_router(factory, authenticator.require_session),
         ),
         csrf=csrf,

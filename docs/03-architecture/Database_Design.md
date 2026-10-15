@@ -151,6 +151,7 @@ Xóa role: trigger `trg_last_admin_guard` từ chối nếu sau thao tác không
 | valid_from, valid_to | `valid_to` NULL = không hạn |
 | granted_by | CHECK `granted_by <> user_id` |
 | reason, created_at, revoked_at, revoked_by | |
+| idempotency_key, request_hash | text NULL; cùng NULL hoặc cùng có giá trị; **UNIQUE `(granted_by, idempotency_key)`** — API-ADM-07 `IDEMPOTENT` (INV-08); migration `0008` (T-109) |
 
 Trigger `trg_assignment_eligibility`: từ chối nếu không có role nào của user ở `role_permission.kind='ELIGIBLE'` cho permission đó.
 
