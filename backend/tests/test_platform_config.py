@@ -168,3 +168,19 @@ def test_env_example_lists_every_variable_without_values() -> None:
         assert re.fullmatch(r"AIEOS_[A-Z0-9_]+=", line), f"dòng có giá trị hoặc sai dạng: {line!r}"
     names = {line.removesuffix("=") for line in lines}
     assert names == {v.name for v in VARIABLES}
+
+
+def test_provider_keys_are_secrets_from_env_or_file(tmp_path: Path) -> None:
+    """T-204: `AIEOS_LLM_API_KEY_<NAME>` đọc như secret (kể cả `_FILE`); tên do cấu hình provider quyết định."""
+    key_file = tmp_path / "khoa"
+    key_file.write_text("khoa-tu-file\n", encoding="utf-8")
+    env = {**full_env(Process.WORKER), "AIEOS_LLM_API_KEY_MAIN": "khoa-a", "AIEOS_LLM_API_KEY_OCR_FILE": str(key_file)}
+    settings = load_settings(Process.WORKER, env)
+    main, ocr = settings.provider_key("MAIN"), settings.provider_key("ocr")
+    assert main is not None and main.reveal() == "khoa-a"
+    assert ocr is not None and ocr.reveal() == "khoa-tu-file"
+    assert settings.provider_key("KHAC") is None
+    assert "khoa-a" not in repr(settings)
+    assert load_settings(Process.ADMIN_CLI, {**full_env(Process.ADMIN_CLI), **env}).provider_key("MAIN") is None
+    with pytest.raises(ConfigError, match="AIEOS_LLM_API_KEY_MAIN"):
+        load_settings(Process.WORKER, {**env, "AIEOS_LLM_API_KEY_MAIN_FILE": str(key_file)})

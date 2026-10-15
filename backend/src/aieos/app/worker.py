@@ -1,15 +1,18 @@
 """Tiến trình worker (composition root, D-42): `python -m aieos.app worker`.
 
-Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → registry loại job của các module →
+Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → provider AI (T-204, kiểm cấu hình;
+chưa job nào dùng) → registry loại job của các module →
 `jobs.api.Worker`. Chưa module nào đăng ký loại job (T-009 chỉ dựng queue); module sau thêm vào `build_registry`.
 Chưa có `access.policy` (T-108) nên authorizer mặc định từ chối mọi job cần quyền người khởi tạo (mặc định deny).
 """
 
 import signal
+import sys
 import threading
 from types import FrameType
 
 import aieos.app.metadata  # noqa: F401 — nạp model mọi module (khóa ngoại liên module)
+from aieos.ai.api import DbCallRecorder
 from aieos.jobs.api import JobRegistry, Worker
 from aieos.platform.api import (
     Process,
@@ -18,6 +21,7 @@ from aieos.platform.api import (
     load_settings_or_exit,
     make_session_factory,
 )
+from aieos.providers.api import ProviderConfigError, client_from_settings
 
 
 def build_registry() -> JobRegistry:
@@ -30,7 +34,13 @@ def run(once: bool = False) -> int:
     configure_logging()
     engine = create_app_engine(settings)
     try:
-        worker = Worker(make_session_factory(engine), build_registry())
+        factory = make_session_factory(engine)
+        try:
+            client_from_settings(settings, recorder=DbCallRecorder(factory))
+        except ProviderConfigError as error:
+            print(f"Cấu hình không hợp lệ cho tiến trình worker: {error}", file=sys.stderr)
+            return 2
+        worker = Worker(factory, build_registry())
         if once:
             worker.reap()
             worker.tick_scheduler()

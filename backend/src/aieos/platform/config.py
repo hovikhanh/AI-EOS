@@ -129,6 +129,11 @@ class Settings:
             raise KeyError(f"{name} không được đặt")
         return value
 
+    def provider_key(self, provider: str) -> Secret | None:
+        """Khóa API của provider `AIEOS_LLM_API_KEY_<PROVIDER>` (T-204); không đặt → `None`."""
+        value = self._values.get(LLM_API_KEY_PREFIX + provider.upper())
+        return value if isinstance(value, Secret) else None
+
     def _lookup(self, name: str, kind: Kind) -> str | Secret | None:
         variable = _BY_NAME.get(name)
         if variable is None or variable.kind is not kind or self.process not in variable.processes:
@@ -171,6 +176,12 @@ def load_settings(process: Process, environ: Mapping[str, str] | None = None) ->
         raw = _read(variable, env, problems)
         if raw is not None:
             values[variable.name] = Secret(raw) if variable.kind is Kind.SECRET else raw
+    if process in _API_WORKER:
+        names = {k.removesuffix(FILE_SUFFIX) for k in env if k.startswith(LLM_API_KEY_PREFIX)}
+        for name in sorted(names):  # tên do cấu hình provider quyết định; bắt buộc hay không: T-204 kiểm
+            raw = _read(Variable(name, Kind.SECRET, _API_WORKER, required=False), env, problems)
+            if raw is not None:
+                values[name] = Secret(raw)
     if problems:
         raise ConfigError(process, problems)
     return Settings(process, values)
