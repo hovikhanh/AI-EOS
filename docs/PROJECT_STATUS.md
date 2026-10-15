@@ -3,20 +3,20 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 15/10/2026 (T-101 đang review; D-57)
-**Commit tham chiếu:** `46fa612` (`main`, PR #18 — T-007); T-101 trên branch `feat/T-101-identity-tables`
-**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 10/13 task `DONE`. Kế hoạch đã được duyệt (D-46). T-101 đang review. **3 task đủ điều kiện bắt đầu:** T-003, T-010, T-204 (T-013 còn chờ T-003).
+**Cập nhật lần cuối:** 15/10/2026 (T-101 `DONE`; D-57)
+**Commit tham chiếu:** `46fa612` (`main`, PR #18 — T-007); T-101: PR #19 (branch `feat/T-101-identity-tables`, CI run `38683463269` xanh)
+**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 10/13 task `DONE`; P1: T-101 `DONE`. Kế hoạch đã được duyệt (D-46). **5 task đủ điều kiện bắt đầu:** T-003, T-010, T-102, T-107, T-204 (T-013 còn chờ T-003).
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
 
 ## 1. Tóm tắt nhanh
 
 - Tổng task: **83** (thêm T-308, T-513 theo D-49)
-- DONE: **10** — T-001, T-002, T-004, T-005, T-006, T-007, T-008, T-009, T-011, T-012 (T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
-- IN_REVIEW: **1** — T-101
+- DONE: **11** — T-001, T-002, T-004, T-005, T-006, T-007, T-008, T-009, T-011, T-012, T-101 (T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
+- IN_REVIEW: **0**
 - BLOCKED: **10** — T-407, T-604, T-901…T-908
 - TODO: **62** (`READY` 54, `PARTIAL` 8; chưa bắt đầu)
-- Task đủ điều kiện bắt đầu ngay: **3** — T-003, T-010, T-204
+- Task đủ điều kiện bắt đầu ngay: **5** — T-003, T-010, T-102, T-107, T-204
 - Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend
 - Test case: **206** (199 + TC-FE-01…07); **19 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…05), 187 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
@@ -62,13 +62,13 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 
 | Task | Trạng thái | Ghi chú ngắn |
 |------|------------|--------------|
-| T-101 | IN_REVIEW | Bảng `identity.*` (migration `0004`), token chỉ lưu hash (INV-16); chờ CI của PR |
-| T-102 | TODO | READY · Đăng nhập, session; chờ T-101 (rate limit: biến cấu hình D-57) |
+| T-101 | DONE | Bảng `identity.*` (migration `0004`), token chỉ lưu hash (INV-16); run `38683463269` |
+| T-102 | TODO | READY · **đủ điều kiện bắt đầu** · Đăng nhập, session (rate limit: biến cấu hình D-57) |
 | T-103 | TODO | READY · MFA TOTP; chờ T-102 |
 | T-104 | TODO | READY · Step-up, đổi mật khẩu; chờ T-102 |
 | T-105 | TODO | READY · Lời mời; chờ T-102, T-108 |
-| T-106 | TODO | READY · CLI bootstrap/recover admin; chờ T-101, T-107 |
-| T-107 | TODO | READY · Bảng `access.*`, seed; chờ T-101 |
+| T-106 | TODO | READY · CLI bootstrap/recover admin; chờ T-107 |
+| T-107 | TODO | READY · **đủ điều kiện bắt đầu** · Bảng `access.*`, seed role/permission |
 | T-108 | TODO | PARTIAL (định nghĩa "team" PROPOSED) · `authorize()`; chờ T-107 |
 | T-109 | TODO | READY · API quản trị; chờ T-108, T-104 |
 | T-110 | TODO | READY · Audit, trang tình trạng; chờ T-109; TC-FIN-14 cần thêm T-401 hoặc T-402 (OPEN_DECISIONS 0.2) |
@@ -175,7 +175,7 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 
 ## 5. Việc nên làm tiếp theo (sau khi có quyết định)
 
-1. Hoàn tất PR T-101 (CI xanh → T-101 `DONE`).
+1. Merge PR #19 (T-101) khi CDA đồng ý.
 2. Tiếp theo đường găng demo: **T-101** → **T-102** (đăng nhập) → T-107 → T-108; **T-003** song song.
 3. T-013 khi T-003 xong → T-605 về sau.
 4. CDA điền OPEN_DECISIONS mục 0 trước khi tới T-204 (D-50) và T-108 (TC-ACC-10).
@@ -185,7 +185,7 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 **Phiên 15/10/2026 (lần 6) — T-101:**
 - PR #18 (T-007) merge → `46fa612`, CI `main` run `38682923035` xanh.
 - D-57 (CDA): rate limit là biến cấu hình bắt buộc, không mặc định — tên biến ở Implementation_Plan §7.
-- T-101: migration `0004` + module `identity` (bảng, hàm băm token); `scripts/ci.sh` local rc 0; 4 đột biến → test đỏ. Chi tiết: Implementation_Plan §10, §21.
+- T-101: migration `0004` + module `identity` (bảng, hàm băm token); `scripts/ci.sh` local rc 0; 4 đột biến → test đỏ. PR #19, CI run `38683463269` xanh (221 passed, 0 skipped) → T-101 `DONE`. Chi tiết: Implementation_Plan §10, §21.
 
 **Phiên 15/10/2026 (lần 5) — T-007:**
 - PR #17 (T-009) merge → `f012775`, CI `main` run `38680968482` xanh.
