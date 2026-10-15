@@ -12,9 +12,16 @@ import aieos.access.api
 import aieos.audit.api
 import aieos.identity.api
 import aieos.jobs.api
+import aieos.notify.api
 from aieos.platform.api import Base
 
-MODULE_APIS: tuple[ModuleType, ...] = (aieos.access.api, aieos.audit.api, aieos.identity.api, aieos.jobs.api)
+MODULE_APIS: tuple[ModuleType, ...] = (
+    aieos.access.api,
+    aieos.audit.api,
+    aieos.identity.api,
+    aieos.jobs.api,
+    aieos.notify.api,
+)
 
 
 def metadata() -> MetaData:

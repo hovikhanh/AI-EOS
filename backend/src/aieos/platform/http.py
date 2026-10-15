@@ -10,6 +10,8 @@
   kèm dấu vân tay request; `run_idempotent` trả lại kết quả cũ khi cùng khóa + cùng nội dung, `409
   IDEMPOTENCY_KEY_REUSED` khi khác nội dung, an toàn khi hai request đồng thời (savepoint + ràng buộc UNIQUE).
 - **Đồng thời (SRS-GEN-04, §1.7):** `etag`, `require_if_match` (thiếu → 428), `check_version` (lệch → 412).
+- **Phân trang (§1.8):** `?limit=` (mặc định `PAGE_DEFAULT_LIMIT`, tối đa `PAGE_MAX_LIMIT`) `&cursor=`; cursor là chuỗi
+  mờ (base64url của danh sách khóa sắp xếp) — `encode_cursor`/`decode_cursor`; cursor hỏng → `422 VALIDATION_ERROR`.
 - **Giới hạn tốc độ (§1.9):** `RateLimiter` cửa sổ trượt trong bộ nhớ tiến trình; giới hạn do nơi gọi truyền (tài liệu
   chưa có giá trị). Giới hạn theo từng tiến trình API — `[CẦN XÁC NHẬN]` khi chạy nhiều worker ASGI
   (Implementation_Plan §20).
@@ -193,6 +195,28 @@ def require_if_match(value: str | None) -> int:
 def check_version(current: int, expected: int) -> None:
     if current != expected:
         raise ApiError("VERSION_CONFLICT")
+
+
+# ---------- Phân trang ----------
+
+PAGE_DEFAULT_LIMIT = 20
+PAGE_MAX_LIMIT = 100
+
+
+def encode_cursor(values: Iterable[str]) -> str:
+    raw = json.dumps(list(values), separators=(",", ":")).encode()
+    return base64.urlsafe_b64encode(raw).decode().rstrip("=")
+
+
+def decode_cursor(cursor: str, parts: int) -> list[str]:
+    """Giải cursor của `encode_cursor`; sai định dạng hoặc sai số phần → `422 VALIDATION_ERROR` (trường `cursor`)."""
+    try:
+        values = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+    except ValueError:
+        values = None
+    if not isinstance(values, list) or len(values) != parts or not all(isinstance(v, str) for v in values):
+        raise ApiError("VALIDATION_ERROR", errors=[{"field": "cursor", "message": "cursor không hợp lệ"}])
+    return values
 
 
 # ---------- Giới hạn tốc độ ----------

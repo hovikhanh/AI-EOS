@@ -399,6 +399,7 @@ Phân vùng theo tháng khi cần. Không có cột chứa token/mật khẩu.
 
 ### `notify.notification`
 `id`, `user_id`, `type`, `title`, `body` (không chứa dữ liệu nhạy cảm), `link`, `created_at`, `read_at`.
+Migration `0006` (T-010): `type`, `title` không rỗng; `link` NULL hoặc đường dẫn nội bộ (`^/([^/\\]|$)` — không URL tuyệt đối, `//`, `/\`); `read_at ≥ created_at`; index `(user_id, read_at)` và `(user_id, created_at, id)` cho phân trang; `aieos_app` không DELETE.
 
 ## 10. Quy tắc migration
 

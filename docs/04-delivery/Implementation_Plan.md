@@ -541,3 +541,12 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - IP lấy từ kết nối (`request.client.host`); sau reverse proxy (T-003) cần cấu hình nguồn IP tin cậy — `[CẦN XÁC NHẬN]` khi làm T-003/T-013.
 - Ngoài phạm vi: API MFA (T-103), reauth/đổi mật khẩu/thu hồi session khi đổi role (T-104, T-109), lời mời (T-105), phạm vi quyền (T-108).
 - **D-58 (15/10/2026):** T-010 thêm dependency T-102; T-106 thêm dependency T-010; TC-NTF-01 chủ T-510 (tách phần ở T-304, T-403, T-505); `AIEOS_PASSWORD_MIN_LENGTH` là biến cấu hình bắt buộc.
+
+## 24. Ghi chú triển khai T-010 (15/10/2026)
+
+- Vị trí: module `notify` (`service.py`, `router.py`); migration `0006` (phần `notify` của M-05, D-56); `app/asgi.py` lắp router với dependency `Authenticator.require_session` (session đủ MFA). Phân trang cursor dùng chung ở `platform/http.py` (`encode_cursor`, `decode_cursor`, `PAGE_DEFAULT_LIMIT` = 20, `PAGE_MAX_LIMIT` = 100 theo API_Specification §1.8).
+- Module khác tạo thông báo bằng `notify.api.notify(session, user_id=, type=, title=, link=, body=)` trong transaction của thao tác nghiệp vụ (thông báo chỉ tồn tại khi thao tác được ghi). `type` là chuỗi tự do — danh mục loại thông báo do task phát sinh sự kiện đặt (T-106, T-304, T-403, T-505…); chưa có tài liệu liệt kê.
+- SRS-NTF-02 (không dữ liệu nhạy cảm): CSDL/service không kiểm được nội dung; trách nhiệm ở module gọi và được kiểm ở phần TC-NTF-01 của T-304, T-403, T-505 (D-58). T-010 bảo đảm: chỉ người nhận đọc/đánh dấu được (người khác → `404`), `link` chỉ là đường dẫn nội bộ (service + CHECK CSDL) — quyết định kỹ thuật của agent để thông báo không dẫn ra ngoài hệ thống.
+- API-NOT-02 trả `200` kèm thông báo (API_Specification §8 không ghi response; chọn để frontend cập nhật ngay); gọi lại giữ nguyên `read_at`.
+- Ngoài phạm vi: số chưa đọc, lọc theo trạng thái, dọn thông báo cũ (cần DELETE + chính sách lưu trữ), giao diện chuông thông báo (T-111/T-513).
+

@@ -258,6 +258,9 @@ Request `{ "reason": "Nhập sai số tiền" }` → `201` bút toán đảo `DR
 | API-SYS-01 | GET | `/health/live` | công khai | Tiến trình sống | ADR-012 |
 | API-SYS-02 | GET | `/health/ready` | công khai, không lộ chi tiết | CSDL, storage, migration | ADR-012 |
 
+**API-NOT-01** (T-010) phân trang cursor §1.8; mới nhất trước → `200 { "items": [{ "id", "type", "title", "body", "link", "created_at", "read_at" }], "next_cursor": "..." | null }`; `limit`/`cursor` sai → `422 VALIDATION_ERROR`. Chỉ trả thông báo của người đang đăng nhập.
+**API-NOT-02** (T-010) → `200` thông báo sau khi đánh dấu (gọi lại không đổi `read_at`); thông báo của người khác hoặc không tồn tại → `404 NOT_FOUND`. `link` luôn là đường dẫn nội bộ (bắt đầu bằng một `/`).
+
 ---
 
 ## 9. Ngoài MVP
