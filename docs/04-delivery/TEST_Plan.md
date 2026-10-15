@@ -331,12 +331,12 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-GEN-05` | **T-007** | D-44 (bảng 65 TC) | T-006, T-603 | `NOT RUN` |
 | `TC-GEN-06` | **T-102** | D-44 (bảng 65 TC) | T-007 | `NOT RUN` |
 | `TC-GEN-07` | **T-111** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-01` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-02` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-03` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-04` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-01` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_concurrent_claim_single_winner`) |
+| `TC-JOB-02` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_reaper_requeues_then_dead`) |
+| `TC-JOB-03` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_crash_before_commit_yields_single_result, test_stale_worker_cannot_commit_after_reap`) |
+| `TC-JOB-04` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_enqueue_rolled_back_with_business_change`) |
 | `TC-JOB-05` | **T-203** | D-56 | T-009 (cơ chế kiểm tra quyền lúc chạy, authorizer giả lập) | `NOT RUN` |
-| `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `NOT RUN` |
+| `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `PASSED` — run `38680383606` (T-009, PR #17; quét tĩnh + ca vi phạm) |
 | `TC-NTF-01` | **T-010** | duy nhất | — | `NOT RUN` |
 | `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `NOT RUN` |
 | `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `NOT RUN` |
