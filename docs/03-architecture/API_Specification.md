@@ -104,6 +104,11 @@ Không có endpoint đăng ký công khai. Bootstrap và khôi phục ADMIN ch�
 
 **API-ADM-05** request `{ "roles": ["MANAGER"], "reason": "..." }` → `200` user mới, `ETag`; lỗi: `403 SELF_ROLE_CHANGE`, `409 LAST_ADMIN`, `412 VERSION_CONFLICT`, `422 ROLE_COMBINATION_FORBIDDEN`, `401 REAUTH_REQUIRED`.
 
+Chi tiết T-105:
+- **API-ADM-02** `{ "email", "display_name", "roles": [...], "reason" }` + `Idempotency-Key` → `201 { "user": {…}, "invitation": { "link": "/invite#token=…", "expires_at" } }`, `Cache-Control: no-store`. Link chỉ trả **một lần**: gọi lại cùng khóa + cùng nội dung → `201` cùng `user`, `invitation: null` (token chỉ lưu hash — dùng API-ADM-03 để cấp lại). Có `roles` thì cần thêm `role.assign`. Email đã có → `422` (trường `email`); `ADMIN`+`CFO` → `422 ROLE_COMBINATION_FORBIDDEN`. Token đặt trong fragment (`#`) để không tới máy chủ/log khi mở trang; trang `/invite` thuộc frontend (T-111). Hạn: `AIEOS_INVITE_TTL_HOURS`.
+- **API-ADM-03** → `201 { "link", "expires_at" }`; thu hồi lời mời còn hiệu lực; tài khoản không còn `INVITED` → `409 INVALID_STATE`.
+- **API-AUTH-08** (công khai, miễn CSRF token, vẫn kiểm `Origin`) `{ "token", "password" }` → `204` (tài khoản `ACTIVE`; đăng nhập lại qua API-AUTH-01); mật khẩu không đạt `AIEOS_PASSWORD_MIN_LENGTH` → `422` (kiểm trước token); token sai/hết hạn/đã dùng/đã thu hồi → `400 INVITATION_INVALID` cùng nội dung; rate limit theo IP và token.
+
 Chi tiết T-109:
 - User (API-ADM-01/04/05): `{ "id", "email", "display_name", "status", "roles": [...], "mfa_enabled", "created_at", "version" }`; `ETag` = `"<version>"` (tăng khi đổi trạng thái hoặc role). API-ADM-01 phân trang cursor §1.8 (mới nhất trước).
 - **API-ADM-04** `{ "status": "ACTIVE" | "LOCKED" | "DISABLED", "reason": "..." (tùy chọn) }` → `200` user + `ETag`. Tài khoản `INVITED` → `409 INVALID_STATE` (kích hoạt qua lời mời, T-105); tự đổi trạng thái của mình → `403 FORBIDDEN`; rời `ACTIVE` → thu hồi mọi session; về `ACTIVE` → xóa khóa tạm.

@@ -36,6 +36,7 @@ class UserAccountRow(Base):
     __table_args__ = (
         UniqueConstraint("email"),
         UniqueConstraint("employee_id"),
+        UniqueConstraint("created_by", "idempotency_key"),
         CheckConstraint("status IN ('INVITED', 'ACTIVE', 'LOCKED', 'DISABLED')", name="status"),
         CheckConstraint("(status = 'INVITED') = (password_hash IS NULL)", name="password_iff_not_invited"),
         CheckConstraint("NOT mfa_enabled OR mfa_secret_enc IS NOT NULL", name="mfa_secret"),
@@ -43,6 +44,7 @@ class UserAccountRow(Base):
         CheckConstraint("version >= 1", name="version"),
         CheckConstraint("display_name <> ''", name="display_name"),
         CheckConstraint("mfa_last_step >= 0", name="mfa_last_step"),
+        CheckConstraint("(idempotency_key IS NULL) = (request_hash IS NULL)", name="idempotency_hash"),
         _SCHEMA,
     )
 
@@ -62,6 +64,8 @@ class UserAccountRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     version: Mapped[int] = mapped_column(Integer, server_default=text("1"))
+    idempotency_key: Mapped[str | None] = mapped_column(Text)  # 0009 (T-105, INV-08)
+    request_hash: Mapped[str | None] = mapped_column(Text)
 
 
 class SessionRow(Base):

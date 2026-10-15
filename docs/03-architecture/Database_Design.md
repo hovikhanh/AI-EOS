@@ -86,6 +86,7 @@ erDiagram
 | mfa_enabled | boolean | NOT NULL default false |
 | must_enroll_mfa | boolean | true với ADMIN cho đến khi đăng ký |
 | mfa_last_step | bigint NULL, CHECK `>= 0` | Bước TOTP (Unix time / 30) được chấp nhận gần nhất — chống dùng lại mã (RFC 6238 §5.2); migration `0007` (T-103) |
+| idempotency_key, request_hash | text NULL; cùng NULL hoặc cùng có giá trị; **UNIQUE `(created_by, idempotency_key)`** — API-ADM-02 `IDEMPOTENT` (INV-08); migration `0009` (T-105) |
 | failed_login_count | int | default 0 |
 | locked_until | timestamptz | NULL |
 | employee_id | uuid | FK `org.employee`, NULL, UNIQUE |

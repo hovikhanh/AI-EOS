@@ -607,3 +607,14 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Audit (SRS-AUD-01, TC-AUD-01): thành công ghi trong cùng transaction (`access.role.grant/revoke`, `access.assignment.*`, `identity.user.status`); từ chối quyền `access.denied` `DENIED`; lỗi nghiệp vụ `FAILED` (transaction riêng, `reason` = mã lỗi).
 - API-ADM-02/03 (tạo tài khoản, lời mời) thuộc T-105; API-ADM-10/11 thuộc T-110.
 
+## 30. Ghi chú triển khai T-105 (15/10/2026)
+
+- Vị trí: `identity/invitations.py` (`InvitationService`: `create_user`, `reissue`, `accept`), `identity/router.py` (`build_invitation_router`: API-ADM-02, API-ADM-03, API-AUTH-08); `app/asgi.py` thêm `POST /auth/invitations/accept` vào `PUBLIC_PATHS` và `CSRF_EXEMPT_PATHS` (API_Specification §1.2), đọc `AIEOS_INVITE_TTL_HOURS` (bắt buộc, không mặc định; 72 giờ của SRS-IAM-02 là `PROPOSED` — không đặt làm mặc định).
+- Chính sách mật khẩu: chỉ độ dài `AIEOS_PASSWORD_MIN_LENGTH` (D-58); "không nằm trong danh sách mật khẩu phổ biến" (SRS-IAM-03) vẫn `PROPOSED` — chưa làm.
+- Link mời `/invite#token=…` (fragment không gửi tới máy chủ, không vào log/Referer); trang thuộc T-111. Gọi lại API-ADM-02 cùng khóa không trả lại link (chỉ lưu hash — INV-16) → `invitation: null`; cấp lại qua API-ADM-03. Lựa chọn của agent, ghi ở API_Specification §3.
+- Migration `0009`: `identity.user_account.idempotency_key`, `request_hash`, UNIQUE `(created_by, idempotency_key)` (INV-08). Test INV-16 cho phép `request_hash` (dấu vân tay request, không phải token).
+- Một lần dùng: `UPDATE invitation … WHERE used_at IS NULL AND revoked_at IS NULL AND expires_at > now() RETURNING` + `UPDATE user_account … WHERE status = 'INVITED'` trong một transaction — hai lớp độc lập (bỏ một lớp vẫn đúng; bỏ cả hai thì test đỏ). TC-IAM-10: 4 request đồng thời → đúng một thành công.
+- Không có API "Admin hủy lời mời" riêng (SRS-IAM-02 nêu thu hồi khi Admin hủy) — API_Specification chưa thiết kế; hiện thu hồi khi cấp lại. `[CẦN XÁC NHẬN]` có cần endpoint hủy riêng.
+- Tài khoản tạo với role `ADMIN` được đặt `must_enroll_mfa = true`. Tạo kèm role cần thêm `role.assign` (ngoài `user.manage`).
+- TC-AUD-02 đạt tổng ở T-105 (D-55): một luồng đầu-cuối gồm đăng nhập sai/đúng, đăng ký MFA (mã sai/đúng), reauth bằng TOTP, đổi mật khẩu, tạo + chấp nhận lời mời (thành công và dùng lại) — audit và log không chứa mật khẩu, token session, CSRF, secret TOTP, mã TOTP, mã khôi phục, token mời.
+

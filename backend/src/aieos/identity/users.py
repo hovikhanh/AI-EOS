@@ -103,6 +103,11 @@ class UserAdmin:
             return self._locked(session, user_id, lock=False)
 
     @staticmethod
+    def view(session: Session, user_id: uuid.UUID, *, lock: bool = False) -> UserView:
+        """Tài khoản theo id trong transaction của nơi gọi; không có → `404 NOT_FOUND`."""
+        return UserAdmin._locked(session, user_id, lock=lock)
+
+    @staticmethod
     def _locked(session: Session, user_id: uuid.UUID, *, lock: bool = True) -> UserView:
         row = session.execute(
             text(f"SELECT {_COLUMNS} FROM identity.user_account WHERE id = :i" + (" FOR UPDATE" if lock else "")),

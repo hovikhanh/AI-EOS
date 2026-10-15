@@ -51,6 +51,8 @@ def test_secret_columns_are_sha256_hashes_only() -> None:
                     continue
                 if column.name == "password_hash":
                     continue  # chuỗi Argon2id đã mã hóa (ADR-006), không phải token
+                if column.name == "request_hash":
+                    continue  # dấu vân tay request cho idempotency (INV-08, migration 0009), không phải token
                 assert column.name.endswith("_hash"), column.name
                 assert isinstance(column.type, LargeBinary), column.name
     assert ("session", "token_hash") in found and ("invitation", "token_hash") in found
