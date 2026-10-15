@@ -324,11 +324,11 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 
 | TC | Task chủ | Căn cứ | Bằng chứng thành phần | Trạng thái |
 | --- | --- | --- | --- | --- |
-| `TC-GEN-01` | **T-007** | duy nhất | — | `NOT RUN` |
-| `TC-GEN-02` | **T-007** | duy nhất | — | `NOT RUN` |
-| `TC-GEN-03` | **T-007** | D-44 (bảng 65 TC) | T-603 | `NOT RUN` |
-| `TC-GEN-04` | **T-007** | D-44 (bảng 65 TC) | T-603 | `NOT RUN` |
-| `TC-GEN-05` | **T-007** | D-44 (bảng 65 TC) | T-006, T-603 | `NOT RUN` |
+| `TC-GEN-01` | **T-007** | duy nhất | — | `PASSED` — run `38681777001` (T-007, PR #18; `test_post_without_csrf_token_rejected`) |
+| `TC-GEN-02` | **T-007** | duy nhất | — | `PASSED` — run `38681777001` (T-007, PR #18; `test_csrf_ok_but_foreign_origin_rejected`) |
+| `TC-GEN-03` | **T-007** | D-44 (bảng 65 TC) | T-603 | `PASSED` — run `38681777001` (T-007, PR #18; route thử, tuần tự + đồng thời) |
+| `TC-GEN-04` | **T-007** | D-44 (bảng 65 TC) | T-603 | `PASSED` — run `38681777001` (T-007, PR #18; route thử) |
+| `TC-GEN-05` | **T-007** | D-44 (bảng 65 TC) | T-006, T-603 | `PASSED` — run `38681777001` (T-007, PR #18; If-Match 412/428, lỗi 500 problem+json) |
 | `TC-GEN-06` | **T-102** | D-44 (bảng 65 TC) | T-007 | `NOT RUN` |
 | `TC-GEN-07` | **T-111** | duy nhất | — | `NOT RUN` |
 | `TC-JOB-01` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_concurrent_claim_single_winner`) |
