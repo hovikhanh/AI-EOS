@@ -7,13 +7,12 @@ của người khác → `404 NOT_FOUND` (API_Specification §1.4). Phân trang 
 import uuid
 from collections.abc import Callable
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Protocol
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
 
-from aieos.identity.api import Principal
 from aieos.notify.service import Notification, list_for_user, mark_read
 from aieos.platform.api import (
     PAGE_DEFAULT_LIMIT,
@@ -23,6 +22,14 @@ from aieos.platform.api import (
     encode_cursor,
     transaction,
 )
+
+
+class Recipient(Protocol):
+    """Người dùng của request (vd. `identity.api.Principal`); `notify` không import `identity` để `identity` gọi được
+    `notify()` (T-106) mà không tạo vòng import."""
+
+    @property
+    def user_id(self) -> uuid.UUID: ...
 
 
 class NotificationOut(BaseModel):
@@ -54,9 +61,9 @@ def _after(cursor: str | None) -> tuple[datetime, uuid.UUID] | None:
         raise ApiError("VALIDATION_ERROR", errors=[{"field": "cursor", "message": "cursor không hợp lệ"}]) from None
 
 
-def build_notify_router(factory: sessionmaker[Session], require_session: Callable[..., Principal]) -> APIRouter:
+def build_notify_router(factory: sessionmaker[Session], require_session: Callable[..., Recipient]) -> APIRouter:
     router = APIRouter(tags=["notifications"])
-    signed_in = Annotated[Principal, Depends(require_session)]
+    signed_in = Annotated[Recipient, Depends(require_session)]
 
     @router.get("/notifications", response_model=NotificationPage)
     def list_notifications(
