@@ -1,7 +1,7 @@
 """Ứng dụng API (composition root, D-42): `uvicorn --factory aieos.app.asgi:create_app` (server: T-013).
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
-xác thực (T-102) → router → kiểm tra readiness.
+xác thực (T-102) → router (auth, thông báo T-010) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -14,6 +14,7 @@ from datetime import timedelta
 from fastapi import FastAPI
 
 from aieos.identity.api import LOGIN_PATH, Authenticator, AuthSettings, build_auth_router
+from aieos.notify.api import build_notify_router
 from aieos.platform.api import (
     API_PREFIX,
     CsrfConfig,
@@ -83,9 +84,10 @@ def create_app() -> FastAPI:
     csrf_key = settings.secret("AIEOS_CSRF_KEY")
     csrf = CsrfConfig(csrf_key, origins, CSRF_EXEMPT_PATHS)
     engine = create_app_engine(settings)
-    authenticator = Authenticator(make_session_factory(engine), auth_config)
+    factory = make_session_factory(engine)
+    authenticator = Authenticator(factory, auth_config)
     return create_api(
         {"database": lambda: database_ready(engine), "storage": storage.is_ready},
-        (build_auth_router(authenticator, csrf_key),),
+        (build_auth_router(authenticator, csrf_key), build_notify_router(factory, authenticator.require_session)),
         csrf=csrf,
     )
