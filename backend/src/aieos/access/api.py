@@ -1,9 +1,24 @@
 """Interface công khai của `access` (ADR-007, Architecture §3 quy tắc 1).
 
-T-107: bảng, seed role/permission, bất biến INV-09/10/11 ở CSDL và service ghi role/assignment. Policy
-`authorize()` thuộc T-108; API quản trị thuộc T-109.
+T-107: bảng, seed role/permission, bất biến INV-09/10/11 ở CSDL và service ghi role/assignment. T-108: policy
+`authorize()`, `require()`, `scope_filter()`, `PermissionGuard` (`policy.py`). API quản trị thuộc T-109.
 """
 
+from aieos.access.policy import (
+    ALLOW,
+    FINANCE,
+    NO_ORG,
+    Actor,
+    Decision,
+    Grant,
+    OrgScope,
+    PermissionGuard,
+    Resource,
+    authorize,
+    load_actor,
+    require,
+    scope_filter,
+)
 from aieos.access.service import (
     ScopeType,
     active_admins,
@@ -17,6 +32,19 @@ from aieos.access.service import (
 )
 
 __all__ = [
+    "ALLOW",
+    "FINANCE",
+    "NO_ORG",
+    "Actor",
+    "Decision",
+    "Grant",
+    "OrgScope",
+    "PermissionGuard",
+    "Resource",
+    "authorize",
+    "load_actor",
+    "require",
+    "scope_filter",
     "ScopeType",
     "active_admins",
     "create_assignment",

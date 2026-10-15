@@ -15,9 +15,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from aieos.notify.service import Notification, list_for_user, mark_read
 from aieos.platform.api import (
+    AUTHENTICATED,
     PAGE_DEFAULT_LIMIT,
     PAGE_MAX_LIMIT,
     ApiError,
+    declare,
     decode_cursor,
     encode_cursor,
     transaction,
@@ -65,7 +67,7 @@ def build_notify_router(factory: sessionmaker[Session], require_session: Callabl
     router = APIRouter(tags=["notifications"])
     signed_in = Annotated[Recipient, Depends(require_session)]
 
-    @router.get("/notifications", response_model=NotificationPage)
+    @router.get("/notifications", response_model=NotificationPage, **declare(AUTHENTICATED))
     def list_notifications(
         principal: signed_in,
         limit: Annotated[int, Query(ge=1, le=PAGE_MAX_LIMIT)] = PAGE_DEFAULT_LIMIT,
@@ -81,7 +83,7 @@ def build_notify_router(factory: sessionmaker[Session], require_session: Callabl
             next_cursor = encode_cursor((last.created_at.isoformat(), str(last.id)))
         return NotificationPage(items=[_out(item) for item in items], next_cursor=next_cursor)
 
-    @router.post("/notifications/{notification_id}/read", response_model=NotificationOut)
+    @router.post("/notifications/{notification_id}/read", response_model=NotificationOut, **declare(AUTHENTICATED))
     def read_notification(principal: signed_in, notification_id: uuid.UUID) -> NotificationOut:
         with transaction(factory) as session:
             item = mark_read(session, user_id=principal.user_id, notification_id=notification_id)

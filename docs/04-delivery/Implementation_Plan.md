@@ -573,3 +573,14 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - TC-IAM-06/07: test gọi **mọi** endpoint của `create_app` bằng session chờ MFA — API quản trị chưa có (T-105, T-109) sẽ tự thuộc phạm vi kiểm khi được thêm.
 - Ngoài phạm vi: reauth/step-up (T-104), giao diện đăng ký MFA (T-111).
 
+## 27. Ghi chú triển khai T-108 (15/10/2026)
+
+- Vị trí: `access/policy.py` (`load_actor`, `authorize`, `require`, `scope_filter`, `PermissionGuard`, `OrgScope`); `platform/web.py` (`declare`, dependency toàn cục từ chối route không khai báo). Đúng Architecture §3 quy tắc 5 (mọi quyết định quyền qua `access.policy.authorize`).
+- Mặc định deny: không có permission → `NO_PERMISSION`; có permission nhưng đối tượng ngoài phạm vi → `OUT_OF_SCOPE`. `require(..., hide=True)` trả `404 NOT_FOUND` (API_Specification §1.4, ADR-007), route-level trả `403 FORBIDDEN` + audit `access.denied` (SECURITY, DENIED, không ghi dữ liệu nghiệp vụ).
+- Khai báo quyền cho route (SRS-ACC-09, TC-ACC-02): `PUBLIC` (khớp đúng API_Specification §1.2 — test đối chiếu `PUBLIC_PATHS`), `AUTHENTICATED` (chỉ cần session: `/auth/me`, đăng xuất, API MFA, thông báo) hoặc mã permission qua `PermissionGuard.route(...)` (khai báo và kiểm tra đi cùng nhau). Dependency toàn cục chạy trước mọi dependency của route, áp cả route ẩn khỏi OpenAPI → route quên khai báo bị `403` (fail-closed).
+- Phạm vi (SRS-ACC-03, Architecture §6): quyền nền theo role — CEO toàn công ty; CFO tài chính toàn công ty + của mình; MANAGER đơn vị quản lý và cấp dưới; EMPLOYEE của mình; ADMIN không có `data.read`. Assignment: `COMPANY`, `ORG_UNIT` (cây con), `DOCUMENT_TYPE`, `REVIEW_QUEUE`. Tài nguyên quản trị (`business=False`) chỉ xét permission.
+- Phần **chưa làm** (task `PARTIAL`, CDA 15/10/2026 cho bỏ qua): "team" của EMPLOYEE (SRS-ACC-04, TC-ACC-10 — định nghĩa còn mở ở mục 0 OPEN_DECISIONS) và "mục tiêu cha" (cần module `goals`) → hiện từ chối (mặc định deny).
+- Cây tổ chức: `access` không đọc bảng `org.*` — `OrgScope` (đơn vị do người dùng quản lý, cây con) do T-201 cài; trước đó `NO_ORG` (MANAGER chỉ thấy dữ liệu của mình). `Resource.org_units` = đơn vị của đối tượng và các cấp trên (nơi gọi cung cấp).
+- `PermissionGuard` chưa gắn vào router nào của `create_app` (chưa có endpoint cần permission nghiệp vụ); T-109, T-201… dùng khi thêm route.
+- TC-ACC-03: không chạy đủ kịch bản ở T-108 (task/mục tiêu, `org.*` chưa có) — Q-52 `[CẦN XÁC NHẬN]`; T-108 ghi bằng chứng thành phần (`scope_filter` trên bảng thử).
+

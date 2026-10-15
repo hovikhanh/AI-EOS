@@ -10,6 +10,10 @@
 - Lỗi (T-007, SRS-GEN-05): mọi lỗi trả `application/problem+json` có `correlation_id` — `ApiError`, lỗi định tuyến
   (404/405), lỗi validation (422, không lặp lại giá trị đầu vào), lỗi không lường trước (500 `INTERNAL_ERROR`, không
   stack trace, vẫn có header `X-Request-ID`).
+- Khai báo quyền (T-108, SRS-ACC-02/09, ADR-007 "mặc định deny"): mọi route phải khai báo bằng `declare(...)` —
+  `PUBLIC` (API_Specification §1.2), `AUTHENTICATED` (chỉ cần session) hoặc mã permission (khai báo qua
+  `access.api.PermissionGuard`, kèm kiểm tra). Dependency toàn cục chạy **trước** mọi dependency của route: route không
+  khai báo → `403 FORBIDDEN` (TC-ACC-02), kể cả route ẩn khỏi OpenAPI.
 """
 
 import logging
@@ -19,7 +23,7 @@ import uuid
 from collections.abc import Callable, Mapping
 from typing import Any
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -30,6 +34,9 @@ from aieos.platform.http import CsrfConfig, CsrfMiddleware
 from aieos.platform.logs import CORRELATION_ID
 
 API_PREFIX = "/api/v1"
+PERMISSION_EXTRA = "x-aieos-permission"
+PUBLIC = "PUBLIC"
+AUTHENTICATED = "AUTHENTICATED"
 REQUEST_ID_HEADER = "x-request-id"
 _VALID_REQUEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{7,127}")
 
@@ -132,13 +139,38 @@ def _install_error_handlers(app: FastAPI) -> None:
         return response
 
 
+def declare(permission: str) -> dict[str, Any]:
+    """Tham số cho `@router.<method>(..., **declare(...))`: ghi khai báo quyền vào route (đọc lại qua OpenAPI)."""
+    if not permission:
+        raise ValueError("permission không được rỗng")
+    return {"openapi_extra": {PERMISSION_EXTRA: permission}}
+
+
+def declared_permission(route: Any) -> str | None:
+    extra = getattr(route, "openapi_extra", None) or {}
+    value = extra.get(PERMISSION_EXTRA)
+    return value if isinstance(value, str) and value else None
+
+
+def _require_declared(request: Request) -> None:
+    if declared_permission(request.scope.get("route")) is None:
+        _log.error("route_without_permission", extra={"path": request.url.path})
+        raise ApiError("FORBIDDEN")
+
+
 def create_api(
     readiness_checks: Mapping[str, ReadinessCheck],
     routers: tuple[APIRouter, ...] = (),
     *,
     csrf: CsrfConfig,
 ) -> FastAPI:
-    app = FastAPI(title="AI-EOS", docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(
+        title="AI-EOS",
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
+        dependencies=[Depends(_require_declared)],
+    )
     _install_error_handlers(app)
     # add_middleware chèn vào ngoài cùng: CSRF chạy bên trong correlation ID để lỗi 403 có correlation_id.
     app.add_middleware(CsrfMiddleware, config=csrf, prefix=API_PREFIX)
@@ -146,11 +178,11 @@ def create_api(
     checks = dict(readiness_checks)
     health = APIRouter(prefix=f"{API_PREFIX}/health", tags=["system"])
 
-    @health.get("/live")
+    @health.get("/live", **declare(PUBLIC))
     def live() -> dict[str, str]:
         return {"status": "ok"}
 
-    @health.get("/ready", responses={503: {"description": "Chưa sẵn sàng"}})
+    @health.get("/ready", responses={503: {"description": "Chưa sẵn sàng"}}, **declare(PUBLIC))
     def ready() -> Any:
         failed = _run_checks(checks)
         if failed:

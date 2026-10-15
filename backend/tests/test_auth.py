@@ -27,6 +27,7 @@ from aieos.access.api import grant_role
 from aieos.app.asgi import PUBLIC_PATHS, create_app
 from aieos.identity.api import Authenticator, AuthSettings, Principal, build_auth_router, hash_password
 from aieos.platform.api import (
+    AUTHENTICATED,
     SESSION_COOKIE,
     CsrfConfig,
     Secret,
@@ -34,6 +35,7 @@ from aieos.platform.api import (
     create_api,
     create_db_engine,
     csrf_token,
+    declare,
     make_session_factory,
     transaction,
 )
@@ -79,7 +81,7 @@ def build(engine: Engine, settings: AuthSettings = SETTINGS) -> tuple[Authentica
     auth = Authenticator(make_session_factory(engine), settings)
     protected = APIRouter()
 
-    @protected.get("/probe/private")
+    @protected.get("/probe/private", **declare(AUTHENTICATED))
     def private(principal: Principal = Depends(auth.require_session)) -> dict[str, str]:  # noqa: B008
         return {"user": str(principal.user_id)}
 

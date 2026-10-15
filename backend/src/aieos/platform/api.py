@@ -55,7 +55,16 @@ from aieos.platform.http import (
     run_idempotent,
 )
 from aieos.platform.logs import CORRELATION_ID, REDACTED, JsonFormatter, configure_logging, redact
-from aieos.platform.web import API_PREFIX, ReadinessCheck, create_api
+from aieos.platform.web import (
+    API_PREFIX,
+    AUTHENTICATED,
+    PERMISSION_EXTRA,
+    PUBLIC,
+    ReadinessCheck,
+    create_api,
+    declare,
+    declared_permission,
+)
 
 __all__ = [
     "CSRF_HEADER",
@@ -82,6 +91,11 @@ __all__ = [
     "require_if_match",
     "run_idempotent",
     "API_PREFIX",
+    "AUTHENTICATED",
+    "PERMISSION_EXTRA",
+    "PUBLIC",
+    "declare",
+    "declared_permission",
     "CORRELATION_ID",
     "REDACTED",
     "JsonFormatter",

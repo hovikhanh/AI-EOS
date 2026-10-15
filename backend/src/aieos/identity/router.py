@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from aieos.identity.auth import Authenticator, Principal
 from aieos.identity.mfa import MfaService
-from aieos.platform.api import SESSION_COOKIE, Secret, csrf_token
+from aieos.platform.api import AUTHENTICATED, PUBLIC, SESSION_COOKIE, Secret, csrf_token, declare
 
 LOGIN_PATH = "/auth/login"
 
@@ -55,7 +55,7 @@ def build_auth_router(auth: Authenticator, csrf_key: Secret) -> APIRouter:
     full_session = Annotated[Principal, Depends(auth.require_session)]
     any_session = Annotated[Principal, Depends(auth.require_session_allow_pending)]
 
-    @router.post(LOGIN_PATH, response_model=LoginResponse)
+    @router.post(LOGIN_PATH, response_model=LoginResponse, **declare(PUBLIC))
     def login(body: LoginBody, request: Request, response: Response) -> LoginResponse:
         result = auth.login(
             body.email,
@@ -71,14 +71,14 @@ def build_auth_router(auth: Authenticator, csrf_key: Secret) -> APIRouter:
             csrf_token=csrf_token(csrf_key, result.token),
         )
 
-    @router.post("/auth/logout", status_code=204)
+    @router.post("/auth/logout", status_code=204, **declare(AUTHENTICATED))
     def logout(principal: any_session) -> Response:
         auth.logout(principal)
         response = Response(status_code=204)
         response.delete_cookie(SESSION_COOKIE, secure=True, httponly=True, samesite="lax", path="/")
         return response
 
-    @router.get("/auth/me")
+    @router.get("/auth/me", **declare(AUTHENTICATED))
     def me(request: Request, principal: full_session) -> dict[str, Any]:
         body = auth.me(principal)
         body["csrf_token"] = csrf_token(csrf_key, request.cookies.get(SESSION_COOKIE, ""))
@@ -95,12 +95,12 @@ def build_mfa_router(auth: Authenticator, mfa: MfaService) -> APIRouter:
     router = APIRouter(tags=["auth"])
     any_session = Annotated[Principal, Depends(auth.require_session_allow_pending)]
 
-    @router.post("/auth/mfa/enroll", response_model=EnrollResponse)
+    @router.post("/auth/mfa/enroll", response_model=EnrollResponse, **declare(AUTHENTICATED))
     def enroll(principal: any_session) -> EnrollResponse:
         result = mfa.enroll(principal)
         return EnrollResponse(secret=result.secret, otpauth_uri=result.otpauth_uri)
 
-    @router.post("/auth/mfa/enroll/confirm", response_model=RecoveryCodesResponse)
+    @router.post("/auth/mfa/enroll/confirm", response_model=RecoveryCodesResponse, **declare(AUTHENTICATED))
     def confirm(
         body: MfaCodeBody, request: Request, response: Response, principal: any_session
     ) -> RecoveryCodesResponse:
@@ -109,7 +109,7 @@ def build_mfa_router(auth: Authenticator, mfa: MfaService) -> APIRouter:
         set_session_cookie(response, result.token)
         return RecoveryCodesResponse(recovery_codes=list(result.recovery_codes))
 
-    @router.post("/auth/mfa/verify", status_code=204)
+    @router.post("/auth/mfa/verify", status_code=204, **declare(AUTHENTICATED))
     def verify(body: MfaCodeBody, request: Request, principal: any_session) -> Response:
         ip, user_agent = _client(request)
         result = mfa.verify(principal, body.code, ip=ip, user_agent=user_agent)
