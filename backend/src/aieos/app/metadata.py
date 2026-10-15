@@ -14,6 +14,7 @@ import aieos.identity.api
 import aieos.jobs.api
 import aieos.notify.api
 import aieos.org.api
+import aieos.work.api
 from aieos.platform.api import Base
 
 MODULE_APIS: tuple[ModuleType, ...] = (
@@ -23,6 +24,7 @@ MODULE_APIS: tuple[ModuleType, ...] = (
     aieos.jobs.api,
     aieos.notify.api,
     aieos.org.api,
+    aieos.work.api,
 )
 
 
