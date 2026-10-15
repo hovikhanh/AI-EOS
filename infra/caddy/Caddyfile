@@ -1,0 +1,32 @@
+# Reverse proxy (T-003, D-43; Architecture §9.1): TLS nội bộ, cổng 443 duy nhất publish.
+# `tls internal`: chứng chỉ do CA nội bộ của Caddy cấp — triển khai nội bộ có thể thay bằng chứng chỉ của doanh nghiệp
+# (Architecture §9.2). Cookie `__Host-` cần HTTPS (ADR-006).
+{
+	admin off
+}
+
+:443 {
+	tls internal {
+		on_demand
+	}
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

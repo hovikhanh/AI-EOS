@@ -106,7 +106,7 @@ Không có endpoint đăng ký công khai. Bootstrap và khôi phục ADMIN ch�
 
 Chi tiết T-105:
 - **API-ADM-02** `{ "email", "display_name", "roles": [...], "reason" }` + `Idempotency-Key` → `201 { "user": {…}, "invitation": { "link": "/invite#token=…", "expires_at" } }`, `Cache-Control: no-store`. Link chỉ trả **một lần**: gọi lại cùng khóa + cùng nội dung → `201` cùng `user`, `invitation: null` (token chỉ lưu hash — dùng API-ADM-03 để cấp lại). Có `roles` thì cần thêm `role.assign`. Email đã có → `422` (trường `email`); `ADMIN`+`CFO` → `422 ROLE_COMBINATION_FORBIDDEN`. Token đặt trong fragment (`#`) để không tới máy chủ/log khi mở trang; trang `/invite` thuộc frontend (T-111). Hạn: `AIEOS_INVITE_TTL_HOURS`.
-- **API-ADM-03** → `201 { "link", "expires_at" }`; thu hồi lời mời còn hiệu lực; tài khoản không còn `INVITED` → `409 INVALID_STATE`.
+- **API-ADM-03** → `201 { "link", "expires_at" }`; thu hồi lời mời còn hiệu lực; tài khoản không còn `INVITED` → `409 INVALID_STATE`. Chưa có endpoint hủy lời mời riêng (SRS-IAM-02 "Admin hủy") — lời mời chỉ bị thu hồi khi cấp lại; CDA 15/10/2026 tạm giữ, `[CẦN XÁC NHẬN]`.
 - **API-AUTH-08** (công khai, miễn CSRF token, vẫn kiểm `Origin`) `{ "token", "password" }` → `204` (tài khoản `ACTIVE`; đăng nhập lại qua API-AUTH-01); mật khẩu không đạt `AIEOS_PASSWORD_MIN_LENGTH` → `422` (kiểm trước token); token sai/hết hạn/đã dùng/đã thu hồi → `400 INVITATION_INVALID` cùng nội dung; rate limit theo IP và token.
 
 Chi tiết T-109:
