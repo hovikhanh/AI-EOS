@@ -309,6 +309,8 @@ Chỉ các thuộc tính có nguồn hoặc được SRS đặc tả; công th�
 | `insights.briefing` | `id`, `for_user_id`, `generated_at`, `summary_text`, `tiles jsonb` (giá trị, `as_of`, nguồn), `decision_items jsonb`, `data_quality_notes jsonb`, `generation_status`, `source_job_id` | append-only; chỉ bản chụp, không phải dữ liệu nghiệp vụ | SRS-BRF-10, 11 |
 | `insights.user_tile_preference` | `user_id`, `slot` (1–4), `metric_code` | PK `(user_id, slot)` | SRS-BRF-02 |
 
+Migration `0015` (T-501): `created_by`, `idempotency_key`, `request_hash` trên `objective`/`key_result`/`kpi`/`measurement`/`check_in` (UNIQUE theo người tạo — INV-08); `ACTIVE` ⇒ `activated_by` và `activated_at` NOT NULL; `confidence` CHECK 0–10 (Q-30, D-51); `measurement.target_id` kiểm bằng trigger `goals.measurement_target_exists` (`AE040`) vì đích đa hình; `aieos_app` không UPDATE `measurement`/`check_in`, không DELETE bảng `goals.*`; khóa ngoại `work.task.objective_id` → `goals.objective`.
+
 Index: `work.task (owner_user_id, status, due_date)`; `goals.objective (org_unit_id, status)`; `goals.measurement (target_type, target_id, created_at)`.
 
 Sales Pipeline Lite: **không có bảng** cho tới khi trả lời Q-38 (SRS-SLS-03).

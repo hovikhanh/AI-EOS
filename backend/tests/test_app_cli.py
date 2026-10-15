@@ -31,3 +31,21 @@ def test_health_reports_migration_state(
 def test_health_fails_when_database_unreachable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     worker_env(monkeypatch, tmp_path, "postgresql://aieos_app:x@127.0.0.1:1/aieos")
     assert main(["health"]) == 1
+
+
+def test_composition_root_registers_every_model() -> None:
+    """Hồi quy T-501: tiến trình chỉ import `app.asgi` (hoặc `app.worker`) phải đăng ký đủ model của mọi module như
+    `app.metadata` — model có khóa ngoại liên module (vd. `work.task.source_document_id` → `capture.source_document`)
+    không ghi được nếu bảng đích chưa đăng ký."""
+    import subprocess
+    import sys
+
+    def tables(entry: str) -> list[str]:
+        code = f"import {entry}\nfrom aieos.platform.api import Base\nprint('\\n'.join(sorted(Base.metadata.tables)))"
+        result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)
+        return result.stdout.split()
+
+    expected = tables("aieos.app.metadata")
+    assert "capture.source_document" in expected
+    assert tables("aieos.app.asgi") == expected
+    assert tables("aieos.app.worker") == expected

@@ -51,7 +51,7 @@ class TaskRow(Base):
     status: Mapped[str] = mapped_column(Text, server_default=text("'OPEN'"))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_by: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey(_USER_FK))
-    objective_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK goals.objective: T-501
+    objective_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("goals.objective.id"))  # 0015
     source_document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("capture.source_document.id"))
     source_locator: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_via: Mapped[str] = mapped_column(Text, server_default=text("'MANUAL'"))

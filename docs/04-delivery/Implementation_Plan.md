@@ -705,3 +705,13 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Khóa ngoại `source_document_id` của `org.org_unit`, `org.employee`, `work.task`, `finance.transaction`; model `org` dùng `use_alter` để cắt vòng khóa ngoại (tài liệu → tài khoản → nhân viên → tài liệu) — nếu không, so khớp model ↔ schema (TC-MIG-01) bỏ qua các khóa ngoại trong vòng.
 - Test `backend/tests/test_capture_schema.py` (4). 6 đột biến → test đỏ (một đột biến ban đầu lọt vì test tạo hai vi phạm cùng lúc — đã sửa).
 
+## 39. Ghi chú triển khai T-501 (15/10/2026)
+
+- Vị trí: module `goals` (`models.py`, `service.py`, `router.py`); migration `0015` (`goals.objective`, `key_result`, `kpi`, `measurement`, `check_in`; khóa ngoại `work.task.objective_id` → `goals.objective`). Endpoint: API-GOAL-01, 02, 03, 05, 06; kích hoạt (API-GOAL-04) thuộc T-502.
+- Số (baseline, target, giá trị) lưu `NUMERIC`, trả dạng chuỗi thập phân; không có trường % đạt hay cảnh báo (SRS-GOAL-09, D-16).
+- Phạm vi: Objective theo `scope_filter` của T-108 trên owner/đơn vị; người tạo và owner một KR của Objective luôn thấy. KR theo phạm vi của Objective cha; KPI theo owner/đơn vị của KPI. Ngoài phạm vi → `404`.
+- Ghi: tạo/sửa cần `record.submit`; owner phải là mình hoặc trong phạm vi `data.read` của mình (`403`); chỉ sửa bản `DRAFT` (`409 INVALID_STATE`), chỉ người tạo/owner, `If-Match`. Check-in: chỉ owner KR (`403`). Đo lường: owner chỉ số hoặc người có `data.write` trên owner/đơn vị; `source_document_id` phải tồn tại (`422`, kiểm qua `capture.api.document_exists`).
+- Theo D-51: thang độ tự tin 0–10 (Q-30, CHECK ở CSDL); nhịp check-in chưa ràng buộc. `measurement`/`check_in` append-only (`aieos_app` không UPDATE/DELETE); trigger `goals.measurement_target_exists` (`AE040`) thay khóa ngoại đa hình.
+- Sửa lỗi hồi quy từ T-202: composition root (`app/asgi.py`, `app/worker.py`) và `tests/conftest.py` nạp `aieos.app.metadata` để mọi bảng đích của khóa ngoại liên module đã đăng ký (nếu không, ghi task có `source_document_id` lỗi `NoReferencedTableError`); thêm test `test_composition_root_registers_every_model`.
+- Chưa làm: TC-GOAL-02 (DRAFT không xuất hiện ở ô chỉ số/Briefing/câu trả lời AI) — các bề mặt đó chưa có (T-510, T-211, T-305); đã kiểm phần dữ liệu: `GET ?status=ACTIVE` không trả bản nháp. Ghi từ tài liệu qua gateway (T-503), giao diện (T-504).
+- Test `backend/tests/test_goals.py` (6). 6 đột biến (phạm vi Objective/KR/KPI, owner, chỉ sửa bản nháp, chỉ owner check-in) → test đỏ; đột biến phạm vi KPI ban đầu lọt — đã thêm kiểm tra `404`.
