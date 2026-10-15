@@ -50,4 +50,4 @@ BRD yêu cầu mọi lần ghi từ Domain 22 đi qua Tool Registry với permis
 - **Nguồn:** CDA duyệt AMD-02 theo phiên bản của CDA (Decision_Log D-38).
 - **Thay đổi:** mở rộng phạm vi kill switch tới job `AI_CONTENT` ngoài gateway (mục Decision); phân loại job ở ADR-005 Amendment 1.
 - **Không thay đổi:** thứ tự kiểm tra tại gateway, hạ L3 về L2, bản nháp không tự thực thi.
-- **Diễn giải cần CDA lưu ý:** chat AI chỉ đọc theo yêu cầu trực tiếp của người dùng vẫn hoạt động khi kill switch bật (D-09 nói về hành động WRITE/EXECUTION; BRD §4.2 L0 là "chỉ đọc và trả lời"). Nếu CDA muốn tắt cả chat khi bật kill switch, cần một quyết định riêng.
+- **Diễn giải cần CDA lưu ý:** chat AI chỉ đọc theo yêu cầu trực tiếp của người dùng vẫn hoạt động khi kill switch bật (D-09 nói về hành động WRITE/EXECUTION; BRD §4.2 L0 là "chỉ đọc và trả lời"). Nếu CDA muốn tắt cả chat khi bật kill switch, cần một quyết định riêng. **CDA xác nhận diễn giải này ngày 15/10/2026 (D-48).**

@@ -2,10 +2,10 @@
 
 | Trường | Giá trị |
 | --- | --- |
-| Status | CONFIRMED (cơ chế adapter) · provider cụ thể: NEEDS_CONFIRMATION (D-08) |
+| Status | CONFIRMED (cơ chế adapter) · Amendment 1 (15/10/2026, D-50): provider demo DeepSeek qua OpenRouter · provider local cho production: NEEDS_CONFIRMATION (D-08) |
 | Source | D-07 (CDA); cơ chế: `ARCHITECTURE_DECISION`; quy tắc benchmark và dữ liệu nhạy cảm: `CDA_DIRECTIVE` (yêu cầu 12/10/2026 §7) |
 | Liên quan | D-07, D-08; FR-AIQ-05, FR-AIQ-06, SEC-DC-04, CMP-02, NFR-07, MET-01, MET-05, BR-06 |
-| Ngày cập nhật | 12/10/2026 |
+| Ngày cập nhật | 15/10/2026 |
 
 ## Context
 Không khóa provider (D-07); ưu tiên miễn phí/chi phí thấp; dữ liệu mật có thể chỉ xử lý tại hạ tầng nội bộ (SEC-DC-04); chuyển model dự phòng khi model chính lỗi (NFR-07).
@@ -46,3 +46,12 @@ Không tuyên bố đạt field accuracy ≥ 90% (MET-01) trước khi có kết
 - Prompt hệ thống và policy nằm trong code; nội dung tài liệu được đặt trong vùng dữ liệu rõ ràng, có chỉ dẫn coi là dữ liệu (BR-06), nhưng **an toàn không dựa vào prompt** mà dựa vào gateway (ADR-008).
 - Converter/OCR chạy trong worker với giới hạn tài nguyên và thời gian; không thực thi macro trong tài liệu Office.
 - Không ghi nội dung tài liệu vào log kỹ thuật.
+
+## Amendments
+
+### Amendment 1 — D-50 (15/10/2026)
+- **Nguồn:** quyết định `CDA` ngày 15/10/2026 (OPEN_DECISIONS.md, D-43 mục 4 và câu hỏi bổ sung cùng ngày; Decision_Log D-50).
+- **Thay đổi:** DeepSeek qua OpenRouter (provider cloud) là một provider được cấu hình qua adapter, dùng cho **mọi loại dữ liệu khi demo**, kể cả `PERSONAL`/`SENSITIVE`. Đây là ngoại lệ có thẩm quyền đối với quy tắc định tuyến "dữ liệu nhạy cảm chỉ tới provider local" ở mục Decision. Sau khi triển khai production sẽ tích hợp thêm option provider local (D-08).
+- **Không thay đổi:** cơ chế adapter, định tuyến theo phân loại dữ liệu (vẫn hiện thực, để bật lại cho production), call log, trần chi phí, timeout/retry, giả lập trong CI (CI không gọi provider thật), đầu ra LLM là dữ liệu không tin cậy, mọi ghi qua gateway (ADR-008).
+- **`[CẦN XÁC NHẬN]`:** (1) môi trường demo dùng dữ liệu tổng hợp hay dữ liệu thật — CLAUDE.md §6 cấm dữ liệu thật trong dev/test/CI; (2) cách định tuyến `PERSONAL`/`SENSITIVE` ở production trước khi có provider local; (3) DeepSeek có là phương án trong benchmark T-606 không.
+- **Rủi ro ghi nhận:** dữ liệu rời máy triển khai, tới provider ngoài Việt Nam (liên quan CMP-02, BRD §4.5); khóa API là secret (`AIEOS_LLM_API_KEY_<NAME>`), không commit.

@@ -1,7 +1,7 @@
 # AI-EOS — Test Plan (Stage 2D)
 
-> Phiên bản: 1.0 · Ngày: 12/10/2026 · Trạng thái: **Kế hoạch — chưa có test nào được chạy**
-> AI-EOS chưa có code; mọi test case ở trạng thái `NOT RUN`. Không tính năng nào được tuyên bố đạt yêu cầu.
+> Phiên bản: 1.1 · Ngày: 15/10/2026 · Trạng thái: **Đã duyệt — D-46 (CDA, 15/10/2026)**. Thay đổi 1.1: task chủ của mọi TC (§12, D-44); nhóm TC-FE (§8a, D-47); TC-BRF-02 theo Q-37, TC-NFR-01 theo D-45
+> Trạng thái từng TC: §12 (`NOT RUN`, hoặc `PASSED` kèm run CI của task chủ). Hiện trạng dự án: [PROJECT_STATUS](../PROJECT_STATUS.md).
 > Nguồn: [SRS](../02-requirements/SRS.md) 1.1, ADR-013, Architecture §10–§11 (AC-ARCH-01…12), [Implementation_Plan](Implementation_Plan.md).
 
 ## 1. Chiến lược
@@ -24,7 +24,7 @@
 **Mức độ:** P0 (chặn release) · P1 · P2. Lỗi: Critical, High, Medium, Low.
 **Tiêu chí vào:** task tương ứng ở Implementation_Plan đạt DoD phần code. **Tiêu chí ra:** mọi TC P0 xanh, không lỗi Critical/High mở, AC-ARCH-01…12 xanh.
 
-Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, E = E2E, S = security, P = performance. Trạng thái mọi dòng: `NOT RUN`.
+Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, E = E2E, S = security, P = performance. Trạng thái và task chủ của từng TC: §12. **Quy tắc (D-44):** mỗi TC có đúng một task chủ; TC chỉ ghi `PASSED` khi task chủ chạy toàn bộ kịch bản và kết quả mong đợi xanh trong CI (ghi run CI); task khác chỉ có "bằng chứng thành phần", không phải PASS; task sau chạy lại TC như hồi quy.
 
 ## 2. Chung, job, thông báo, audit
 
@@ -224,7 +224,7 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 | TC-WRK-09 | SRS-WRK-09 | I | P1 | Job quá hạn | Thông báo owner; không ghi dữ liệu nghiệp vụ |
 | TC-WRK-10 | SRS-WRK-08 | I | P0 | Action card tạo 3 task L3; hoàn tác | 3 task bị hủy bằng hành động bù; audit tạo và hoàn tác |
 | TC-BRF-01 | SRS-BRF-01, SRS-BRF-02 | A | P0 | CEO mở Trang chủ; đổi ô | 4 ô theo lựa chọn |
-| TC-BRF-02 | SRS-BRF-05 | A | P0 | Đọc ô chỉ số | `official=false`, nhãn "chưa chính thức", không có trường cảnh báo/màu trạng thái |
+| TC-BRF-02 | SRS-BRF-05 | A | P0 | Đọc ô chỉ số | Giá trị đúng công thức SRS-BRF-05 (chính thức — Q-37, D-51); không có trường cảnh báo/màu trạng thái (chưa có ngưỡng) |
 | TC-BRF-03 | SRS-BRF-03 | A | P1 | Dữ liệu nguồn quá ngưỡng cấu hình | Nhãn dữ liệu cũ + thời điểm |
 | TC-BRF-04 | SRS-BRF-06 | A | P0 | Chưa có doanh thu ghi sổ | Ô trống + gợi ý, không "0 đ" |
 | TC-BRF-05 | SRS-BRF-07 | A | P0 | "Cần anh quyết" | Chỉ bản nháp chờ CEO và task giao CEO trễ/sắp hạn, mỗi mục có nguồn |
@@ -248,6 +248,20 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 | TC-E2E-04 | FL-15 | E | P1 | Mục tiêu nháp → kích hoạt → check-in | Hoàn tất trong phạm vi quyền |
 | TC-E2E-05 | FL-07, FL-08 | E | P0 | CEO xác nhận action card → task → owner hoàn thành | Ô "Task trễ" cập nhật đúng |
 | TC-E2E-06 | FL-10 | E | P0 | ADMIN bật kill switch → banner → tác vụ thành nháp → tắt | Không ghi tự động; bản nháp còn chờ |
+
+## 8a. Nền tảng frontend (T-012)
+
+Đăng ký theo D-47 (CDA, 15/10/2026) từ đề xuất `ĐX-12-1…7` (Implementation_Plan §12.2).
+
+| ID | Yêu cầu | Loại | Mức | Tình huống | Kết quả mong đợi |
+| --- | --- | --- | --- | --- | --- |
+| TC-FE-01 | ADR-003 | U | P1 | Render ứng dụng với memory router tại `/` và tại một đường dẫn không khai báo | `/`: tiêu đề "AI-EOS"; đường dẫn lạ: "Không tìm thấy hoặc bạn không có quyền" + liên kết "Về Trang chủ" tới `/` |
+| TC-FE-02 | ADR-003, ADR-006 | U | P0 | Gọi `apiFetch` (GET, POST, kể cả khi nơi gọi truyền `credentials: "omit"`); theo dõi mọi phương thức của `Storage` | `credentials: "include"` mọi request; không phương thức `Storage` nào được gọi; `localStorage`/`sessionStorage` rỗng; lỗi HTTP → `ApiError` |
+| TC-FE-03 | ADR-003 | U | P0 | Kiểm hàm chính sách cache của service worker với `/api`, `/api/*`, `/`, `/index.html`, route SPA, request có query, khác GET, khác origin | Chỉ `/assets/*` (GET, cùng origin, không query) và manifest/icon được cache; chỉ lưu response thành công; mọi trường hợp còn lại không qua cache |
+| TC-FE-04 | ADR-003 | U | P1 | `npm run check:build` sau `vite build` | `dist/manifest.webmanifest` có `name`, `short_name`, `start_url`, `display`, icon 192 và 512 tồn tại; `index.html` liên kết manifest |
+| TC-FE-05 | ADR-003 | S | P0 | `npm run check:build` sau `vite build` | `dist/index.html` không có `<script>` inline hay thuộc tính sự kiện `on…=`; `dist/sw.js` không import module khác |
+| TC-FE-06 | ADR-003 | S | P0 | Lint một đoạn TSX có `dangerouslySetInnerHTML` và một đoạn render văn bản | Đoạn thứ nhất: lỗi `no-restricted-syntax` mức error; đoạn thứ hai: không lỗi |
+| TC-FE-07 | ADR-003 | U | P2 | Render `Button` (mặc định và `asChild`); đọc `src/index.css` | Class dùng token; đủ token UX §8.2; `primary` thuộc thang xám (D-35) |
 
 ## 9. Kế hoạch benchmark LLM/OCR (D-08)
 
@@ -279,7 +293,7 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 
 | ID | Yêu cầu | Loại | Mức | Tình huống | Kết quả mong đợi |
 | --- | --- | --- | --- | --- | --- |
-| TC-NFR-01 | SRS-NFR-04 | S | P0 | Theo dõi kết nối ra ngoài của container khi chỉ cấu hình provider local | Không có kết nối ra ngoài máy (trừ đích backup đã cấu hình) |
+| TC-NFR-01 | SRS-NFR-04 | S | P0 | Theo dõi kết nối ra ngoài của các container xử lý dữ liệu nghiệp vụ (`proxy`, `api`, `worker`, `db`, `scanner`) khi chỉ cấu hình provider local (D-45) | Không có kết nối ra ngoài máy, trừ đích backup đã cấu hình; service cập nhật chữ ký (không đọc dữ liệu nghiệp vụ) là ngoại lệ được phép, chỉ tới nguồn chữ ký |
 | TC-NFR-02 | SRS-NFR-05 | E | P1 | Giao diện vi/en; câu hỏi AI trộn hai ngôn ngữ (adapter giả lập kiểm tra ngôn ngữ trả lời) | Nhãn đúng ngôn ngữ; AI trả lời theo ngôn ngữ câu hỏi |
 | TC-NFR-03 | SRS-NFR-06 | E | P1 | Viewport 390 px: Briefing, hỏi AI, chụp tài liệu, duyệt | Dùng được; vùng chạm ≥ 44 px |
 | TC-NFR-04 | SRS-NFR-07 | I | P0 | Tắt mọi provider | Nhập tay, tài chính, task, review thủ công hoạt động |
@@ -303,3 +317,216 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 | AC-ARCH-10 | TC-MIG-01, TC-MIG-02, TC-DR-01 |
 | AC-ARCH-11 | TC-AIC-06 |
 | AC-ARCH-12 | TC-PRV-01…TC-PRV-04, TC-SEC-06 |
+
+## 12. Task chủ và trạng thái từng test case (D-44)
+
+Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột. TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
+
+| TC | Task chủ | Căn cứ | Bằng chứng thành phần | Trạng thái |
+| --- | --- | --- | --- | --- |
+| `TC-GEN-01` | **T-007** | duy nhất | — | `NOT RUN` |
+| `TC-GEN-02` | **T-007** | duy nhất | — | `NOT RUN` |
+| `TC-GEN-03` | **T-007** | D-44 (bảng 65 TC) | T-603 | `NOT RUN` |
+| `TC-GEN-04` | **T-007** | D-44 (bảng 65 TC) | T-603 | `NOT RUN` |
+| `TC-GEN-05` | **T-007** | D-44 (bảng 65 TC) | T-006, T-603 | `NOT RUN` |
+| `TC-GEN-06` | **T-102** | D-44 (bảng 65 TC) | T-007 | `NOT RUN` |
+| `TC-GEN-07` | **T-111** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-01` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-02` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-03` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-04` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-05` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `NOT RUN` |
+| `TC-NTF-01` | **T-010** | duy nhất | — | `NOT RUN` |
+| `TC-AUD-01` | **T-008** | duy nhất | — | `NOT RUN` |
+| `TC-AUD-02` | **T-008** | duy nhất | — | `NOT RUN` |
+| `TC-AUD-03` | **T-008** | duy nhất | — | `NOT RUN` |
+| `TC-AUD-04` | **T-110** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-01` | **T-102** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-02` | **T-102** | D-44 (bảng 65 TC) | T-101 | `NOT RUN` |
+| `TC-IAM-03` | **T-102** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-04` | **T-102** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-05` | **T-102** | D-44 (bảng 65 TC) | T-101 | `NOT RUN` |
+| `TC-IAM-06` | **T-103** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-07` | **T-103** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-08` | **T-104** | D-44 (bảng 65 TC) | T-109 | `NOT RUN` |
+| `TC-IAM-09` | **T-105** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-10` | **T-105** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-11` | **T-106** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-12` | **T-106** | duy nhất | — | `NOT RUN` |
+| `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |
+| `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `NOT RUN` |
+| `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `NOT RUN` |
+| `TC-ACC-03` | **T-108** | duy nhất | — | `NOT RUN` |
+| `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
+| `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
+| `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
+| `TC-ACC-07` | **T-109** | D-44 (bảng 65 TC) | T-107 | `NOT RUN` |
+| `TC-ACC-08` | **T-109** | D-44 (bảng 65 TC) | T-104 | `NOT RUN` |
+| `TC-ACC-09` | **T-201** | D-44 (bảng 65 TC) | T-108 | `NOT RUN` |
+| `TC-ACC-10` | Chưa có `[CẦN XÁC NHẬN]` (theo R1 đề xuất T-108; SRS-ACC-04 còn PROPOSED) | — | — | `NOT RUN` |
+| `TC-FILE-01` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-FILE-02` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-FILE-03` | **T-203** | D-44 (bảng 65 TC) | T-011 | `NOT RUN` |
+| `TC-FILE-04` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-FILE-05` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-FILE-06` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-FILE-07` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-FILE-08` | **T-203** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-01` | **T-206** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-02` | **T-206** | D-44 (bảng 65 TC) | T-202 | `NOT RUN` |
+| `TC-CAP-03` | **T-206** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-04` | **T-206** | D-44 (bảng 65 TC) | T-208 | `NOT RUN` |
+| `TC-CAP-05` | **T-208** | D-44 (bảng 65 TC) | T-206 | `NOT RUN` |
+| `TC-CAP-06` | **T-206** | D-44 (bảng 65 TC) | T-208 | `NOT RUN` |
+| `TC-CAP-07` | **T-206** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-08` | **T-206** | D-44 (bảng 65 TC) | T-302 | `NOT RUN` |
+| `TC-CAP-09` | **T-209** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-10` | **T-209** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-11` | **T-209** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-12` | **T-211** | D-44 (bảng 65 TC) | T-510 | `NOT RUN` |
+| `TC-CAP-13` | **T-512** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-14` | **T-206** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-15` | **T-206** | D-44 (bảng 65 TC) | T-208 | `NOT RUN` |
+| `TC-CAP-16` | **T-206** | duy nhất | — | `NOT RUN` |
+| `TC-CAP-17` | **T-212** | duy nhất | — | `NOT RUN` |
+| `TC-REV-01` | **T-207** | duy nhất | — | `NOT RUN` |
+| `TC-REV-02` | **T-207** | duy nhất | — | `NOT RUN` |
+| `TC-REV-03` | **T-207** | duy nhất | — | `NOT RUN` |
+| `TC-REV-04` | **T-207** | D-44 (bảng 65 TC) | T-202 | `NOT RUN` |
+| `TC-REV-05` | **T-207** | D-44 câu 3 | T-408 | `NOT RUN` |
+| `TC-REV-06` | **T-207** | duy nhất | — | `NOT RUN` |
+| `TC-REV-07` | **T-207** | duy nhất | — | `NOT RUN` |
+| `TC-IMP-01` | **T-210** | duy nhất | — | `NOT RUN` |
+| `TC-IMP-02` | **T-210** | duy nhất | — | `NOT RUN` |
+| `TC-IMP-03` | **T-210** | duy nhất | — | `NOT RUN` |
+| `TC-IMP-04` | **T-210** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-01` | **T-302** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-02` | **T-302** | D-44 (bảng 65 TC) | T-301 | `NOT RUN` |
+| `TC-AIC-03` | **T-302** | D-44 (bảng 65 TC) | T-301 | `NOT RUN` |
+| `TC-AIC-04` | **T-302** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-05` | **T-302** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-06` | **T-302** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-07` | **T-304** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-08` | **T-304** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-09` | **T-304** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-10` | **T-304** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-11` | **T-304** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-12` | **T-305** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-13` | **T-306** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-14` | **T-306** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-15` | **T-306** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-16` | **T-307** | duy nhất | — | `NOT RUN` |
+| `TC-AIC-17` | **T-304** | duy nhất | — | `NOT RUN` |
+| `TC-KS-01` | **T-303** | duy nhất | — | `NOT RUN` |
+| `TC-KS-02` | **T-303** | duy nhất | — | `NOT RUN` |
+| `TC-KS-03` | **T-303** | D-44 (bảng 65 TC) | T-302 | `NOT RUN` |
+| `TC-KS-04` | **T-303** | D-44 (bảng 65 TC) | T-302 | `NOT RUN` |
+| `TC-KS-05` | **T-303** | D-44 (bảng 65 TC) | T-302 | `NOT RUN` |
+| `TC-KS-06` | **T-303** | D-44 (bảng 65 TC) | T-302 | `NOT RUN` |
+| `TC-KS-07` | **T-303** | D-44 (bảng 65 TC) | T-009 | `NOT RUN` |
+| `TC-KS-08` | **T-511** | D-44 (bảng 65 TC) | T-009, T-303 | `NOT RUN` |
+| `TC-KS-09` | **T-511** | D-44 (bảng 65 TC) | T-009, T-303 | `NOT RUN` |
+| `TC-KS-10` | **T-303** | D-44 (bảng 65 TC) | T-302 | `NOT RUN` |
+| `TC-SEC-01` | **T-602** | D-44 câu 3 | T-601 | `NOT RUN` |
+| `TC-SEC-02` | **T-602** | D-44 câu 3 | T-601 | `NOT RUN` |
+| `TC-SEC-03` | **T-601** | D-44 (bảng 65 TC) | T-602 | `NOT RUN` |
+| `TC-SEC-04` | **T-602** | D-44 (bảng 65 TC) | T-601 | `NOT RUN` |
+| `TC-SEC-05` | **T-602** | D-44 (bảng 65 TC) | T-006, T-007 | `NOT RUN` |
+| `TC-SEC-06` | **T-206** | D-44 câu 3 | T-112, T-204 | `NOT RUN` |
+| `TC-FIN-01` | **T-401** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-02` | **T-401** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-03` | **T-401** | D-44 (bảng 65 TC) | T-404 | `NOT RUN` |
+| `TC-FIN-04` | **T-401** | D-44 (bảng 65 TC) | T-404 | `NOT RUN` |
+| `TC-FIN-05` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-06` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-07` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-08` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-09` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-10` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-11` | **T-403** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-12` | **T-402** | D-44 (bảng 65 TC) | T-110, T-409 | `NOT RUN` |
+| `TC-FIN-13` | **T-402** | D-44 (bảng 65 TC) | T-110, T-409 | `NOT RUN` |
+| `TC-FIN-14` | **T-110** | D-44 câu 3 | T-402, T-409 | `NOT RUN` |
+| `TC-FIN-15` | **T-402** | D-44 (bảng 65 TC) | T-110, T-409 | `NOT RUN` |
+| `TC-FIN-16` | **T-404** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-17` | **T-404** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-18` | **T-404** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-19` | **T-404** | D-44 (bảng 65 TC) | T-401 | `NOT RUN` |
+| `TC-FIN-20` | **T-404** | D-44 (bảng 65 TC) | T-401 | `NOT RUN` |
+| `TC-FIN-21` | **T-404** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-22` | **T-404** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-23` | **T-405** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-24` | **T-405** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-25` | **T-405** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-26` | **T-405** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-27` | **T-405** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-28` | **T-405** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-29` | **T-406** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-30` | **T-408** | duy nhất | — | `NOT RUN` |
+| `TC-FIN-31` | **T-407** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-01` | **T-501** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-02` | **T-501** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-03` | **T-501** | D-44 (bảng 65 TC) | T-503 | `NOT RUN` |
+| `TC-GOAL-04` | **T-501** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-05` | **T-501** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-06` | **T-501** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-07` | **T-502** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-08` | **T-502** | D-44 (bảng 65 TC) | T-503 | `NOT RUN` |
+| `TC-GOAL-09` | **T-503** | D-44 (bảng 65 TC) | T-502 | `NOT RUN` |
+| `TC-GOAL-10` | **T-504** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-01` | **T-505** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-02` | **T-505** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-03` | **T-505** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-04` | **T-505** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-05` | **T-505** | D-44 (bảng 65 TC) | T-509 | `NOT RUN` |
+| `TC-WRK-06` | **T-506** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-07` | **T-506** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-08` | **T-506** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-09` | **T-507** | duy nhất | — | `NOT RUN` |
+| `TC-WRK-10` | **T-508** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-01` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-02` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-03` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-04` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-05` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-06` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-07` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-08` | **T-511** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-09` | **T-511** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-10` | **T-511** | duy nhất | — | `NOT RUN` |
+| `TC-BRF-11` | **T-511** | duy nhất | — | `NOT RUN` |
+| `TC-SLS-01` | **T-510** | duy nhất | — | `NOT RUN` |
+| `TC-PRV-01` | **T-112** | duy nhất | — | `NOT RUN` |
+| `TC-PRV-02` | **T-112** | duy nhất | — | `NOT RUN` |
+| `TC-PRV-03` | **T-112** | duy nhất | — | `NOT RUN` |
+| `TC-PRV-04` | **T-204** | D-44 (bảng 65 TC) | T-112 | `NOT RUN` |
+| `TC-PRV-05` | **T-204** | duy nhất | — | `NOT RUN` |
+| `TC-PRV-06` | **T-204** | duy nhất | — | `NOT RUN` |
+| `TC-PRV-07` | **T-204** | D-44 (bảng 65 TC) | T-205 | `NOT RUN` |
+| `TC-E2E-01` | **T-608** | D-44 (bảng 65 TC) | T-111 | `NOT RUN` |
+| `TC-E2E-02` | **T-608** | D-44 (bảng 65 TC) | T-212 | `NOT RUN` |
+| `TC-E2E-03` | **T-608** | D-44 (bảng 65 TC) | T-409 | `NOT RUN` |
+| `TC-E2E-04` | **T-608** | D-44 (bảng 65 TC) | T-504 | `NOT RUN` |
+| `TC-E2E-05` | **T-608** | D-44 (bảng 65 TC) | T-509 | `NOT RUN` |
+| `TC-E2E-06` | **T-608** | duy nhất | — | `NOT RUN` |
+| `TC-FE-01` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-02` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-03` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-04` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-05` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-06` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-FE-07` | **T-012** | D-47 | — | `PASSED` — run `38536047844` (T-012) |
+| `TC-MIG-01` | **T-005** | D-44 (bảng 65 TC) | T-605 | `PASSED` — run `38543440774` (T-005, phạm vi schema tại revision `0001`; bắt buộc xanh ở mọi CI sau) |
+| `TC-MIG-02` | **T-605** | D-44 câu 3 | T-005 | `NOT RUN` |
+| `TC-DR-01` | **T-605** | D-44 (bảng 65 TC) | T-005 | `NOT RUN` |
+| `TC-DR-02` | **T-605** | D-44 câu 3 | T-005 | `NOT RUN` |
+| `TC-PERF-01` | **T-604** | duy nhất | — | `NOT RUN` |
+| `TC-PERF-02` | **T-604** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-01` | **T-013** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-02` | **T-607** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-03` | **T-608** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-04` | **T-204** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-05` | **T-607** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-06` | **T-606** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-07` | **T-207** | duy nhất | — | `NOT RUN` |

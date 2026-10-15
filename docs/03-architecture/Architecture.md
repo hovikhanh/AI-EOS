@@ -456,12 +456,13 @@ Các trạng thái và chuyển chính theo BRD §3.6. Chuyển `FAILED → PROC
 
 | Service | Ghi chú |
 | --- | --- |
-| `proxy` | Reverse proxy mã nguồn mở có TLS nội bộ; cổng duy nhất publish ra ngoài (443) |
+| `proxy` | Caddy (D-43), TLS nội bộ; cổng duy nhất publish ra ngoài (443) |
 | `api` | FastAPI; nhiều worker ASGI theo CPU |
 | `worker` | Có thể scale số bản sao; scheduler chỉ chạy ở một bản sao nhờ advisory lock |
 | `db` | PostgreSQL; volume dữ liệu; không publish cổng |
-| `scanner` | Malware scanner mã nguồn mở; cập nhật chữ ký định kỳ |
-| `llm` (profile tùy chọn) | Runtime LLM/OCR local; cần RAM/GPU theo model (D-08) |
+| `scanner` | ClamAV (D-43); ở mạng `internal`, không có đường ra; đọc chữ ký từ volume chung (D-45) |
+| cập nhật chữ ký scanner | Service riêng, chỉ tải chữ ký vào volume, không đọc file người dùng; được kết nối ra nguồn chữ ký (ngoại lệ TC-NFR-01, D-45); tuổi chữ ký tối đa 90 ngày |
+| `llm` (profile tùy chọn) | Runtime LLM/OCR local; cần RAM/GPU theo model (D-08); chưa đưa vào Compose. Demo dùng provider cloud DeepSeek qua OpenRouter, không phải service (D-50, ADR-011 Amendment 1) |
 | `observability` (profile tùy chọn) | ADR-012 |
 
 - Mạng nội bộ Docker cho `api`, `worker`, `db`, `scanner`, `llm`; chỉ `proxy` nhận kết nối từ ngoài.
@@ -570,8 +571,8 @@ Chiến lược công cụ ở ADR-013. Test case chi tiết viết ở `docs/04
 
 | Điểm | Trạng thái | Mặc định an toàn trong thiết kế |
 | --- | --- | --- |
-| Provider LLM/OCR (D-08) | NEEDS_CONFIRMATION | Adapter + benchmark (ADR-011); dữ liệu nhạy cảm chỉ provider local |
-| Người giữ quyền dữ liệu nhân sự nhạy cảm (R6) | NEEDS_CONFIRMATION | Không ai giữ `hr.profile.read`, `hr.export`, `pii.unmask`; dữ liệu bị che |
+| Provider LLM/OCR (D-08) | Demo: DeepSeek qua OpenRouter cho mọi dữ liệu (D-50) · production local: NEEDS_CONFIRMATION | Adapter + benchmark (ADR-011, Amendment 1) |
+| Người giữ quyền dữ liệu nhân sự nhạy cảm (R6) | CONFIRMED 15/10/2026: không ai giữ trong MVP (D-21) | Không ai giữ `hr.profile.read`, `hr.export`, `pii.unmask`; dữ liệu bị che |
 | Người giữ `finance.period.manage` | NEEDS_CONFIRMATION | Chỉ giao được cho CFO; chưa giao thì không mở/khóa kỳ được → không ghi sổ được |
 | Trường trọng yếu, hạn mức (D-16) | NEEDS_CONFIRMATION | Mọi trường tiền là trọng yếu; tự ghi tắt; không có hạn mức |
 | Ngưỡng hiển thị vs định tuyến (D-29) | NEEDS_CONFIRMATION | Hai cấu hình tách biệt trong schema; tự ghi tắt |

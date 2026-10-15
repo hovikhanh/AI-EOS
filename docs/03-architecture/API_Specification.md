@@ -1,7 +1,7 @@
 # AI-EOS — API Specification (Stage 2C)
 
-> Phiên bản: 1.2 · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — chưa triển khai** · Thay đổi: §11
-> AI-EOS chưa có code (D-04): **không endpoint nào đã được triển khai hay xác minh**. Mọi endpoint ở đây có trạng thái `DESIGNED`. Không tạo OpenAPI ở giai đoạn này vì không có code để kiểm chứng; OpenAPI sẽ sinh từ code (ADR-002) và được contract test đối chiếu với tài liệu này (ADR-013).
+> Phiên bản: 1.3 (15/10/2026, D-52) · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — chưa triển khai** · Thay đổi: §11
+> Trạng thái endpoint: mục 1.10. Từ 15/10/2026 (D-52) endpoint có code và test xanh trong CI ghi `IMPLEMENTED` (hiện: API-SYS-01, API-SYS-02); còn lại `DESIGNED`. OpenAPI sinh từ code (ADR-002) và được contract test đối chiếu với tài liệu này (ADR-013).
 > Từ 1.1, endpoint đối chiếu với [SRS](../02-requirements/SRS.md) (Stage 2B). Sales Pipeline Lite vẫn `SKELETON` (Q-38).
 > Liên quan: [Architecture.md](Architecture.md), [Database_Design.md](Database_Design.md), ADR-006…ADR-011.
 
@@ -54,6 +54,7 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 | Giá trị | Ý nghĩa |
 | --- | --- |
 | `DESIGNED` | Đã thiết kế ở 2C, chưa có code |
+| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`) |
 | `SKELETON` | Chỉ khung; chi tiết chờ 2B (D-24) |
 | `DEFERRED` | Ngoài MVP |
 
@@ -306,6 +307,7 @@ Request `{ "reason": "Nhập sai số tiền" }` → `201` bút toán đảo `DR
 
 | Phiên bản | Thay đổi | Lý do | Loại |
 | --- | --- | --- | --- |
+| 1.3 | §1.10 thêm trạng thái `IMPLEMENTED`; API-SYS-01, API-SYS-02 → `IMPLEMENTED` | D-52 | Không phá vỡ |
 | 1.0 | Thiết kế ban đầu | Stage 2C | — |
 | 1.2 | AMD-01: API-FIN-08 (bỏ nhãn PROPOSED), API-FIN-09/11 thêm `ON_HOLD`, lỗi `PERIOD_CLOSED` của API-FIN-10 dẫn tới `ON_HOLD`. AMD-02: thêm API-INS-03; API-INS-01 thêm `ai_paused`, `official`. API-GOAL-04 dùng `goals.activate` (D-39). API-SALES-01 ghi D-40 | D-37…D-40 | Thay đổi có kiểm soát |
 | 1.1 | Cột Req của API-FIN-01…14 và API-ADM-07: quy tắc tài chính ghi `CDA-F1…CDA-F7` để phân biệt với luồng UX F1–F5 (sửa lỗi truy vết). §7 viết lại: API-GOAL-01/02, API-WORK-01/02, API-KNOW-01, API-INS-01 từ `SKELETON` → `DESIGNED`; thêm API-GOAL-03…06, API-WORK-03…06, API-INS-02. API-FIN-08 thêm lỗi kỳ theo AMD-01 (PROPOSED). API-ADM-11 thêm cảnh báo vận hành. Header tham chiếu SRS | SRS Stage 2B (C-03…C-05) | Làm rõ; API-FIN-08 phụ thuộc AMD-01 |

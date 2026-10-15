@@ -215,9 +215,12 @@ def check_delivery(T: dict[str, str]) -> None:
                 err(f"{rel}: {x} không có trong Implementation_Plan")
         for x in expand(text, r"TC-[A-Z0-9]+") - cset:
             err(f"{rel}: {x} không có trong TEST_Plan")
-    # Test case không được ở trạng thái đã chạy khi chưa có code
-    if re.search(r"\b(PASSED|FAILED_RUN|VERIFIED)\b", tp):
-        err("TEST_Plan chứa trạng thái đã chạy/VERIFIED khi chưa có code")
+    # Trạng thái TC (D-44): chỉ `NOT RUN` hoặc `PASSED`; `PASSED` phải kèm run CI trên cùng dòng
+    if re.search(r"\b(FAILED_RUN|VERIFIED)\b", tp):
+        err("TEST_Plan chứa trạng thái FAILED_RUN/VERIFIED")
+    for line in tp.splitlines():
+        if re.search(r"\bPASSED\b", line) and re.match(r"^\| `?TC-", line) and not re.search(r"run `\d+`", line):
+            err(f"TEST_Plan: PASSED không kèm run CI: {line[:60]}")
     # SRS chưa có test (trừ mục bị chặn/DEFERRED/không có nguồn mục tiêu)
     srs_text = T["02-requirements/SRS.md"]
     covered = set(re.findall(r"SRS-[A-Z]+-\d+", tp))
