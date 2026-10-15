@@ -1,6 +1,7 @@
 """Endpoint xác thực (T-102): API-AUTH-01 `POST /auth/login`, API-AUTH-06 `POST /auth/logout`,
 API-AUTH-07 `GET /auth/me`. T-103: API-AUTH-02 `POST /auth/mfa/verify`, API-AUTH-03 `POST /auth/mfa/enroll`, API-AUTH-04
 `POST /auth/mfa/enroll/confirm` — nhận session chờ MFA; xác minh/xác nhận xong đặt cookie session mới.
+T-104: API-AUTH-05 `POST /auth/reauth`, API-AUTH-09 `POST /auth/password` (`STEP-UP`).
 
 Router mỏng (ADR-002): kiểm tra đầu vào → gọi `Authenticator` → trả response. `POST /auth/login` là đường dẫn công khai
 (API_Specification §1.2): composition root miễn token CSRF cho đường dẫn này, vẫn kiểm `Origin` (T-007).
@@ -13,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from aieos.identity.auth import Authenticator, Principal
 from aieos.identity.mfa import MfaService
+from aieos.identity.stepup import StepUpService
 from aieos.platform.api import AUTHENTICATED, PUBLIC, SESSION_COOKIE, Secret, csrf_token, declare
 
 LOGIN_PATH = "/auth/login"
@@ -35,6 +37,19 @@ class MfaCodeBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     code: str = Field(min_length=6, max_length=32)
+
+
+class ReauthBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(min_length=1, max_length=1024)
+    code: str | None = Field(default=None, min_length=6, max_length=32)
+
+
+class PasswordBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    new_password: str = Field(min_length=1, max_length=4096)  # độ dài thật kiểm ở service (D-58)
 
 
 class EnrollResponse(BaseModel):
@@ -116,5 +131,24 @@ def build_mfa_router(auth: Authenticator, mfa: MfaService) -> APIRouter:
         response = Response(status_code=204)
         set_session_cookie(response, result.token)
         return response
+
+    return router
+
+
+def build_stepup_router(auth: Authenticator, stepup: StepUpService) -> APIRouter:
+    router = APIRouter(tags=["auth"])
+    full_session = Annotated[Principal, Depends(auth.require_session)]
+    step_up = Annotated[Principal, Depends(auth.require_step_up)]
+
+    @router.post("/auth/reauth", status_code=204, **declare(AUTHENTICATED))
+    def reauth(body: ReauthBody, request: Request, principal: full_session) -> Response:
+        ip, _ = _client(request)
+        stepup.reauth(principal, body.password, body.code, ip=ip)
+        return Response(status_code=204)
+
+    @router.post("/auth/password", status_code=204, **declare(AUTHENTICATED))
+    def change_password(body: PasswordBody, principal: step_up) -> Response:
+        stepup.change_password(principal, body.new_password)
+        return Response(status_code=204)
 
     return router

@@ -67,6 +67,8 @@ SETTINGS = AuthSettings(
     rate_limit_window=timedelta(seconds=60),
     lockout_threshold=10,
     lockout_duration=timedelta(minutes=15),
+    reauth=timedelta(minutes=5),
+    password_min_length=12,
 )
 MFA_PATHS = {"/api/v1/auth/mfa/enroll", "/api/v1/auth/mfa/enroll/confirm", "/api/v1/auth/mfa/verify"}
 
