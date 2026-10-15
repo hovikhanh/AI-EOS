@@ -203,7 +203,7 @@ Quy tắc: một chuỗi revision; mỗi migration có test rỗng → head và 
 | `AIEOS_DATABASE_URL` | Secret | api, worker, CLI quản trị `admin-cli` (role `aieos_app`) |
 | `AIEOS_DATABASE_OWNER_URL` | Secret | lệnh migration |
 | `AIEOS_CSRF_KEY` | Secret | api |
-| `AIEOS_TOTP_ENCRYPTION_KEY` | Secret | api |
+| `AIEOS_TOTP_ENCRYPTION_KEY` | Secret — 32 byte ngẫu nhiên mã hóa base64 (AES-256-GCM cho secret TOTP, T-103); sai định dạng → api thoát mã 2 | api |
 | `AIEOS_STORAGE_PATH` | Cấu hình | api, worker |
 | `AIEOS_ALLOWED_ORIGINS` | Cấu hình | api |
 | `AIEOS_SCANNER_HOST` | Cấu hình | worker |
@@ -560,4 +560,15 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Recover: cần `--confirm` (thiếu → mã 1, không đổi gì) và `--reason`; đích phải là ADMIN `ACTIVE` (trigger INV-11 bảo đảm luôn có ít nhất một). Đặt mật khẩu mới do người vận hành nhập; `mfa_enabled = false`, xóa `mfa_secret_enc`, `must_enroll_mfa = true`; đánh dấu mã khôi phục còn lại đã dùng; gỡ khóa tạm (`locked_until`, bộ đếm); `version + 1`; thu hồi mọi session; audit `identity.admin.recover` kèm lý do; thông báo `ADMIN_RECOVERED` (tiêu đề chung, không tên/email, không link) cho mọi ADMIN `ACTIVE` khác (T-010).
 - `[CẦN XÁC NHẬN]` (CDA 15/10/2026: giữ hành vi hiện tại, xác nhận sau): khôi phục tài khoản ADMIN đang `LOCKED`/`DISABLED` (đổi trạng thái về `ACTIVE`) — chưa làm; hiện chỉ khôi phục ADMIN `ACTIVE`. CDA chấp nhận các lựa chọn kỹ thuật ở §24, §25 (link nội bộ, response API-NOT-02, không nhận mật khẩu qua tham số, từ chối email đã có, tiến trình `admin-cli`).
 - Đăng nhập lần đầu sau bootstrap/recover: session ở trạng thái chờ MFA (T-102); đăng ký MFA là T-103.
+
+## 26. Ghi chú triển khai T-103 (15/10/2026)
+
+- Vị trí: `identity/mfa.py` (TOTP, mã hóa secret, mã khôi phục, `MfaService`), `identity/router.py` (`build_mfa_router`: API-AUTH-02/03/04), `Authenticator.rotate_session`; `app/asgi.py` nạp `AIEOS_TOTP_ENCRYPTION_KEY`. Migration `0007`: `identity.user_account.mfa_last_step` (Database_Design §4).
+- TOTP theo RFC 6238: HMAC-SHA1, 6 chữ số, bước 30 giây (mặc định của ứng dụng xác thực phổ biến), chấp nhận lệch ±1 bước; mã đã chấp nhận không chấp nhận lại (RFC 6238 §5.2) nhờ `mfa_last_step`. Secret 20 byte; lưu AES-256-GCM, dữ liệu liên kết = id tài khoản. Thư viện mới: `cryptography` 50.0.2 (phát hành 30/09/2026, ≥ 2 tuần); TOTP tự viết bằng `hmac` chuẩn, kiểm bằng vector RFC 6238 Phụ lục B.
+- Mã khôi phục: 10 mã, 10 ký tự (bảng chữ không có I, O, 0, 1), dạng `XXXXX-XXXXX`, không phân biệt hoa thường/gạch; CSDL lưu SHA-256 (INV-16); xác nhận đăng ký mới → mã cũ bị đánh dấu đã dùng (không DELETE). Số lượng, độ dài, cửa sổ lệch là tham số kỹ thuật do agent chọn (tài liệu chưa ghi).
+- Phạm vi đăng ký: chỉ tài khoản bắt buộc MFA (role `ADMIN`) — MFA cho role khác là DEFERRED (D-30) → `403`. Đã bật MFA → `409 INVALID_STATE`; đặt lại MFA qua `recover-admin` (T-106).
+- Xác minh/xác nhận xong → xoay session (thu hồi session chờ MFA, tạo session mới `mfa_verified`, ADR-006). Giới hạn thử theo IP + tài khoản dùng chung `AIEOS_AUTH_RATE_LIMIT_*` (D-57); sai mã không tính vào khóa tạm của đăng nhập (SRS-IAM-07 chỉ nói đăng nhập). Audit `auth.mfa.enroll`, `auth.mfa.enroll.confirm`, `auth.mfa.verify` (SECURITY; lý do `INVALID_CODE`/`RATE_LIMITED`, phương thức `TOTP`/`RECOVERY_CODE`), không ghi mã.
+- Thay đổi API bổ sung (API_Specification §2, cập nhật trước khi code): response API-AUTH-01 thêm `mfa_enrolled` và `csrf_token` — session chờ MFA không gọi được `GET /auth/me` (TC-IAM-07) nhưng API MFA là POST cần `X-CSRF-Token`. Sau khi xoay session, frontend lấy token mới qua `/auth/me`.
+- TC-IAM-06/07: test gọi **mọi** endpoint của `create_app` bằng session chờ MFA — API quản trị chưa có (T-105, T-109) sẽ tự thuộc phạm vi kiểm khi được thêm.
+- Ngoài phạm vi: reauth/step-up (T-104), giao diện đăng ký MFA (T-111).
 

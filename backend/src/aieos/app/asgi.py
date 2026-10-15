@@ -1,7 +1,7 @@
 """Ứng dụng API (composition root, D-42): `uvicorn --factory aieos.app.asgi:create_app` (server: T-013).
 
 Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
-xác thực (T-102) → router (auth, thông báo T-010) → kiểm tra readiness.
+xác thực (T-102) → router (auth, MFA T-103, thông báo T-010) → kiểm tra readiness.
 
 `PUBLIC_PATHS`: endpoint không cần session (API_Specification §1.2) — mọi endpoint khác dưới `/api/v1` phải dùng
 dependency session của `identity` (SRS-GEN-01; test TC-GEN-06 gọi mọi route không có session).
@@ -13,7 +13,16 @@ from datetime import timedelta
 
 from fastapi import FastAPI
 
-from aieos.identity.api import LOGIN_PATH, Authenticator, AuthSettings, build_auth_router
+from aieos.identity.api import (
+    LOGIN_PATH,
+    Authenticator,
+    AuthSettings,
+    MfaKeyError,
+    MfaService,
+    build_auth_router,
+    build_mfa_router,
+    parse_totp_key,
+)
 from aieos.notify.api import build_notify_router
 from aieos.platform.api import (
     API_PREFIX,
@@ -79,7 +88,8 @@ def create_app() -> FastAPI:
         origins = parse_allowed_origins(settings.config("AIEOS_ALLOWED_ORIGINS"))
         auth_config = auth_settings(settings)
         storage = storage_from_settings(settings)
-    except (OriginConfigError, AppConfigError, StorageError) as error:
+        totp_key = parse_totp_key(settings.secret("AIEOS_TOTP_ENCRYPTION_KEY"))
+    except (OriginConfigError, AppConfigError, StorageError, MfaKeyError) as error:
         raise _exit_config_error(error) from None
     csrf_key = settings.secret("AIEOS_CSRF_KEY")
     csrf = CsrfConfig(csrf_key, origins, CSRF_EXEMPT_PATHS)
@@ -88,6 +98,10 @@ def create_app() -> FastAPI:
     authenticator = Authenticator(factory, auth_config)
     return create_api(
         {"database": lambda: database_ready(engine), "storage": storage.is_ready},
-        (build_auth_router(authenticator, csrf_key), build_notify_router(factory, authenticator.require_session)),
+        (
+            build_auth_router(authenticator, csrf_key),
+            build_mfa_router(authenticator, MfaService(authenticator, totp_key)),
+            build_notify_router(factory, authenticator.require_session),
+        ),
         csrf=csrf,
     )

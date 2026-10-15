@@ -1,7 +1,7 @@
 """Model `identity.*` (Database_Design §4, ADR-006). Chỉ dùng nội bộ module `identity`.
 
-Bảng do migration 0004 tạo; model phải khớp schema (TC-MIG-01). Token, mã khôi phục, email trong `login_attempt`
-chỉ lưu dạng băm SHA-256 32 byte (INV-16).
+Bảng do migration 0004 tạo (0007 thêm `user_account.mfa_last_step`); model phải khớp schema (TC-MIG-01). Token, mã
+khôi phục, email trong `login_attempt` chỉ lưu dạng băm SHA-256 32 byte (INV-16).
 """
 
 import uuid
@@ -42,6 +42,7 @@ class UserAccountRow(Base):
         CheckConstraint("failed_login_count >= 0", name="failed_login_count"),
         CheckConstraint("version >= 1", name="version"),
         CheckConstraint("display_name <> ''", name="display_name"),
+        CheckConstraint("mfa_last_step >= 0", name="mfa_last_step"),
         _SCHEMA,
     )
 
@@ -53,6 +54,7 @@ class UserAccountRow(Base):
     mfa_secret_enc: Mapped[bytes | None] = mapped_column(BYTEA)
     mfa_enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     must_enroll_mfa: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    mfa_last_step: Mapped[int | None] = mapped_column(BigInteger)  # bước TOTP đã dùng gần nhất (0007, T-103)
     failed_login_count: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     employee_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK org.employee thêm ở T-201
