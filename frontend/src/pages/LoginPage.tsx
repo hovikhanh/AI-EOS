@@ -7,11 +7,13 @@ import type { LoginResult } from "@/api/types";
 import { ME_KEY } from "@/auth/session";
 import { Card, ErrorNotice, Field } from "@/components/form";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher, useI18n } from "@/i18n";
 import { formText } from "@/lib/utils";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
 
@@ -41,12 +43,13 @@ export function LoginPage() {
 
   return (
     <main className="mx-auto mt-16 max-w-sm p-4">
-      <h1 className="mb-6 text-2xl font-semibold">Đăng nhập AI-EOS</h1>
+      <LanguageSwitcher className="mb-4 flex justify-end" />
+      <h1 className="mb-6 text-2xl font-semibold">{t.login.title}</h1>
       <Card>
         <form onSubmit={(e) => void submit(e)} className="space-y-4">
-          <Field label="Email" id="email" name="email" type="email" autoComplete="username" required />
+          <Field label={t.common.email} id="email" name="email" type="email" autoComplete="username" required />
           <Field
-            label="Mật khẩu"
+            label={t.common.password}
             id="password"
             name="password"
             type="password"
@@ -55,7 +58,7 @@ export function LoginPage() {
           />
           <ErrorNotice error={error} />
           <Button type="submit" className="w-full" disabled={busy}>
-            Đăng nhập
+            {t.login.submit}
           </Button>
         </form>
       </Card>

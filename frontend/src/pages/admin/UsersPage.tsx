@@ -8,16 +8,11 @@ import { useStepUp } from "@/auth/reauth";
 import { hasPermission, useMe } from "@/auth/session";
 import { Card, ErrorNotice, Field, Loading } from "@/components/form";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 import { formText } from "@/lib/utils";
 import { formatDateTime } from "@/lib/format";
 
 const USERS_KEY = ["admin", "users"] as const;
-const STATUS_LABEL: Record<User["status"], string> = {
-  INVITED: "Chờ kích hoạt",
-  ACTIVE: "Hoạt động",
-  LOCKED: "Đã khóa",
-  DISABLED: "Vô hiệu",
-};
 
 export function useRoles() {
   return useQuery({
@@ -32,18 +27,19 @@ function inviteUrl(link: string): string {
 
 function OneTimeLink({ invitation, onClose }: { invitation: Invitation; onClose: () => void }) {
   const url = inviteUrl(invitation.link);
+  const { t } = useI18n();
   return (
     <div role="status" className="space-y-2 rounded-md border border-info/40 bg-info/5 p-3 text-sm">
-      <p className="font-medium">Link mời — chỉ hiển thị một lần. Hết hạn: {formatDateTime(invitation.expires_at)}</p>
-      <p className="break-all font-mono" aria-label="Link mời">
+      <p className="font-medium">{t.users.inviteLink(formatDateTime(invitation.expires_at))}</p>
+      <p className="break-all font-mono" aria-label={t.users.inviteLinkLabel}>
         {url}
       </p>
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={() => void navigator.clipboard?.writeText(url)}>
-          Sao chép
+          {t.common.copy}
         </Button>
         <Button size="sm" variant="ghost" onClick={onClose}>
-          Đóng
+          {t.common.close}
         </Button>
       </div>
     </div>
@@ -53,6 +49,7 @@ function OneTimeLink({ invitation, onClose }: { invitation: Invitation; onClose:
 function CreateUserForm({ roles, onCreated }: { roles: RoleInfo[]; onCreated: (result: CreatedUser) => void }) {
   const stepUp = useStepUp();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [key] = useState(newIdempotencyKey);
   const [selected, setSelected] = useState<string[]>([]);
   const create = useMutation({
@@ -77,11 +74,11 @@ function CreateUserForm({ roles, onCreated }: { roles: RoleInfo[]; onCreated: (r
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2" aria-label="Tạo tài khoản">
-      <Field label="Email" id="new-email" name="email" type="email" required />
-      <Field label="Họ tên" id="new-name" name="display_name" required />
+    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2" aria-label={t.users.createTitle}>
+      <Field label={t.common.email} id="new-email" name="email" type="email" required />
+      <Field label={t.users.fullName} id="new-name" name="display_name" required />
       <fieldset className="sm:col-span-2">
-        <legend className="mb-1 text-sm font-medium">Role</legend>
+        <legend className="mb-1 text-sm font-medium">{t.users.roles}</legend>
         <div className="flex flex-wrap gap-3 text-sm">
           {roles.map((role) => (
             <label key={role.code} className="flex items-center gap-1">
@@ -98,12 +95,12 @@ function CreateUserForm({ roles, onCreated }: { roles: RoleInfo[]; onCreated: (r
         </div>
         {comboForbidden ? (
           <p role="alert" className="mt-1 text-sm text-danger">
-            Không được gán ADMIN và CFO cho cùng một tài khoản.
+            {t.common.adminCfoForbidden}
           </p>
         ) : null}
       </fieldset>
       <div className="sm:col-span-2">
-        <Field label="Lý do" id="new-reason" name="reason" required />
+        <Field label={t.common.reason} id="new-reason" name="reason" required />
       </div>
       <div className="sm:col-span-2">
         <ErrorNotice error={create.error} />
@@ -113,7 +110,7 @@ function CreateUserForm({ roles, onCreated }: { roles: RoleInfo[]; onCreated: (r
         disabled={create.isPending || comboForbidden}
         className="sm:col-span-2 sm:justify-self-start"
       >
-        Tạo và cấp lời mời
+        {t.users.create}
       </Button>
     </form>
   );
@@ -122,6 +119,7 @@ function CreateUserForm({ roles, onCreated }: { roles: RoleInfo[]; onCreated: (r
 function RoleEditor({ user, roles, onDone }: { user: User; roles: RoleInfo[]; onDone: () => void }) {
   const stepUp = useStepUp();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [selected, setSelected] = useState<string[]>(user.roles);
   const [reason, setReason] = useState("");
   const save = useMutation({
@@ -140,7 +138,7 @@ function RoleEditor({ user, roles, onDone }: { user: User; roles: RoleInfo[]; on
   });
   const comboForbidden = selected.includes("ADMIN") && selected.includes("CFO");
   return (
-    <div className="space-y-2 rounded-md bg-muted p-3 text-sm" aria-label={`Sửa role của ${user.email}`}>
+    <div className="space-y-2 rounded-md bg-muted p-3 text-sm" aria-label={t.users.editRolesOf(user.email)}>
       <div className="flex flex-wrap gap-3">
         {roles.map((role) => (
           <label key={role.code} className="flex items-center gap-1">
@@ -157,18 +155,23 @@ function RoleEditor({ user, roles, onDone }: { user: User; roles: RoleInfo[]; on
       </div>
       {comboForbidden ? (
         <p role="alert" className="text-danger">
-          Không được gán ADMIN và CFO cho cùng một tài khoản.
+          {t.common.adminCfoForbidden}
         </p>
       ) : null}
-      <Field label="Lý do" id={`reason-${user.id}`} value={reason} onChange={(e) => setReason(e.target.value)} />
-      <p className="text-muted-foreground">Lưu xong, mọi phiên đăng nhập của người này sẽ bị thu hồi.</p>
+      <Field
+        label={t.common.reason}
+        id={`reason-${user.id}`}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+      />
+      <p className="text-muted-foreground">{t.common.sessionsRevoked}</p>
       <ErrorNotice error={save.error} />
       <div className="flex gap-2">
         <Button size="sm" disabled={!reason.trim() || comboForbidden || save.isPending} onClick={() => save.mutate()}>
-          Lưu role
+          {t.users.saveRoles}
         </Button>
         <Button size="sm" variant="ghost" onClick={onDone}>
-          Hủy
+          {t.common.cancel}
         </Button>
       </div>
     </div>
@@ -188,6 +191,7 @@ function UserRow({
 }) {
   const stepUp = useStepUp();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const [editing, setEditing] = useState(false);
   const [link, setLink] = useState<Invitation | null>(null);
   const action = useMutation({
@@ -215,37 +219,37 @@ function UserRow({
             {user.display_name} <span className="text-muted-foreground">· {user.email}</span>
           </p>
           <p className="text-sm text-muted-foreground">
-            {STATUS_LABEL[user.status]} · {user.roles.join(", ") || "chưa có role"} · tạo{" "}
-            {formatDateTime(user.created_at)}
+            {t.users.status[user.status]} · {user.roles.join(", ") || t.common.noRole} ·{" "}
+            {t.users.created(formatDateTime(user.created_at))}
           </p>
         </div>
         {self ? (
-          <p className="text-sm text-muted-foreground">Không thể tự sửa tài khoản của mình.</p>
+          <p className="text-sm text-muted-foreground">{t.users.selfEdit}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {user.status === "INVITED" ? (
               <Button size="sm" variant="outline" onClick={reissue}>
-                Cấp lại lời mời
+                {t.users.reissue}
               </Button>
             ) : null}
             {user.status === "ACTIVE" ? (
               <Button size="sm" variant="outline" onClick={() => setStatus("LOCKED")}>
-                Khóa
+                {t.users.lock}
               </Button>
             ) : null}
             {user.status === "LOCKED" || user.status === "DISABLED" ? (
               <Button size="sm" variant="outline" onClick={() => setStatus("ACTIVE")}>
-                Mở khóa
+                {t.users.unlock}
               </Button>
             ) : null}
             {user.status !== "DISABLED" && user.status !== "INVITED" ? (
               <Button size="sm" variant="destructive" onClick={() => setStatus("DISABLED")}>
-                Vô hiệu
+                {t.users.disable}
               </Button>
             ) : null}
             {canAssign ? (
               <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>
-                Sửa role
+                {t.users.editRoles}
               </Button>
             ) : null}
           </div>
@@ -260,6 +264,7 @@ function UserRow({
 
 export function UsersPage() {
   const me = useMe().data;
+  const { t } = useI18n();
   const users = useQuery({
     queryKey: USERS_KEY,
     queryFn: async () => (await apiFetch("/admin/users?limit=100")) as Page<User>,
@@ -271,8 +276,8 @@ export function UsersPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">Người dùng</h1>
-      <Card title="Tạo tài khoản">
+      <h1 className="text-2xl font-semibold">{t.users.title}</h1>
+      <Card title={t.users.createTitle}>
         {created?.invitation ? (
           <OneTimeLink
             invitation={created.invitation}
@@ -287,15 +292,15 @@ export function UsersPage() {
           <ErrorNotice error={roles.error} />
         )}
       </Card>
-      <Card title="Danh sách">
+      <Card title={t.common.list}>
         {users.isPending ? (
           <Loading />
         ) : users.isError ? (
           <ErrorNotice error={users.error} />
         ) : users.data.items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có tài khoản nào.</p>
+          <p className="text-sm text-muted-foreground">{t.users.empty}</p>
         ) : (
-          <ul aria-label="Danh sách người dùng">
+          <ul aria-label={t.users.listLabel}>
             {users.data.items.map((user) => (
               <UserRow
                 key={user.id}

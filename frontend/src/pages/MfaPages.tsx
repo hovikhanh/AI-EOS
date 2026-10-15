@@ -8,6 +8,7 @@ import { apiFetch, hasCsrfToken } from "@/api/client";
 import { ME_KEY, fetchMe } from "@/auth/session";
 import { Card, ErrorNotice, Field, Loading } from "@/components/form";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 import { formText } from "@/lib/utils";
 
 type Enrollment = { secret: string; otpauth_uri: string };
@@ -24,6 +25,7 @@ function useFinish() {
 
 export function MfaVerifyPage() {
   const finish = useFinish();
+  const { t } = useI18n();
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   if (!hasCsrfToken()) {
@@ -47,19 +49,13 @@ export function MfaVerifyPage() {
 
   return (
     <main className="mx-auto mt-16 max-w-sm p-4">
-      <h1 className="mb-6 text-2xl font-semibold">Xác minh MFA</h1>
+      <h1 className="mb-6 text-2xl font-semibold">{t.mfa.verifyTitle}</h1>
       <Card>
         <form onSubmit={(e) => void submit(e)} className="space-y-4">
-          <Field
-            label="Mã từ ứng dụng xác thực hoặc mã khôi phục"
-            id="code"
-            name="code"
-            autoComplete="one-time-code"
-            required
-          />
+          <Field label={t.mfa.codeOrRecovery} id="code" name="code" autoComplete="one-time-code" required />
           <ErrorNotice error={error} />
           <Button type="submit" className="w-full" disabled={busy}>
-            Xác minh
+            {t.mfa.verify}
           </Button>
         </form>
       </Card>
@@ -69,6 +65,7 @@ export function MfaVerifyPage() {
 
 export function MfaEnrollPage() {
   const finish = useFinish();
+  const { t } = useI18n();
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [codes, setCodes] = useState<string[] | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -120,13 +117,14 @@ export function MfaEnrollPage() {
   if (codes) {
     return (
       <main className="mx-auto mt-16 max-w-md p-4">
-        <h1 className="mb-6 text-2xl font-semibold">Lưu mã khôi phục</h1>
+        <h1 className="mb-6 text-2xl font-semibold">{t.mfa.recoveryTitle}</h1>
         <Card>
           <p className="mb-3 text-sm">
-            Mỗi mã dùng được một lần khi không có ứng dụng xác thực. Mã chỉ hiển thị <strong>một lần</strong> — hãy lưu
-            ở nơi an toàn.
+            {t.mfa.recoveryIntroBefore}
+            <strong>{t.mfa.recoveryOnce}</strong>
+            {t.mfa.recoveryIntroAfter}
           </p>
-          <ul aria-label="Mã khôi phục" className="mb-4 grid grid-cols-2 gap-2 font-mono text-sm">
+          <ul aria-label={t.mfa.recoveryCodes} className="mb-4 grid grid-cols-2 gap-2 font-mono text-sm">
             {codes.map((code) => (
               <li key={code} className="rounded bg-muted px-2 py-1">
                 {code}
@@ -134,7 +132,7 @@ export function MfaEnrollPage() {
             ))}
           </ul>
           <Button className="w-full" onClick={() => void finish()}>
-            Tôi đã lưu mã, tiếp tục
+            {t.mfa.recoverySaved}
           </Button>
         </Card>
       </main>
@@ -143,21 +141,28 @@ export function MfaEnrollPage() {
 
   return (
     <main className="mx-auto mt-16 max-w-md p-4">
-      <h1 className="mb-6 text-2xl font-semibold">Đăng ký MFA</h1>
+      <h1 className="mb-6 text-2xl font-semibold">{t.mfa.enrollTitle}</h1>
       <Card>
         {enrollment ? (
           <form onSubmit={(e) => void confirm(e)} className="space-y-4">
-            <p className="text-sm">Thêm tài khoản vào ứng dụng xác thực bằng khóa sau rồi nhập mã 6 số.</p>
-            <p className="break-all rounded bg-muted p-2 font-mono text-sm" aria-label="Khóa bí mật">
+            <p className="text-sm">{t.mfa.enrollIntro}</p>
+            <p className="break-all rounded bg-muted p-2 font-mono text-sm" aria-label={t.mfa.secret}>
               {enrollment.secret}
             </p>
             <a className="text-sm text-primary underline" href={enrollment.otpauth_uri}>
-              Mở bằng ứng dụng xác thực trên thiết bị này
+              {t.mfa.openApp}
             </a>
-            <Field label="Mã 6 số" id="code" name="code" inputMode="numeric" autoComplete="one-time-code" required />
+            <Field
+              label={t.mfa.sixDigits}
+              id="code"
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+            />
             <ErrorNotice error={error} />
             <Button type="submit" className="w-full" disabled={busy}>
-              Xác nhận
+              {t.common.confirm}
             </Button>
           </form>
         ) : error ? (

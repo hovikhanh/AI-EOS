@@ -1,6 +1,7 @@
 // Thành phần biểu mẫu và thông báo dùng chung (T-111, UX_Flows §0.2). Nội dung từ server render dạng văn bản.
 import type { ComponentProps, ReactNode } from "react";
 import { ApiError } from "@/api/client";
+import { useI18n } from "@/i18n";
 import { errorMessage } from "@/lib/messages";
 import { cn } from "@/lib/utils";
 
@@ -19,14 +20,15 @@ export function Field({ label, id, ...props }: ComponentProps<"input"> & { label
 
 /** Lỗi tạm thời: thông báo ngắn + mã tham chiếu `correlation_id` (UX_Flows §0.2). */
 export function ErrorNotice({ error }: { error: unknown }) {
+  const { t } = useI18n();
   if (!error) {
     return null;
   }
   const reference = error instanceof ApiError ? error.correlationId : null;
   return (
     <div role="alert" className="rounded-md border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
-      <p>{errorMessage(error)}</p>
-      {reference ? <p className="mt-1 text-xs text-muted-foreground">Mã tham chiếu: {reference}</p> : null}
+      <p>{errorMessage(error, t)}</p>
+      {reference ? <p className="mt-1 text-xs text-muted-foreground">{t.common.reference(reference)}</p> : null}
     </div>
   );
 }
@@ -40,10 +42,11 @@ export function Card({ title, children, className }: { title?: string; children:
   );
 }
 
-export function Loading({ label = "Đang tải…" }: { label?: string }) {
+export function Loading({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <p role="status" className="p-6 text-sm text-muted-foreground">
-      {label}
+      {label ?? t.common.loading}
     </p>
   );
 }

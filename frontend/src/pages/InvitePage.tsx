@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { apiFetch } from "@/api/client";
 import { Card, ErrorNotice, Field } from "@/components/form";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher, useI18n } from "@/i18n";
 import { formText } from "@/lib/utils";
 
 function takeToken(): string {
@@ -16,6 +17,7 @@ function takeToken(): string {
 }
 
 export function InvitePage() {
+  const { t } = useI18n();
   const [token] = useState(takeToken);
   const [error, setError] = useState<unknown>(null);
   const [mismatch, setMismatch] = useState(false);
@@ -44,21 +46,22 @@ export function InvitePage() {
 
   return (
     <main className="mx-auto mt-16 max-w-sm p-4">
-      <h1 className="mb-6 text-2xl font-semibold">Kích hoạt tài khoản</h1>
+      <LanguageSwitcher className="mb-4 flex justify-end" />
+      <h1 className="mb-6 text-2xl font-semibold">{t.invite.title}</h1>
       <Card>
         {done ? (
           <div className="space-y-4">
-            <p className="text-sm">Tài khoản đã được kích hoạt.</p>
+            <p className="text-sm">{t.invite.activated}</p>
             <Button asChild className="w-full">
-              <Link to="/login">Đăng nhập</Link>
+              <Link to="/login">{t.login.submit}</Link>
             </Button>
           </div>
         ) : !token ? (
-          <p className="text-sm">Lời mời không còn hiệu lực. Vui lòng liên hệ quản trị.</p>
+          <p className="text-sm">{t.invite.invalid}</p>
         ) : (
           <form onSubmit={(e) => void submit(e)} className="space-y-4">
             <Field
-              label="Mật khẩu mới"
+              label={t.invite.newPassword}
               id="password"
               name="password"
               type="password"
@@ -66,7 +69,7 @@ export function InvitePage() {
               required
             />
             <Field
-              label="Nhập lại mật khẩu"
+              label={t.invite.confirmPassword}
               id="confirm"
               name="confirm"
               type="password"
@@ -75,12 +78,12 @@ export function InvitePage() {
             />
             {mismatch ? (
               <p role="alert" className="text-sm text-danger">
-                Hai lần nhập mật khẩu không khớp.
+                {t.invite.mismatch}
               </p>
             ) : null}
             <ErrorNotice error={error} />
             <Button type="submit" className="w-full" disabled={busy}>
-              Kích hoạt
+              {t.invite.submit}
             </Button>
           </form>
         )}

@@ -1,10 +1,20 @@
 // Xác thực lại cho thao tác `STEP-UP` (T-111, SRS-IAM-08, API-AUTH-05): API trả `401 REAUTH_REQUIRED` → hộp thoại
 // nhập mật khẩu (+ mã MFA nếu đã bật) → gọi `/auth/reauth` → thử lại thao tác một lần. Mật khẩu/mã không lưu lại.
-import { createContext, useCallback, useContext, useRef, useState, type FormEvent, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { apiFetch, isApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { formText } from "@/lib/utils";
 import { ErrorNotice, Field } from "@/components/form";
+import { useI18n } from "@/i18n";
 import { useMe } from "./session";
 
 type StepUp = <T>(action: () => Promise<T>) => Promise<T>;
@@ -21,6 +31,7 @@ export function useStepUp(): StepUp {
 
 export function ReauthProvider({ children }: { children: ReactNode }) {
   const me = useMe().data;
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
@@ -66,6 +77,14 @@ export function ReauthProvider({ children }: { children: ReactNode }) {
     waiter.current?.reject(new Error("Đã hủy xác thực lại"));
   }
 
+  // Bàn phím (WCAG 2.1.1, T-607): Esc đóng hộp thoại như nút Hủy.
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      cancel();
+    }
+  }
+
   return (
     <StepUpContext.Provider value={stepUp}>
       {children}
@@ -74,6 +93,7 @@ export function ReauthProvider({ children }: { children: ReactNode }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="reauth-title"
+          onKeyDown={onKeyDown}
           className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4"
         >
           <form
@@ -81,33 +101,28 @@ export function ReauthProvider({ children }: { children: ReactNode }) {
             className="w-full max-w-sm space-y-4 rounded-lg bg-background p-6 shadow-lg"
           >
             <h2 id="reauth-title" className="text-lg font-semibold">
-              Xác thực lại
+              {t.reauth.title}
             </h2>
-            <p className="text-sm text-muted-foreground">Thao tác này cần xác nhận lại danh tính.</p>
+            <p className="text-sm text-muted-foreground">{t.reauth.intro}</p>
             <Field
-              label="Mật khẩu"
+              label={t.common.password}
               id="reauth-password"
+              autoFocus
               name="password"
               type="password"
               autoComplete="current-password"
               required
             />
             {me?.mfa_enabled ? (
-              <Field
-                label="Mã MFA hoặc mã khôi phục"
-                id="reauth-code"
-                name="code"
-                autoComplete="one-time-code"
-                required
-              />
+              <Field label={t.reauth.code} id="reauth-code" name="code" autoComplete="one-time-code" required />
             ) : null}
             <ErrorNotice error={error} />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="ghost" onClick={cancel}>
-                Hủy
+                {t.common.cancel}
               </Button>
               <Button type="submit" disabled={busy}>
-                Xác nhận
+                {t.common.confirm}
               </Button>
             </div>
           </form>

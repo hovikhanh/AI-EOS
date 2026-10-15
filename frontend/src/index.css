@@ -4,7 +4,8 @@
  * Design token trung tính (T-012, UX §8.1–8.2, D-35).
  * Màu thương hiệu chưa quyết định (D-35 DEFERRED): `primary` dùng thang xám; `ai` và màu trạng thái là
  * giá trị giữ chỗ — đề xuất, chưa chính thức. Đổi giá trị ở đây, không sửa component.
- * Chưa có: chế độ tối, hai mật độ Gọn/Thoáng, kiểm tra tương phản WCAG (T-607).
+ * Tương phản chữ/nền ≥ 4,5:1 (WCAG 2.1 AA) được kiểm bởi `src/t607.test.tsx` — đổi màu phải giữ đạt.
+ * Chưa có: chế độ tối, hai mật độ Gọn/Thoáng.
  */
 :root {
   --neutral-0: #ffffff;
