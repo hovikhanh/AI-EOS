@@ -1,0 +1,166 @@
+# Docker Compose — CẤU HÌNH (T-003, D-43; Architecture §9.1, ADR-004). Chạy đủ service, build image api/worker,
+# healthcheck đạt và TC-NFR-01 thuộc T-013. File này KHÔNG chứa giá trị secret (Implementation_Plan §7).
+#
+# Mạng:
+#   edge     — chỉ `proxy`; cổng duy nhất publish ra ngoài (443).
+#   backend  — `internal: true` (không có đường ra internet): proxy, api, worker, db, scanner (TC-NFR-01, D-45).
+#   egress   — chỉ `scanner-updater` (tải chữ ký ClamAV; không đọc file người dùng — ngoại lệ D-45).
+# Cấu hình: file `.env` cạnh file này (không commit; danh sách tên biến ở `.env.example`). Secret: Docker secrets từ
+# thư mục `secrets/` (không commit) → biến `<TÊN>_FILE` (loader T-004).
+# Phiên bản image ghim chính xác, phát hành ≥ 2 tuần (caddy 2.11.4: 03/06/2026; postgres 18.6: 13/08/2026;
+# clamav 1.5.4: 07/08/2026).
+
+name: aieos
+
+x-backend-image: &backend-image
+  image: aieos-backend:local
+  build:
+    context: ../backend # Dockerfile thuộc T-013
+  env_file:
+    - path: .env
+      required: false
+  restart: unless-stopped
+
+services:
+  proxy:
+    image: caddy:2.11.4
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../frontend/dist:/srv:ro # bản build frontend (T-012/T-111)
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge, backend]
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--no-check-certificate", "https://localhost/api/v1/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  api:
+    <<: *backend-image
+    command: ["uvicorn", "--factory", "aieos.app.asgi:create_app", "--host", "0.0.0.0", "--port", "8000",
+              "--proxy-headers", "--forwarded-allow-ips", "*"]
+    environment:
+      AIEOS_STORAGE_PATH: /data/storage
+      AIEOS_DATABASE_URL_FILE: /run/secrets/database_url
+      AIEOS_CSRF_KEY_FILE: /run/secrets/csrf_key
+      AIEOS_TOTP_ENCRYPTION_KEY_FILE: /run/secrets/totp_encryption_key
+    secrets: [database_url, csrf_key, totp_encryption_key]
+    volumes:
+      - storage:/data/storage
+    networks: [backend]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    <<: *backend-image
+    command: ["python", "-m", "aieos.app", "worker"]
+    environment:
+      AIEOS_STORAGE_PATH: /data/storage
+      AIEOS_SCANNER_HOST: scanner
+      AIEOS_DATABASE_URL_FILE: /run/secrets/database_url
+    secrets: [database_url]
+    volumes:
+      - storage:/data/storage
+    networks: [backend]
+    depends_on:
+      db:
+        condition: service_healthy
+    # Healthcheck worker: T-013 (worker chưa có endpoint/tín hiệu sống riêng).
+
+  migrate:
+    # Lệnh riêng, role chủ sở hữu CSDL; không chạy khi api khởi động (Database_Design §10):
+    #   docker compose --profile ops run --rm migrate
+    <<: *backend-image
+    profiles: [ops]
+    restart: "no"
+    command: ["python", "-m", "aieos.app", "migrate"]
+    environment:
+      AIEOS_DATABASE_OWNER_URL_FILE: /run/secrets/database_owner_url
+    secrets: [database_owner_url]
+    networks: [backend]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: aieos
+    secrets: [postgres_password]
+    volumes:
+      - db_data:/var/lib/postgresql
+      # Tạo role aieos_owner/aieos_app/aieos_backup khi khởi tạo CSDL lần đầu (T-005); mật khẩu role đặt riêng.
+      - ../backend/src/aieos/platform/sql/provision_roles.sql:/docker-entrypoint-initdb.d/10_provision_roles.sql:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aieos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  scanner:
+    image: clamav/clamav:1.5.4
+    restart: unless-stopped
+    environment:
+      CLAMAV_NO_FRESHCLAMD: "true" # không tự tải chữ ký: mạng backend không có đường ra (D-45)
+    volumes:
+      - clamav_db:/var/lib/clamav
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  scanner-updater:
+    # Chỉ tải chữ ký vào volume chung; không gắn volume dữ liệu người dùng, không ở mạng backend (D-45).
+    image: clamav/clamav:1.5.4
+    restart: unless-stopped
+    environment:
+      CLAMAV_NO_CLAMD: "true"
+      CLAMAV_NO_MILTERD: "true"
+    volumes:
+      - clamav_db:/var/lib/clamav
+    networks: [egress]
+
+networks:
+  edge: {}
+  backend:
+    internal: true
+  egress: {}
+
+volumes:
+  db_data: {}
+  storage: {}
+  clamav_db: {}
+  caddy_data: {}
+  caddy_config: {}
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  database_url:
+    file: ./secrets/database_url
+  database_owner_url:
+    file: ./secrets/database_owner_url
+  csrf_key:
+    file: ./secrets/csrf_key
+  totp_encryption_key:
+    file: ./secrets/totp_encryption_key

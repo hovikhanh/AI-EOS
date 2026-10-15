@@ -5,6 +5,7 @@
 # Biến môi trường:
 #   AIEOS_REQUIRE_DB=1          bắt buộc test PostgreSQL (CI đặt biến này); thiếu URL → thất bại
 #   AIEOS_TEST_DATABASE_URL     chuỗi kết nối PostgreSQL dùng cho test `db` (không in ra log)
+#   AIEOS_REQUIRE_DOCKER=1      bắt buộc kiểm Compose (scripts/check_compose.py, T-003); không có docker → thất bại
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -66,6 +67,7 @@ audit_python() {
 
 step runtime check_runtime
 step docs python3 "$ROOT/scripts/check_docs.py"
+step compose python3 "$ROOT/scripts/check_compose.py"
 
 step backend-lock in_backend uv lock --check
 step backend-sync in_backend uv sync --locked

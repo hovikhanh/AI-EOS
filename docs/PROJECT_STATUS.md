@@ -20,7 +20,7 @@ Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột 
 - Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend; đăng nhập/session (T-102); MFA TOTP API-AUTH-02/03/04 (T-103); policy `authorize()` + bắt buộc khai báo quyền cho route (T-108); step-up + đổi mật khẩu API-AUTH-05/09 (T-104); API quản trị tài khoản/role/assignment API-ADM-01, 04…09 (T-109); tạo tài khoản + lời mời API-ADM-02/03, API-AUTH-08 (T-105); thông báo in-app API-NOT-01/02 (T-010); CLI `bootstrap-admin`/`recover-admin` (T-106)
 - Test case: **206** (199 + TC-FE-01…07); **41 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…08, TC-IAM-11, TC-IAM-12; TC-IAM-09, TC-IAM-10; TC-ACC-01, TC-ACC-02, TC-ACC-04…08; TC-AUD-01, TC-AUD-02), 165 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
-- CI: `scripts/ci.sh` 18 bước; branch protection `main` (required check `ci`, bắt buộc PR, `enforce_admins`, 0 approval — D-54 chưa áp dụng)
+- CI: `scripts/ci.sh` 19 bước (thêm `compose`, T-003); branch protection `main` (required check `ci`, bắt buộc PR, `enforce_admins`, 0 approval — D-54 chưa áp dụng)
 
 ## 2. Việc đang bị block (Blockers)
 

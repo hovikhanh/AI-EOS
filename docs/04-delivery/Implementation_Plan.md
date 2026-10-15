@@ -615,7 +615,18 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Link mời `/invite#token=…` (fragment không gửi tới máy chủ, không vào log/Referer); trang thuộc T-111. Gọi lại API-ADM-02 cùng khóa không trả lại link (chỉ lưu hash — INV-16) → `invitation: null`; cấp lại qua API-ADM-03. Lựa chọn của agent, ghi ở API_Specification §3.
 - Migration `0009`: `identity.user_account.idempotency_key`, `request_hash`, UNIQUE `(created_by, idempotency_key)` (INV-08). Test INV-16 cho phép `request_hash` (dấu vân tay request, không phải token).
 - Một lần dùng: `UPDATE invitation … WHERE used_at IS NULL AND revoked_at IS NULL AND expires_at > now() RETURNING` + `UPDATE user_account … WHERE status = 'INVITED'` trong một transaction — hai lớp độc lập (bỏ một lớp vẫn đúng; bỏ cả hai thì test đỏ). TC-IAM-10: 4 request đồng thời → đúng một thành công.
-- Không có API "Admin hủy lời mời" riêng (SRS-IAM-02 nêu thu hồi khi Admin hủy) — API_Specification chưa thiết kế; hiện thu hồi khi cấp lại. `[CẦN XÁC NHẬN]` có cần endpoint hủy riêng.
+- Không có API "Admin hủy lời mời" riêng (SRS-IAM-02 nêu thu hồi khi Admin hủy) — API_Specification chưa thiết kế; lời mời chỉ bị thu hồi khi cấp lại (API-ADM-03). **CDA 15/10/2026: tạm giữ hành vi này**; `[CẦN XÁC NHẬN]` endpoint hủy riêng — quyết định sau.
 - Tài khoản tạo với role `ADMIN` được đặt `must_enroll_mfa = true`. Tạo kèm role cần thêm `role.assign` (ngoài `user.manage`).
 - TC-AUD-02 đạt tổng ở T-105 (D-55): một luồng đầu-cuối gồm đăng nhập sai/đúng, đăng ký MFA (mã sai/đúng), reauth bằng TOTP, đổi mật khẩu, tạo + chấp nhận lời mời (thành công và dùng lại) — audit và log không chứa mật khẩu, token session, CSRF, secret TOTP, mã TOTP, mã khôi phục, token mời.
+
+## 31. Ghi chú triển khai T-003 (15/10/2026)
+
+- Phạm vi D-43: chỉ **cấu hình** — `infra/compose.yaml`, `infra/caddy/Caddyfile`, `infra/README.md`, kiểm tra tĩnh `scripts/check_compose.py` (bước `compose` trong `scripts/ci.sh`; CI đặt `AIEOS_REQUIRE_DOCKER=1`, local không có Docker → `NOT RUN`). Dockerfile, `docker compose up`, healthcheck đạt, TC-NFR-01 thuộc T-013.
+- Service theo Architecture §9.1: `proxy` (Caddy, `tls internal`, cổng 443 duy nhất), `api`, `worker`, `migrate` (profile `ops`, role chủ sở hữu), `db` (PostgreSQL, không publish cổng, `provision_roles.sql` ở init), `scanner` (ClamAV, `CLAMAV_NO_FRESHCLAMD`), `scanner-updater` (chỉ mạng `egress`, chỉ volume chữ ký — D-45). Mạng `backend` `internal: true`. Không có profile `llm`/`observability` (D-43).
+- Image ghim theo quy tắc phát hành ≥ 2 tuần: `caddy:2.11.4` (03/06/2026 — bản 2.11.6/2.11.7 mới 01–03/10/2026 chưa đủ 2 tuần), `postgres:18.6` (13/08/2026), `clamav/clamav:1.5.4` (07/08/2026). CI test vẫn dùng `postgres:18` (T-002) — `[CẦN XÁC NHẬN]` có ghim CI về `18.6` cho đồng nhất không.
+- Secret qua Docker secrets (`infra/secrets/`, đã `.gitignore`) → biến `<TÊN>_FILE` (T-004); cấu hình qua `infra/.env` (không bắt buộc khi chạy `config`).
+- Nguồn IP sau proxy (`[CẦN XÁC NHẬN]` của T-102): `api` chạy uvicorn `--proxy-headers --forwarded-allow-ips "*"` — tin `X-Forwarded-For` do Caddy đặt; chấp nhận được vì `api` chỉ nhận kết nối từ mạng `backend` (không publish cổng). Đổi khi có nhiều proxy/kiến trúc khác.
+- Tuổi chữ ký ≤ 90 ngày (D-45) cần giám sát/kiểm tra khi chạy — thuộc T-013/vận hành; T-003 chỉ cấu hình nguồn cập nhật.
+- `[CẦN XÁC NHẬN]`, không tự quyết: provider cloud cho demo (D-50, DeepSeek qua OpenRouter) cần đường ra từ `api`/`worker`, trong khi `backend` là `internal` (TC-NFR-01 áp dụng "khi chỉ cấu hình provider local"). Xử lý ở T-204/T-205 cùng các điểm D-50 còn mở ở mục 0 OPEN_DECISIONS.
+- Kiểm âm: 12 vi phạm tiêm vào cấu hình (publish cổng `db`, thêm cổng 80, bỏ `internal`, `api`/`scanner` ra mạng ngoài, `scanner-updater` vào `backend` hoặc gắn volume dữ liệu, giá trị secret trong `environment`, image `latest`/tag major, secret không từ file) và một `Caddyfile` sai cú pháp → script đều báo lỗi.
 
