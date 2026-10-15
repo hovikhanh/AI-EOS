@@ -9,7 +9,8 @@
 - Không có giá trị secret trong file: biến có tên secret chỉ được đặt dạng `<TÊN>_FILE`; secret Docker đọc từ file.
 - Image ghim phiên bản chính xác `x.y.z` (PostgreSQL: `major.minor`), không dùng tag major/`latest` (trừ image backend
   build tại chỗ).
-- `Caddyfile` hợp lệ (`caddy validate` trong image `proxy`).
+- Image nền trong `backend/Dockerfile`, `infra/caddy/Dockerfile` ghim phiên bản chính xác (T-013).
+- `Caddyfile` hợp lệ (`caddy validate` trong image nền của `proxy`).
 
 Không có Docker: in NOT RUN và thoát 0, trừ khi `AIEOS_REQUIRE_DOCKER=1` (CI) → thoát 1.
 """
@@ -26,10 +27,14 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "infra" / "compose.yaml"
 CADDYFILE = ROOT / "infra" / "caddy" / "Caddyfile"
+DOCKERFILES = (ROOT / "backend" / "Dockerfile", ROOT / "infra" / "caddy" / "Dockerfile")
+BASE_PINNED = re.compile(r"^[\w./-]+:\d+\.\d+(\.\d+)?(-[\w.-]+)?$")  # vd. python:3.12.14-slim-bookworm
 BUSINESS = {"proxy", "api", "worker", "migrate", "db", "scanner"}
-SECRET_NAME = re.compile(r"(PASSWORD|SECRET|_KEY|TOKEN|DATABASE_URL|DATABASE_OWNER_URL)", re.IGNORECASE)
+# Tên biến secret theo hậu tố (vd. POSTGRES_PASSWORD, AIEOS_CSRF_KEY, AIEOS_LLM_API_KEY_<NAME>, AIEOS_DATABASE_URL);
+# không bắt nhầm cấu hình như AIEOS_PASSWORD_MIN_LENGTH.
+SECRET_NAME = re.compile(r"(_|^)(PASSWORD|SECRET|TOKEN)$|_KEY$|_KEY_|DATABASE_(OWNER_)?URL$", re.IGNORECASE)
 PINNED = re.compile(r"^[\w./-]+:\d+\.\d+(\.\d+)?$")  # PostgreSQL dùng major.minor (vd. 18.6)
-LOCAL_IMAGES = {"aieos-backend:local"}
+LOCAL_IMAGES = {"aieos-backend:local", "aieos-proxy:local"}  # build tại chỗ; Dockerfile ghim base image
 
 
 def violations(config: dict[str, Any]) -> list[str]:
@@ -69,6 +74,29 @@ def violations(config: dict[str, Any]) -> list[str]:
     return problems
 
 
+def dockerfile_bases(path: Path) -> list[str]:
+    """Image nền (FROM) của Dockerfile, bỏ tham chiếu tới stage nội bộ."""
+    stages: set[str] = set()
+    bases: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[0].upper() == "FROM":
+            if parts[1] not in stages:
+                bases.append(parts[1])
+            if len(parts) >= 4 and parts[2].upper() == "AS":
+                stages.add(parts[3])
+    return bases
+
+
+def dockerfile_violations() -> list[str]:
+    problems = []
+    for path in DOCKERFILES:
+        for base in dockerfile_bases(path):
+            if not BASE_PINNED.match(base):
+                problems.append(f"{path.relative_to(ROOT)}: image nền {base!r} chưa ghim phiên bản chính xác")
+    return problems
+
+
 def main() -> int:
     if shutil.which("docker") is None or subprocess.run(["docker", "compose", "version"], capture_output=True).returncode:
         if os.environ.get("AIEOS_REQUIRE_DOCKER") == "1":
@@ -82,8 +110,8 @@ def main() -> int:
     if result.returncode:
         print(result.stderr.strip(), file=sys.stderr)
         return 1
-    problems = violations(json.loads(result.stdout))
-    proxy_image = json.loads(result.stdout)["services"]["proxy"]["image"]
+    problems = violations(json.loads(result.stdout)) + dockerfile_violations()
+    proxy_image = dockerfile_bases(DOCKERFILES[1])[-1]  # image nền của aieos-proxy:local
     caddy = subprocess.run(
         [
             "docker", "run", "--rm", "--network", "none", "-v", f"{CADDYFILE}:/etc/caddy/Caddyfile:ro", proxy_image,

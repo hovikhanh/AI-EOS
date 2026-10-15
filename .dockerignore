@@ -1,0 +1,8 @@
+# Ngữ cảnh build của image proxy (infra/caddy/Dockerfile) là gốc repo — chỉ cần frontend và Caddyfile.
+**/node_modules
+**/dist
+backend
+docs
+.git
+infra/secrets
+infra/.env

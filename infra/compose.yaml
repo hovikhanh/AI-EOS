@@ -1,12 +1,12 @@
-# Docker Compose — CẤU HÌNH (T-003, D-43; Architecture §9.1, ADR-004). Chạy đủ service, build image api/worker,
-# healthcheck đạt và TC-NFR-01 thuộc T-013. File này KHÔNG chứa giá trị secret (Implementation_Plan §7).
+# Docker Compose (T-003 cấu hình, T-013 tích hợp — D-43; Architecture §9.1, ADR-004). Hướng dẫn chạy: infra/README.md.
+# Smoke test tích hợp + TC-NFR-01: scripts/compose_smoke.sh. File này KHÔNG chứa giá trị secret (Implementation_Plan §7).
 #
 # Mạng:
 #   edge     — chỉ `proxy`; cổng duy nhất publish ra ngoài (443).
 #   backend  — `internal: true` (không có đường ra internet): proxy, api, worker, db, scanner (TC-NFR-01, D-45).
 #   egress   — chỉ `scanner-updater` (tải chữ ký ClamAV; không đọc file người dùng — ngoại lệ D-45).
-# Cấu hình: file `.env` cạnh file này (không commit; danh sách tên biến ở `.env.example`). Secret: Docker secrets từ
-# thư mục `secrets/` (không commit) → biến `<TÊN>_FILE` (loader T-004).
+# Cấu hình: file `.env` cạnh file này (không commit; tên biến ở `.env.example`, giá trị minh họa ở `demo.env`). Secret:
+# Docker secrets từ thư mục `secrets/` (không commit; sinh bằng scripts/init_secrets.py) → biến `<TÊN>_FILE` (T-004).
 # Phiên bản image ghim chính xác, phát hành ≥ 2 tuần (caddy 2.11.4: 03/06/2026; postgres 18.6: 13/08/2026;
 # clamav 1.5.4: 07/08/2026).
 
@@ -15,7 +15,7 @@ name: aieos
 x-backend-image: &backend-image
   image: aieos-backend:local
   build:
-    context: ../backend # Dockerfile thuộc T-013
+    context: ../backend
   env_file:
     - path: .env
       required: false
@@ -23,13 +23,15 @@ x-backend-image: &backend-image
 
 services:
   proxy:
-    image: caddy:2.11.4
+    # Caddy 2.11.4 + Caddyfile + bản build frontend (T-111), build bằng infra/caddy/Dockerfile.
+    image: aieos-proxy:local
+    build:
+      context: ..
+      dockerfile: infra/caddy/Dockerfile
     restart: unless-stopped
     ports:
       - "443:443"
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ../frontend/dist:/srv:ro # bản build frontend (T-012/T-111)
       - caddy_data:/data
       - caddy_config:/config
     networks: [edge, backend]
@@ -79,7 +81,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Healthcheck worker: T-013 (worker chưa có endpoint/tín hiệu sống riêng).
+    healthcheck:
+      # CSDL kết nối được + migration ở head; không chạy job (T-013).
+      test: ["CMD", "python", "-m", "aieos.app", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   migrate:
     # Lệnh riêng, role chủ sở hữu CSDL; không chạy khi api khởi động (Database_Design §10):
@@ -102,11 +109,13 @@ services:
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       POSTGRES_DB: aieos
-    secrets: [postgres_password]
+    secrets: [postgres_password, db_app_password, db_owner_password]
     volumes:
       - db_data:/var/lib/postgresql
       # Tạo role aieos_owner/aieos_app/aieos_backup khi khởi tạo CSDL lần đầu (T-005); mật khẩu role đặt riêng.
       - ../backend/src/aieos/platform/sql/provision_roles.sql:/docker-entrypoint-initdb.d/10_provision_roles.sql:ro
+      # Đặt mật khẩu role từ Docker secrets (T-013).
+      - ./db/20_role_passwords.sh:/docker-entrypoint-initdb.d/20_role_passwords.sh:ro
     networks: [backend]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d aieos"]
@@ -139,6 +148,13 @@ services:
     volumes:
       - clamav_db:/var/lib/clamav
     networks: [egress]
+    healthcheck:
+      # Đã có chữ ký trong volume chung (daily.cvd/.cld).
+      test: ["CMD-SHELL", "test -s /var/lib/clamav/daily.cvd -o -s /var/lib/clamav/daily.cld"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
 
 networks:
   edge: {}
@@ -156,6 +172,10 @@ volumes:
 secrets:
   postgres_password:
     file: ./secrets/postgres_password
+  db_app_password:
+    file: ./secrets/db_app_password
+  db_owner_password:
+    file: ./secrets/db_owner_password
   database_url:
     file: ./secrets/database_url
   database_owner_url:

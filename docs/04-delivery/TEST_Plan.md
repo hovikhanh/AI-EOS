@@ -523,7 +523,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-DR-02` | **T-605** | D-44 câu 3 | T-005 | `NOT RUN` |
 | `TC-PERF-01` | **T-604** | duy nhất | — | `NOT RUN` |
 | `TC-PERF-02` | **T-604** | duy nhất | — | `NOT RUN` |
-| `TC-NFR-01` | **T-013** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-01` | **T-013** | duy nhất | — | `PASSED` — run `38722522003` (T-013, PR #31; `scripts/compose_smoke.py`: theo dõi kết nối trong netns `proxy`/`api`/`worker`/`db`/`scanner` suốt luồng demo + phép thử chủ động, đối chứng `scanner-updater`; giới hạn ở Implementation_Plan §33) |
 | `TC-NFR-02` | **T-607** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-03` | **T-608** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-04` | **T-204** | duy nhất | — | `NOT RUN` |

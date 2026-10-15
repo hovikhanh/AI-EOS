@@ -5,7 +5,7 @@
 # Biến môi trường:
 #   AIEOS_REQUIRE_DB=1          bắt buộc test PostgreSQL (CI đặt biến này); thiếu URL → thất bại
 #   AIEOS_TEST_DATABASE_URL     chuỗi kết nối PostgreSQL dùng cho test `db` (không in ra log)
-#   AIEOS_REQUIRE_DOCKER=1      bắt buộc kiểm Compose (scripts/check_compose.py, T-003); không có docker → thất bại
+#   AIEOS_REQUIRE_DOCKER=1      bắt buộc kiểm Compose (check_compose.py T-003, compose_smoke.py T-013); không có docker → thất bại
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -87,6 +87,9 @@ step build-check in_frontend npm run -s check:build
 
 step audit-python audit_python
 step audit-npm in_frontend npm audit --audit-level=high
+
+# Tích hợp Compose (T-013): dựng stack, demo đầu-cuối qua HTTPS, TC-NFR-01; không có docker → NOT RUN (trừ khi bắt buộc).
+step compose-smoke python3 "$ROOT/scripts/compose_smoke.py"
 
 if [ -z "${AIEOS_TEST_DATABASE_URL:-}" ]; then
   echo "PostgreSQL: NOT RUN — chưa xác minh (thiếu AIEOS_TEST_DATABASE_URL)"
