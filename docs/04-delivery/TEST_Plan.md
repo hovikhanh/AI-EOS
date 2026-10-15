@@ -340,7 +340,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-NTF-01` | **T-010** | duy nhất | — | `NOT RUN` |
 | `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `NOT RUN` |
 | `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `NOT RUN` |
-| `TC-AUD-03` | **T-008** | duy nhất | — | `NOT RUN` |
+| `TC-AUD-03` | **T-008** | duy nhất (D-55) | — | `PASSED` — run `38678659141` (T-008, PR #16; `test_app_role_cannot_modify_audit`) |
 | `TC-AUD-04` | **T-110** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-01` | **T-102** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-02` | **T-102** | D-44 (bảng 65 TC) | T-101 | `NOT RUN` |
