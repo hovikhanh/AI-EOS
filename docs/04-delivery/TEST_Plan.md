@@ -320,7 +320,7 @@ Ký hiệu cột: **Loại** U = unit, I = integration, A = API, M = migration, 
 
 ## 12. Task chủ và trạng thái từng test case (D-44)
 
-Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột; "D-55" = sửa task chủ TC-AUD-01/02 (15/10/2026). TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
+Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` ` `` để không trùng với bảng định nghĩa TC. Cột "Task chủ": task duy nhất được ghi TC là `PASSED`. Cột "Bằng chứng thành phần": task khác có tham chiếu TC (Implementation_Handoff §5); bằng chứng ở đó **không** phải PASS. Căn cứ: "duy nhất" = TC chỉ được một task tham chiếu; "bảng 65 TC" = [Q-51_TC_Ownership_Draft](Q-51_TC_Ownership_Draft.md) mục 3 (đã duyệt); "câu 3" = lựa chọn của CDA cho 7 TC xung đột; "D-55" = sửa task chủ TC-AUD-01/02; "D-56" = sửa task chủ TC-JOB-05 (15/10/2026). TC-MIG-02 đạt tổng ở T-605 (mỗi task tạo bất biến ghi bằng chứng thành phần "TC-MIG-02 (INV-xx)").
 
 | TC | Task chủ | Căn cứ | Bằng chứng thành phần | Trạng thái |
 | --- | --- | --- | --- | --- |
@@ -335,7 +335,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-JOB-02` | **T-009** | duy nhất | — | `NOT RUN` |
 | `TC-JOB-03` | **T-009** | duy nhất | — | `NOT RUN` |
 | `TC-JOB-04` | **T-009** | duy nhất | — | `NOT RUN` |
-| `TC-JOB-05` | **T-009** | duy nhất | — | `NOT RUN` |
+| `TC-JOB-05` | **T-203** | D-56 | T-009 (cơ chế kiểm tra quyền lúc chạy, authorizer giả lập) | `NOT RUN` |
 | `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `NOT RUN` |
 | `TC-NTF-01` | **T-010** | duy nhất | — | `NOT RUN` |
 | `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `NOT RUN` |
