@@ -1,7 +1,7 @@
 # AI-EOS — Database Design (Stage 2C)
 
 > Phiên bản: 1.2 · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — đang hiện thực theo migration** · Thay đổi: §12
-> Schema thiết kế. **Đã có migration** (15/10/2026): `0001` (M-01, schema + quyền role, T-005), `0002` (M-04 `audit.event` + INV-14, T-008), `0003` (phần `jobs` của M-05, T-009); phần còn lại vẫn là đề xuất. Hiện trạng: [PROJECT_STATUS](../PROJECT_STATUS.md).
+> Schema thiết kế. **Đã có migration** (15/10/2026): `0001` (M-01, schema + quyền role, T-005), `0002` (M-04 `audit.event` + INV-14, T-008), `0003` (phần `jobs` của M-05, T-009), `0004` (M-02 `identity`, T-101); phần còn lại vẫn là đề xuất. Hiện trạng: [PROJECT_STATUS](../PROJECT_STATUS.md).
 > Nguồn: ADR-004, ADR-005, ADR-007…ADR-010; Architecture §3–§8. Nhãn nguồn như Architecture (`SOURCE`, `CDA`, `CDA_DIRECTIVE`, `ARCHITECTURE_DECISION`, `[CẦN XÁC NHẬN]`).
 
 ## 1. Nguyên tắc
