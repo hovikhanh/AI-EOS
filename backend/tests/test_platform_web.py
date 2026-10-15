@@ -231,6 +231,10 @@ def api_env(monkeypatch: pytest.MonkeyPatch, storage: Path, database_url: str) -
         "AIEOS_SESSION_ABSOLUTE_HOURS": "1",
         "AIEOS_INVITE_TTL_HOURS": "1",
         "AIEOS_REAUTH_MINUTES": "1",
+        "AIEOS_AUTH_RATE_LIMIT_ATTEMPTS": "5",
+        "AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS": "60",
+        "AIEOS_AUTH_LOCKOUT_THRESHOLD": "5",
+        "AIEOS_AUTH_LOCKOUT_MINUTES": "15",
     }.items():
         monkeypatch.setenv(name, value)
 

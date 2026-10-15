@@ -4,7 +4,8 @@
   `Origin` thuộc `AIEOS_ALLOWED_ORIGINS` và `X-CSRF-Token` khớp session. Token đồng bộ, gắn session, không lưu:
   `HMAC-SHA256(AIEOS_CSRF_KEY, token session)` (`csrf_token`) — `GET /auth/me` (T-102) trả token này. Đường dẫn
   công khai không có session (đăng nhập, xác minh MFA, chấp nhận lời mời — API_Specification §1.2) do composition
-  root khai báo ở `exempt_paths`: chỉ miễn token, vẫn kiểm `Origin`.
+  root khai báo ở `exempt_paths`: chỉ miễn token, vẫn kiểm `Origin`. Request không có cookie session chỉ bị kiểm
+  `Origin` (không có quyền nào để giả mạo); xác thực trả 401 (T-102).
 - **Idempotency (SRS-GEN-03, §1.6, INV-08):** khóa lưu ở chính bảng tài nguyên (`UNIQUE (created_by, idempotency_key)`)
   kèm dấu vân tay request; `run_idempotent` trả lại kết quả cũ khi cùng khóa + cùng nội dung, `409
   IDEMPOTENCY_KEY_REUSED` khi khác nội dung, an toàn khi hai request đồng thời (savepoint + ràng buộc UNIQUE).
@@ -104,8 +105,12 @@ class CsrfMiddleware:
         if scope["path"] in self.config.exempt_paths:
             return True
         session = cookie_parser(headers.get("cookie", "")).get(SESSION_COOKIE)
+        if not session:
+            # Không có cookie session: request không mang quyền của ai nên không có gì để giả mạo; bước xác thực
+            # trả 401 (SRS-GEN-01, TC-GEN-06). Origin vẫn được kiểm ở trên.
+            return True
         sent = headers.get(CSRF_HEADER)
-        if not session or not sent:
+        if not sent:
             return False
         return hmac.compare_digest(sent, csrf_token(self.config.key, session))
 

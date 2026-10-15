@@ -7,6 +7,7 @@ T-107: bảng, seed role/permission, bất biến INV-09/10/11 ở CSDL và serv
 from aieos.access.service import (
     ScopeType,
     create_assignment,
+    effective_permissions,
     grant_role,
     known_roles,
     revoke_assignment,
@@ -17,6 +18,7 @@ from aieos.access.service import (
 __all__ = [
     "ScopeType",
     "create_assignment",
+    "effective_permissions",
     "grant_role",
     "known_roles",
     "revoke_assignment",
