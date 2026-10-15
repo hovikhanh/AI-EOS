@@ -1,6 +1,7 @@
 """Ứng dụng API (composition root, D-42): `uvicorn --factory aieos.app.asgi:create_app` (server: T-013).
 
-Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → CSRF (T-007) →
+Lắp ráp: cấu hình (T-004) → logging JSON (T-006) → engine `aieos_app` (T-005) → storage (T-011) → provider AI (T-204,
+kiểm cấu hình khi khởi động; `app.state.providers` cho bước AI về sau) → CSRF (T-007) →
 xác thực (T-102) → router (auth, MFA T-103, step-up T-104, quản trị T-109, lời mời T-105, thông báo T-010,
 danh bạ T-201, task T-505, mục tiêu T-501) → kiểm tra readiness.
 
@@ -16,6 +17,7 @@ from fastapi import FastAPI
 
 import aieos.app.metadata  # noqa: F401 — nạp model mọi module: khóa ngoại liên module cần đủ bảng (T-501)
 from aieos.access.api import PermissionGuard, build_access_admin_router
+from aieos.ai.api import DbCallRecorder
 from aieos.goals.api import build_goals_router
 from aieos.identity.api import (
     ACCEPT_INVITATION_PATH,
@@ -50,6 +52,7 @@ from aieos.platform.api import (
     make_session_factory,
     parse_allowed_origins,
 )
+from aieos.providers.api import ProviderConfigError, client_from_settings
 from aieos.storage.api import StorageError, storage_from_settings
 from aieos.work.api import build_work_router
 
@@ -112,13 +115,17 @@ def create_app() -> FastAPI:
     csrf = CsrfConfig(csrf_key, origins, CSRF_EXEMPT_PATHS)
     engine = create_app_engine(settings)
     factory = make_session_factory(engine)
+    try:
+        providers = client_from_settings(settings, recorder=DbCallRecorder(factory))
+    except ProviderConfigError as error:
+        raise _exit_config_error(error) from None
     authenticator = Authenticator(factory, auth_config)
     mfa = MfaService(authenticator, totp_key)
     users = UserAdmin(authenticator)
     guard = PermissionGuard(
         factory, authenticator.require_session, org=OrgDirectoryScope(), require_step_up=authenticator.require_step_up
     )
-    return create_api(
+    app = create_api(
         {"database": lambda: database_ready(engine), "storage": storage.is_ready},
         (
             build_auth_router(authenticator, csrf_key),
@@ -134,3 +141,5 @@ def create_app() -> FastAPI:
         ),
         csrf=csrf,
     )
+    app.state.providers = providers
+    return app
