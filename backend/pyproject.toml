@@ -7,6 +7,7 @@ requires-python = ">=3.12,<3.13"
 # Thư viện ADR-002 thêm ở task đầu tiên dùng tới: SQLAlchemy 2, Alembic, psycopg 3 (T-005); FastAPI, Pydantic v2 (T-006).
 dependencies = [
     "alembic==1.20.0",
+    "argon2-cffi==25.1.0",
     "fastapi==0.142.1",
     "psycopg[binary]==3.3.6",
     "pydantic==2.13.5",
@@ -31,7 +32,7 @@ build-backend = "uv_build"
 [tool.uv]
 default-groups = ["dev", "audit"]
 # Ghim phụ thuộc gián tiếp vào bản phát hành ≥ 2 tuần (FastAPI 0.142.1 chỉ yêu cầu starlette>=0.46).
-constraint-dependencies = ["starlette==1.7.0"]
+constraint-dependencies = ["starlette==1.7.0", "pycparser==3.0"]
 
 [tool.uv.build-backend]
 module-name = "aieos"

@@ -59,6 +59,11 @@ VARIABLES: tuple[Variable, ...] = (
     Variable("AIEOS_SESSION_ABSOLUTE_HOURS", Kind.CONFIG, _API),
     Variable("AIEOS_INVITE_TTL_HOURS", Kind.CONFIG, _API),
     Variable("AIEOS_REAUTH_MINUTES", Kind.CONFIG, _API),
+    # Giới hạn thử và khóa tạm (D-57, SRS-IAM-07): bắt buộc, không mặc định — người vận hành đặt khi triển khai.
+    Variable("AIEOS_AUTH_RATE_LIMIT_ATTEMPTS", Kind.CONFIG, _API, note="D-57"),
+    Variable("AIEOS_AUTH_RATE_LIMIT_WINDOW_SECONDS", Kind.CONFIG, _API, note="D-57"),
+    Variable("AIEOS_AUTH_LOCKOUT_THRESHOLD", Kind.CONFIG, _API, note="SRS-IAM-07, nguyên tắc D-57"),
+    Variable("AIEOS_AUTH_LOCKOUT_MINUTES", Kind.CONFIG, _API, note="SRS-IAM-07, nguyên tắc D-57"),
     # Dùng bởi công cụ backup (T-605), không phải tiến trình Python của AI-EOS.
     Variable("AIEOS_BACKUP_TARGET", Kind.CONFIG, frozenset(), required=False, note="T-605"),
 )

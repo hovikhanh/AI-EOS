@@ -78,6 +78,21 @@ def roles_of(session: Session, user_id: uuid.UUID) -> set[str]:
     return set(session.scalars(select(UserRoleRow.role_code).where(UserRoleRow.user_id == user_id)))
 
 
+def effective_permissions(session: Session, user_id: uuid.UUID) -> set[str]:
+    """Permission hiệu lực (chưa xét phạm vi): quyền nền của role + assignment còn hiệu lực. Phạm vi: T-108."""
+    rows = session.execute(
+        text(
+            "SELECT rp.permission_code FROM access.user_role ur "
+            "JOIN access.role_permission rp ON rp.role_code = ur.role_code AND rp.kind = 'BASE' "
+            "WHERE ur.user_id = :u "
+            "UNION SELECT permission_code FROM access.assignment WHERE user_id = :u AND revoked_at IS NULL "
+            "AND valid_from <= now() AND (valid_to IS NULL OR valid_to > now())"
+        ),
+        {"u": user_id},
+    )
+    return set(rows.scalars())
+
+
 def known_roles(session: Session) -> set[str]:
     return set(session.scalars(select(RoleRow.code)))
 

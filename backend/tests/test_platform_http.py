@@ -122,9 +122,10 @@ def test_post_without_csrf_token_rejected(counter_router: tuple[APIRouter, list[
     c = client(router)
     assert_problem(c.post("/api/v1/probe/write", headers={"Origin": ORIGIN}), 403, "CSRF_FAILED")
     assert_problem(c.post("/api/v1/probe/write", headers=safe_headers(**{"X-CSRF-Token": "sai"})), 403, "CSRF_FAILED")
-    c.cookies.clear()
-    assert_problem(c.post("/api/v1/probe/write", headers=safe_headers()), 403, "CSRF_FAILED")  # không có session
     assert calls == []
+    c.cookies.clear()  # không có session: chỉ kiểm Origin; xác thực của endpoint trả 401 (T-102, TC-GEN-06)
+    assert c.post("/api/v1/probe/write", headers={"Origin": ORIGIN}).status_code == 200
+    assert_problem(c.post("/api/v1/probe/write", headers={"Origin": "https://evil.example"}), 403, "CSRF_FAILED")
 
 
 def test_csrf_ok_but_foreign_origin_rejected(counter_router: tuple[APIRouter, list[str]]) -> None:
