@@ -686,3 +686,12 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Danh mục (`category`) là văn bản tự do (Q-42, D-51); độ dài kỳ chưa ràng buộc (mặc định tháng — `[CẦN XÁC NHẬN]` ở Database_Design).
 - Test `backend/tests/test_finance_schema.py` (8) chạy bằng role ứng dụng như tấn công qua SQL. 8 đột biến (gỡ từng bất biến) → test đỏ.
 
+## 37. Ghi chú triển khai T-301 (15/10/2026)
+
+- Migration `0013` (M-10): `ai.tool`, `autonomy_policy`, `kill_switch`, `setting`, `action`, `call_log`, `feedback`; model ở `ai/models.py`; khóa ngoại `work.task.ai_action_id`, `finance.transaction.ai_action_id` → `ai.action`.
+- Tool Registry: 12 tool theo Database_Design §5 (10 tool Domain 22 BRD §3.9 + `create_task`, `record_kpi_measurement`); `operation_type` theo BR-09 và tên tool; trần chung L3 (không tool nào tài chính); `enabled = false` cho tới khi có handler (T-302); `risk_level` NULL vì tài liệu chưa phân loại từng tool (không tự đặt); `params_schema` chờ 2B. Tool đích MVP khác (Objective/KR/KPI, đơn vị/nhân sự, knowledge item, bản nháp tài chính — `ARCHITECTURE_DECISION`) chưa seed vì chưa có tham số.
+- Policy mặc định chỉ seed khi SRS-AIC-03 nói rõ: tool READ → L0, `create_task` (task nội bộ) → L3. Tool WRITE tài liệu và `record_kpi_measurement` chưa có policy — T-302 xử lý trường hợp thiếu policy.
+- INV-12: CHECK trần trên `ai.tool` + trigger hai chiều (`AE030`); INV-13: kill switch singleton (seed `enabled = false`); tool tài chính: người xác nhận ≠ người khởi tạo (`AE031`); L3: hạn hoàn tác ≥ 24 giờ (BR-11). `ai.setting.draft_expiry_days = 30` (K5).
+- `ai.call_log`: CHECK chỉ provider local cho `SENSITIVE`/`PERSONAL` (Database_Design §5) — xung đột với ngoại lệ demo D-50 → **Q-53** `[CẦN XÁC NHẬN]`, cần trước phần demo DeepSeek của T-205.
+- Test `backend/tests/test_ai_schema.py` (5). 7 đột biến → test đỏ.
+

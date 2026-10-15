@@ -55,7 +55,7 @@ class TaskRow(Base):
     source_document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK capture.source_document: T-202
     source_locator: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_via: Mapped[str] = mapped_column(Text, server_default=text("'MANUAL'"))
-    ai_action_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)  # FK ai.action: T-302
+    ai_action_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("ai.action.id"))  # 0013 (T-301)
     idempotency_key: Mapped[str | None] = mapped_column(Text)
     request_hash: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
