@@ -500,10 +500,10 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-PRV-01` | **T-112** | duy nhất | — | `NOT RUN` |
 | `TC-PRV-02` | **T-112** | duy nhất | — | `NOT RUN` |
 | `TC-PRV-03` | **T-112** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-04` | **T-204** | D-44 (bảng 65 TC) | T-112 | `NOT RUN` |
-| `TC-PRV-05` | **T-204** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-06` | **T-204** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-07` | **T-204** | D-44 (bảng 65 TC) | T-205 | `NOT RUN` |
+| `TC-PRV-04` | **T-204** | D-44 (bảng 65 TC) | T-112 | `NOT RUN` — phần định tuyến đạt ở T-204 (run `38766763685`, `test_sensitive_goes_only_to_local_and_is_logged`); chờ phần gắn nhãn T-112 |
+| `TC-PRV-05` | **T-204** | duy nhất | — | `PASSED` — run `38766763685` (T-204, PR #38; `test_timeout_retries_then_falls_back_then_unavailable`) |
+| `TC-PRV-06` | **T-204** | duy nhất | — | `PASSED` — run `38766763685` (T-204, PR #38; `test_budget_warns_at_80_and_blocks_at_100`) |
+| `TC-PRV-07` | **T-204** | D-44 (bảng 65 TC) | T-205 | `NOT RUN` — phần đổi adapter giả lập bằng cấu hình đạt ở T-204 (run `38766763685`, `test_switch_provider_by_configuration_only`); chờ adapter thật T-205 |
 | `TC-E2E-01` | **T-608** | D-44 (bảng 65 TC) | T-111 (màn hình FL-01…03, test thành phần — run `38719094857`) | `NOT RUN` |
 | `TC-E2E-02` | **T-608** | D-44 (bảng 65 TC) | T-212 | `NOT RUN` |
 | `TC-E2E-03` | **T-608** | D-44 (bảng 65 TC) | T-409 | `NOT RUN` |
@@ -526,7 +526,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-NFR-01` | **T-013** | duy nhất | — | `PASSED` — run `38722522003` (T-013, PR #31; `scripts/compose_smoke.py`: theo dõi kết nối trong netns `proxy`/`api`/`worker`/`db`/`scanner` suốt luồng demo + phép thử chủ động, đối chứng `scanner-updater`; giới hạn ở Implementation_Plan §33) |
 | `TC-NFR-02` | **T-607** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-03` | **T-608** | duy nhất | — | `NOT RUN` |
-| `TC-NFR-04` | **T-204** | duy nhất | — | `NOT RUN` |
+| `TC-NFR-04` | **T-204** | duy nhất | — | `NOT RUN` — phần khởi động và sẵn sàng khi không có provider đạt ở T-204 (run `38766763685`, `test_app_runs_without_any_provider`); nhập tay tài chính, review thủ công chưa có (T-403, T-208) |
 | `TC-NFR-05` | **T-607** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-06` | **T-606** | duy nhất | — | `NOT RUN` |
 | `TC-NFR-07` | **T-207** | duy nhất | — | `NOT RUN` |
