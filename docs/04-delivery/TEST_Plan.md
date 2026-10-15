@@ -497,10 +497,10 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-BRF-10` | **T-511** | duy nhất | — | `NOT RUN` |
 | `TC-BRF-11` | **T-511** | duy nhất | — | `NOT RUN` |
 | `TC-SLS-01` | **T-510** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-01` | **T-112** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-02` | **T-112** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-03` | **T-112** | duy nhất | — | `NOT RUN` |
-| `TC-PRV-04` | **T-204** | D-44 (bảng 65 TC) | T-112 | `NOT RUN` — phần định tuyến đạt ở T-204 (run `38766763685`, `test_sensitive_goes_only_to_local_and_is_logged`); chờ phần gắn nhãn T-112 |
+| `TC-PRV-01` | **T-112** | duy nhất | — | `PASSED` — run `38768790757` (T-112, PR #39; `test_every_role_reads_masked_and_none_can_unmask`) |
+| `TC-PRV-02` | **T-112** | duy nhất | — | `PASSED` — run `38768790757` (T-112, PR #39; `test_admin_gets_403_on_hr_reads_and_export`) |
+| `TC-PRV-03` | **T-112** | duy nhất | — | `NOT RUN` — hàm che `access.api.mask_for` có ở T-112 (run `38768790757`); chưa có câu trả lời AI để kiểm (T-306) |
+| `TC-PRV-04` | **T-204** | D-44 (bảng 65 TC) | T-112 | `NOT RUN` — phần định tuyến đạt ở T-204 (run `38766763685`, `test_sensitive_goes_only_to_local_and_is_logged`); quy tắc phát hiện/nhãn có ở T-112 (run `38768790757`); chờ gắn nhãn khi upload/trích xuất (T-203, T-206) |
 | `TC-PRV-05` | **T-204** | duy nhất | — | `PASSED` — run `38766763685` (T-204, PR #38; `test_timeout_retries_then_falls_back_then_unavailable`) |
 | `TC-PRV-06` | **T-204** | duy nhất | — | `PASSED` — run `38766763685` (T-204, PR #38; `test_budget_warns_at_80_and_blocks_at_100`) |
 | `TC-PRV-07` | **T-204** | D-44 (bảng 65 TC) | T-205 | `NOT RUN` — phần đổi adapter giả lập bằng cấu hình đạt ở T-204 (run `38766763685`, `test_switch_provider_by_configuration_only`); chờ adapter thật T-205 |

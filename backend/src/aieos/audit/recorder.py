@@ -6,7 +6,8 @@
   `FAILED`, `BLOCKED`) mà transaction chính bị rollback (ADR-010).
 - `changes` (giá trị trước/sau) được che trước khi ghi: khóa có tên nhạy cảm (mật khẩu, token, secret, CSRF, khóa API,
   mã OTP/MFA, session, credential, tên biến secret — cùng quy tắc với log của T-006) và các trường nơi gọi khai báo
-  trong `masked_fields` (trường nhạy cảm theo nghiệp vụ, SEC-DC-02) bị thay bằng `***`.
+  trong `masked_fields` (trường nhạy cảm theo nghiệp vụ, SEC-DC-02) bị thay bằng `***`; trong chuỗi còn lại, đoạn dữ
+  liệu cá nhân phát hiện theo quy tắc (CCCD, số tài khoản, điện thoại, email…) bị thay bằng `•••` (T-112).
 - Không có hàm sửa hay xóa audit; CSDL cũng chặn (INV-14, migration 0002).
 """
 
@@ -20,7 +21,7 @@ from sqlalchemy import insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from aieos.audit.models import AuditEventRow
-from aieos.platform.api import CORRELATION_ID, REDACTED, redact, transaction
+from aieos.platform.api import CORRELATION_ID, REDACTED, mask_pii, redact, transaction
 
 
 class Category(StrEnum):
@@ -98,7 +99,7 @@ def mask_changes(changes: Mapping[str, Any] | None, masked_fields: frozenset[str
             return {str(k): REDACTED if str(k).lower() in fields else walk(v) for k, v in value.items()}
         if isinstance(value, list | tuple | set | frozenset):
             return [walk(v) for v in value]
-        return value
+        return mask_pii(value) if isinstance(value, str) else value
 
     return redact(walk(changes))
 

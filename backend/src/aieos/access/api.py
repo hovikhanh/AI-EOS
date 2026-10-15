@@ -19,6 +19,7 @@ from aieos.access.policy import (
     require,
     scope_filter,
 )
+from aieos.access.privacy import UNMASK, can_unmask, mask_fields, mask_for
 from aieos.access.router import build_access_admin_router
 from aieos.access.service import (
     Assignment,
@@ -50,6 +51,10 @@ __all__ = [
     "Resource",
     "authorize",
     "build_access_admin_router",
+    "UNMASK",
+    "can_unmask",
+    "mask_fields",
+    "mask_for",
     "load_actor",
     "require",
     "scope_filter",

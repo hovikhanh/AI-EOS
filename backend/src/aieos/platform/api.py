@@ -55,6 +55,8 @@ from aieos.platform.http import (
     run_idempotent,
 )
 from aieos.platform.logs import CORRELATION_ID, REDACTED, JsonFormatter, configure_logging, redact
+from aieos.platform.privacy import MASK as PII_MASK
+from aieos.platform.privacy import PiiMatch, Sensitivity, classify_text, find_pii, mask_pii
 from aieos.platform.web import (
     API_PREFIX,
     AUTHENTICATED,
@@ -97,11 +99,17 @@ __all__ = [
     "declare",
     "declared_permission",
     "CORRELATION_ID",
+    "PII_MASK",
+    "PiiMatch",
     "REDACTED",
+    "Sensitivity",
     "JsonFormatter",
     "ReadinessCheck",
     "configure_logging",
     "create_api",
+    "classify_text",
+    "find_pii",
+    "mask_pii",
     "redact",
     "ROLES",
     "SCHEMAS",
