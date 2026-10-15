@@ -727,3 +727,12 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Trần chi phí (SRS-PRV-04): chi phí trong kỳ ≥ 80% trần → log `ai_budget_threshold`; ≥ 100% → chặn lời gọi `essential=False` (`AIUnavailable("BUDGET")`), lời gọi thiết yếu vẫn chạy. Kỳ ngân sách, hành vi khi không đặt trần, kênh báo ADMIN: **Q-54** `[CẦN XÁC NHẬN]`.
 - Chưa có adapter thật (`ADAPTERS` rỗng — API tương thích OpenAI, OCR: T-205), chưa có bước AI nào dùng client (T-206, T-306); streaming và validate structured output theo schema thuộc bước gọi (T-206, T-306). `app.state.providers` giữ client của tiến trình api.
 - Test `backend/tests/test_providers.py` (23), `test_platform_config.py` (+1). 14 đột biến → test đỏ (đột biến gỡ kiểm "chỉ local" ở router ban đầu lọt vì cấu hình đã chặn — đã thêm test dựng spec bỏ qua validate).
+
+## 41. Ghi chú triển khai T-112 (15/10/2026)
+
+- Phát hiện/che theo nội dung: `platform/privacy.py` (`find_pii`, `classify_text`, `mask_pii`, ký hiệu che `•••` theo FL-13), xuất qua `platform.api`; hàm thuần, dùng được ở mọi module kể cả `providers`, `audit`. Quy tắc và nhãn là `PROPOSED` — **Q-55** `[CẦN XÁC NHẬN]`: CCCD/CMND, điện thoại, email → `PERSONAL`; số tài khoản, lương → `SENSITIVE`. Số thường (tiền, ngày, mã, UUID) không bị che trừ dạng CCCD 12 số.
+- Che theo quyền: `access/privacy.py` (`can_unmask`, `mask_for` cho văn bản tự do, `mask_fields` cho bản ghi — trường khai báo nhạy cảm che cả giá trị). `pii.unmask` không ai giữ và không role nào đủ điều kiện nhận assignment (D-21, migration 0005) → mọi người thấy bản che.
+- Audit: chuỗi trong `changes` được che tự động trước khi ghi (Plan §18), bên cạnh `masked_fields` của nơi gọi.
+- Nơi áp dụng: hiện chưa có API/file xuất/câu trả lời AI nào trả dữ liệu cá nhân (danh bạ MVP chỉ có họ tên, chức danh, đơn vị, quản lý — Database_Design §6). Bước gọi về sau phải dùng: gắn nhãn `sensitivity` khi trích xuất/upload (T-203, T-206 — nhãn quyết định định tuyến provider của T-204), kết quả import (T-210), câu trả lời AI (T-306), file xuất, đọc audit (T-110).
+- TC-PRV-01 (mọi role thấy bản che, không ai bỏ che, kể cả qua assignment), TC-PRV-02 (ADMIN → `403` trên route khai báo `hr.profile.read`/`hr.salary.read`/`hr.export`, `200` với `hr.import`) — kiểm trên route thử vì MVP không có endpoint hồ sơ/lương. TC-PRV-03 (câu trả lời AI) chưa kiểm được — chờ T-306.
+- Test `backend/tests/test_privacy.py` (21). 11 đột biến → test đỏ (3 đột biến ban đầu lọt — biên phải của CCCD, trường khai báo nhạy cảm, độ dài số tối thiểu — đã thêm test).
