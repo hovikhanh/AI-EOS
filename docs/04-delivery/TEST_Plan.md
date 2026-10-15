@@ -465,12 +465,12 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-FIN-29` | **T-406** | duy nhất | — | `NOT RUN` |
 | `TC-FIN-30` | **T-408** | duy nhất | — | `NOT RUN` |
 | `TC-FIN-31` | **T-407** | duy nhất | — | `NOT RUN` |
-| `TC-GOAL-01` | **T-501** | duy nhất | — | `NOT RUN` |
-| `TC-GOAL-02` | **T-501** | duy nhất | — | `NOT RUN` |
-| `TC-GOAL-03` | **T-501** | D-44 (bảng 65 TC) | T-503 | `NOT RUN` |
-| `TC-GOAL-04` | **T-501** | duy nhất | — | `NOT RUN` |
-| `TC-GOAL-05` | **T-501** | duy nhất | — | `NOT RUN` |
-| `TC-GOAL-06` | **T-501** | duy nhất | — | `NOT RUN` |
+| `TC-GOAL-01` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_create_drafts_with_sourced_fields`) |
+| `TC-GOAL-02` | **T-501** | duy nhất | — | `NOT RUN` — ô chỉ số/Briefing/câu trả lời AI chưa có (T-510, T-211, T-305); phần dữ liệu (`?status=ACTIVE` không trả bản nháp) đã kiểm ở T-501 |
+| `TC-GOAL-03` | **T-501** | D-44 (bảng 65 TC) | T-503 | `PASSED` — run `38764880704` (T-501, PR #37; `test_measurement_has_period_and_source`) |
+| `TC-GOAL-04` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_check_in_own_kr_only`) |
+| `TC-GOAL-05` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_kr_shows_numbers_without_percent`) |
+| `TC-GOAL-06` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_manager_sees_team_check_ins_in_scope`) |
 | `TC-GOAL-07` | **T-502** | duy nhất | — | `NOT RUN` |
 | `TC-GOAL-08` | **T-502** | D-44 (bảng 65 TC) | T-503 | `NOT RUN` |
 | `TC-GOAL-09` | **T-503** | D-44 (bảng 65 TC) | T-502 | `NOT RUN` |
