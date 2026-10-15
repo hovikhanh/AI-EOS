@@ -329,7 +329,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-GEN-03` | **T-007** | D-44 (bảng 65 TC) | T-603 | `PASSED` — run `38681777001` (T-007, PR #18; route thử, tuần tự + đồng thời) |
 | `TC-GEN-04` | **T-007** | D-44 (bảng 65 TC) | T-603 | `PASSED` — run `38681777001` (T-007, PR #18; route thử) |
 | `TC-GEN-05` | **T-007** | D-44 (bảng 65 TC) | T-006, T-603 | `PASSED` — run `38681777001` (T-007, PR #18; If-Match 412/428, lỗi 500 problem+json) |
-| `TC-GEN-06` | **T-102** | D-44 (bảng 65 TC) | T-007 | `NOT RUN` |
+| `TC-GEN-06` | **T-102** | D-44 (bảng 65 TC) | T-007 | `PASSED` — run `38686690047` (T-102, PR #21; mọi endpoint hiện có; T-601 chạy lại khi thêm endpoint) |
 | `TC-GEN-07` | **T-111** | duy nhất | — | `NOT RUN` |
 | `TC-JOB-01` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_concurrent_claim_single_winner`) |
 | `TC-JOB-02` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_reaper_requeues_then_dead`) |
@@ -342,11 +342,11 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `NOT RUN` |
 | `TC-AUD-03` | **T-008** | duy nhất (D-55) | — | `PASSED` — run `38678659141` (T-008, PR #16; `test_app_role_cannot_modify_audit`) |
 | `TC-AUD-04` | **T-110** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-01` | **T-102** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-02` | **T-102** | D-44 (bảng 65 TC) | T-101 | `NOT RUN` |
-| `TC-IAM-03` | **T-102** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-04` | **T-102** | duy nhất | — | `NOT RUN` |
-| `TC-IAM-05` | **T-102** | D-44 (bảng 65 TC) | T-101 | `NOT RUN` |
+| `TC-IAM-01` | **T-102** | duy nhất | — | `PASSED` — run `38686690047` (T-102, PR #21; `test_login_sets_secure_session_cookie`) |
+| `TC-IAM-02` | **T-102** | D-44 (bảng 65 TC) | T-101 | `PASSED` — run `38686690047` (T-102, PR #21; `test_session_fixation`) |
+| `TC-IAM-03` | **T-102** | duy nhất | — | `PASSED` — run `38686690047` (T-102, PR #21; `test_unknown_email_and_wrong_password_indistinguishable`) |
+| `TC-IAM-04` | **T-102** | duy nhất | — | `PASSED` — run `38686690047` (T-102, PR #21; `test_rate_limit_and_lockout`) |
+| `TC-IAM-05` | **T-102** | D-44 (bảng 65 TC) | T-101 | `PASSED` — run `38686690047` (T-102, PR #21; `test_idle_and_absolute_expiry`) |
 | `TC-IAM-06` | **T-103** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-07` | **T-103** | duy nhất | — | `NOT RUN` |
 | `TC-IAM-08` | **T-104** | D-44 (bảng 65 TC) | T-109 | `NOT RUN` |

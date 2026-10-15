@@ -3,22 +3,22 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 15/10/2026 (T-102 đang review; D-58)
-**Commit tham chiếu:** `7429117` (`main`, PR #20 — T-107); T-102 trên branch `feat/T-102-login-session`
-**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 10/13 task `DONE`; P1: T-101, T-107 `DONE`. Kế hoạch đã được duyệt (D-46). T-102 đang review. **5 task đủ điều kiện bắt đầu:** T-003, T-108, T-204, T-301, T-401 (T-010 chờ T-102; T-106 chờ T-010 — D-58).
+**Cập nhật lần cuối:** 15/10/2026 (T-102 `DONE`; D-58)
+**Commit tham chiếu:** `7429117` (`main`, PR #20 — T-107); T-102: PR #21 (branch `feat/T-102-login-session`, CI run `38686690047` xanh)
+**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 10/13 task `DONE`; P1: T-101, T-102, T-107 `DONE`. Kế hoạch đã được duyệt (D-46). **8 task đủ điều kiện bắt đầu:** T-003, T-010, T-103, T-104, T-108, T-204, T-301, T-401 (T-106 chờ T-010 — D-58).
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
 
 ## 1. Tóm tắt nhanh
 
 - Tổng task: **83** (thêm T-308, T-513 theo D-49)
-- DONE: **12** — T-001, T-002, T-004, T-005, T-006, T-007, T-008, T-009, T-011, T-012, T-101, T-107 (T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
-- IN_REVIEW: **1** — T-102
+- DONE: **13** — T-001, T-002, T-004, T-005, T-006, T-007, T-008, T-009, T-011, T-012, T-101, T-102, T-107 (T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
+- IN_REVIEW: **0**
 - BLOCKED: **10** — T-407, T-604, T-901…T-908
 - TODO: **60** (`READY` 52, `PARTIAL` 8; chưa bắt đầu)
-- Task đủ điều kiện bắt đầu ngay: **5** — T-003, T-108, T-204, T-301, T-401
+- Task đủ điều kiện bắt đầu ngay: **8** — T-003, T-010, T-103, T-104, T-108, T-204, T-301, T-401
 - Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend
-- Test case: **206** (199 + TC-FE-01…07); **19 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…05), 187 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
+- Test case: **206** (199 + TC-FE-01…07); **25 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…05), 181 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
 - CI: `scripts/ci.sh` 18 bước; branch protection `main` (required check `ci`, bắt buộc PR, `enforce_admins`, 0 approval — D-54 chưa áp dụng)
 
@@ -53,7 +53,7 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | T-007 | DONE | HTTP: problem+json, CSRF + Origin, idempotency, ETag/If-Match, rate limit; run `38681777001`; TC-GEN-01…05 `PASSED` |
 | T-008 | DONE | Audit append-only: migration `0002`, trigger INV-14, `audit.api.record`/`record_separately`; run `38678659141`; TC-AUD-03 `PASSED` (15/10/2026) |
 | T-009 | DONE | Job queue: migration `0003`, claim `SKIP LOCKED`, lease, reaper, backoff, scheduler, registry `job_class`, lệnh `worker`; run `38680383606`; TC-JOB-01…04, 06 `PASSED` (TC-JOB-05 → T-203, D-56) |
-| T-010 | TODO | READY · Thông báo in-app; chờ T-102 (D-58) |
+| T-010 | TODO | READY · **đủ điều kiện bắt đầu** · Thông báo in-app |
 | T-011 | DONE | Storage adapter; run `38544080219` (D-44, 15/10/2026) |
 | T-012 | DONE | Nền tảng frontend; run `38536047844`; TC-FE-01…07 `PASSED` (D-47, 15/10/2026) |
 | T-013 | TODO | READY · Compose tích hợp; chờ T-003 |
@@ -63,10 +63,10 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | Task | Trạng thái | Ghi chú ngắn |
 |------|------------|--------------|
 | T-101 | DONE | Bảng `identity.*` (migration `0004`), token chỉ lưu hash (INV-16); run `38683463269` |
-| T-102 | IN_REVIEW | Đăng nhập Argon2id, session (`__Host-`, chống fixation, hết hạn), khóa tạm, rate limit, `/auth/me`, logout, dependency session cho mọi endpoint; chờ CI của PR |
-| T-103 | TODO | READY · MFA TOTP; chờ T-102 |
-| T-104 | TODO | READY · Step-up, đổi mật khẩu; chờ T-102 |
-| T-105 | TODO | READY · Lời mời; chờ T-102, T-108 |
+| T-102 | DONE | Đăng nhập Argon2id, session, khóa tạm, rate limit, `/auth/me`, logout, dependency session; run `38686690047`; TC-IAM-01…05, TC-GEN-06 `PASSED` |
+| T-103 | TODO | READY · **đủ điều kiện bắt đầu** · MFA TOTP |
+| T-104 | TODO | READY · **đủ điều kiện bắt đầu** · Step-up, đổi mật khẩu |
+| T-105 | TODO | READY · Lời mời; chờ T-108, T-103, T-104 (D-55) |
 | T-106 | TODO | READY · CLI bootstrap/recover admin; chờ T-010 (D-58) |
 | T-107 | DONE | Bảng `access.*` (migration `0005`), seed theo Architecture §6, INV-09/10/11, điều kiện assignment, service role/assignment; run `38684667496` |
 | T-108 | TODO | PARTIAL (định nghĩa "team" PROPOSED) · **đủ điều kiện bắt đầu** · `authorize()` |
@@ -175,7 +175,7 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 
 ## 5. Việc nên làm tiếp theo (sau khi có quyết định)
 
-1. Hoàn tất PR T-102 (CI xanh → TC-IAM-01…05, TC-GEN-06 `PASSED` → T-102 `DONE`).
+1. Merge PR #21 (T-102) khi CDA đồng ý.
    Đường găng demo (D-58): T-102 → T-010 → T-106 → T-103 → T-108 → T-111.
 2. Tiếp theo đường găng demo: **T-101** → **T-102** (đăng nhập) → T-107 → T-108; **T-003** song song.
 3. T-013 khi T-003 xong → T-605 về sau.
@@ -186,7 +186,7 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 **Phiên 15/10/2026 (lần 8) — T-102:**
 - PR #20 (T-107) merge → `7429117`, CI `main` run `38685297396` xanh.
 - D-58 (CDA): T-106 ← T-010 ← T-102 (thứ tự demo T-102 → T-010 → T-106 → T-103); TC-NTF-01 chủ T-510; `AIEOS_PASSWORD_MIN_LENGTH`.
-- T-102: đăng nhập/session/logout/me; `scripts/ci.sh` local rc 0 (242 passed); 7 đột biến → test đỏ; sửa lỗi lộ thời gian (email không tồn tại) do test TC-IAM-03 bắt. Chi tiết: Implementation_Plan §10, §23.
+- T-102: đăng nhập/session/logout/me; `scripts/ci.sh` local rc 0 (242 passed); 7 đột biến → test đỏ; sửa lỗi lộ thời gian (email không tồn tại) do test TC-IAM-03 bắt. PR #21, CI run `38686690047` xanh (242 passed, 0 skipped) → T-102 `DONE`. Chi tiết: Implementation_Plan §10, §23.
 
 **Phiên 15/10/2026 (lần 7) — T-107:**
 - PR #19 (T-101) merge → `60c55e4`, CI `main` run `38683918733` xanh.

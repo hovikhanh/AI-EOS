@@ -1,7 +1,7 @@
 # AI-EOS — API Specification (Stage 2C)
 
 > Phiên bản: 1.4 (15/10/2026, T-007) · Ngày: 12/10/2026 · Trạng thái: **Thiết kế — chưa triển khai** · Thay đổi: §11
-> Trạng thái endpoint: mục 1.10. Từ 15/10/2026 (D-52) endpoint có code và test xanh trong CI ghi `IMPLEMENTED` (hiện: API-SYS-01, API-SYS-02); còn lại `DESIGNED`. OpenAPI sinh từ code (ADR-002) và được contract test đối chiếu với tài liệu này (ADR-013).
+> Trạng thái endpoint: mục 1.10. Từ 15/10/2026 (D-52) endpoint có code và test xanh trong CI ghi `IMPLEMENTED` (hiện: API-SYS-01, API-SYS-02, API-AUTH-01, API-AUTH-06, API-AUTH-07); còn lại `DESIGNED`. OpenAPI sinh từ code (ADR-002) và được contract test đối chiếu với tài liệu này (ADR-013).
 > Từ 1.1, endpoint đối chiếu với [SRS](../02-requirements/SRS.md) (Stage 2B). Sales Pipeline Lite vẫn `SKELETON` (Q-38).
 > Liên quan: [Architecture.md](Architecture.md), [Database_Design.md](Database_Design.md), ADR-006…ADR-011.
 
@@ -54,7 +54,7 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 | Giá trị | Ý nghĩa |
 | --- | --- |
 | `DESIGNED` | Đã thiết kế ở 2C, chưa có code |
-| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`) |
+| `IMPLEMENTED` | Có code và test chạy xanh trong CI (D-52). Hiện có: API-SYS-01, API-SYS-02 (`/api/v1/health/live`, `/api/v1/health/ready`; T-006, run `38544809935`); API-AUTH-01, API-AUTH-06 (trả `204`), API-AUTH-07 (T-102, run `38686690047`) |
 | `SKELETON` | Chỉ khung; chi tiết chờ 2B (D-24) |
 | `DEFERRED` | Ngoài MVP |
 
@@ -64,13 +64,13 @@ Cursor: `?limit=` (mặc định 20, tối đa 100) `&cursor=`; response `{ "ite
 
 | ID | Method | Path | Quyền | Đánh dấu | Mô tả | Status | Req |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| API-AUTH-01 | POST | `/auth/login` | Công khai | rate limit | Email + mật khẩu → session (chờ MFA nếu bắt buộc). Lỗi chung `401 INVALID_CREDENTIALS` | DESIGNED | D-22, ADR-006 |
+| API-AUTH-01 | POST | `/auth/login` | Công khai | rate limit | Email + mật khẩu → session (chờ MFA nếu bắt buộc). Lỗi chung `401 INVALID_CREDENTIALS` | IMPLEMENTED | D-22, ADR-006 |
 | API-AUTH-02 | POST | `/auth/mfa/verify` | Session chờ MFA | rate limit | Mã TOTP hoặc mã khôi phục → xoay session | DESIGNED | ADR-006 |
 | API-AUTH-03 | POST | `/auth/mfa/enroll` | Đã đăng nhập | — | Tạo secret TOTP tạm, trả URI cấu hình | DESIGNED | ADR-006 |
 | API-AUTH-04 | POST | `/auth/mfa/enroll/confirm` | Đã đăng nhập | — | Xác nhận mã, bật MFA, trả mã khôi phục một lần | DESIGNED | ADR-006 |
 | API-AUTH-05 | POST | `/auth/reauth` | Đã đăng nhập | rate limit | Xác thực lại (mật khẩu + MFA nếu có) cho thao tác STEP-UP | DESIGNED | A3 |
-| API-AUTH-06 | POST | `/auth/logout` | Đã đăng nhập | — | Thu hồi session hiện tại | DESIGNED | ADR-006 |
-| API-AUTH-07 | GET | `/auth/me` | Đã đăng nhập | — | Thông tin người dùng, role, permission hiệu lực, CSRF token | DESIGNED | UX-08, UX-09 |
+| API-AUTH-06 | POST | `/auth/logout` | Đã đăng nhập | — | Thu hồi session hiện tại; `204` | IMPLEMENTED | ADR-006 |
+| API-AUTH-07 | GET | `/auth/me` | Đã đăng nhập | — | Thông tin người dùng, role, permission hiệu lực, CSRF token | IMPLEMENTED | UX-08, UX-09 |
 | API-AUTH-08 | POST | `/auth/invitations/accept` | Công khai (token) | rate limit | Token mời + mật khẩu mới → kích hoạt. Token sai/hết hạn/đã dùng → `400 INVITATION_INVALID` (không phân biệt lý do) | DESIGNED | A1 |
 | API-AUTH-09 | POST | `/auth/password` | Đã đăng nhập | STEP-UP | Đổi mật khẩu; thu hồi các session khác | DESIGNED | ADR-006 |
 
