@@ -123,7 +123,7 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 
 | Task | Trạng thái | Ghi chú ngắn |
 |------|------------|--------------|
-| T-501 | TODO | READY · **đủ điều kiện bắt đầu** · `goals.*`; chờ T-108, T-201 |
+| T-501 | TODO | READY · **đủ điều kiện bắt đầu** · `goals.*` |
 | T-502 | TODO | PARTIAL (vòng đời Q-28) · Kích hoạt: CEO cấp công ty, MANAGER cấp đơn vị; chờ T-501, T-109 |
 | T-503 | TODO | READY · Mục tiêu từ tài liệu; chờ T-206, T-302, T-501 |
 | T-504 | TODO | PARTIAL (quy tắc điền check-in từ task — Q-29) · chờ T-501, T-502 |
