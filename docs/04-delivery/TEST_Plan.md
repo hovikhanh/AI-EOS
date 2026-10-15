@@ -337,7 +337,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-JOB-04` | **T-009** | duy nhất | — | `PASSED` — run `38680383606` (T-009, PR #17; `test_enqueue_rolled_back_with_business_change`) |
 | `TC-JOB-05` | **T-203** | D-56 | T-009 (cơ chế kiểm tra quyền lúc chạy, authorizer giả lập) | `NOT RUN` |
 | `TC-JOB-06` | **T-009** | D-44 (bảng 65 TC) | T-303 | `PASSED` — run `38680383606` (T-009, PR #17; quét tĩnh + ca vi phạm) |
-| `TC-NTF-01` | **T-510** (tổng) | D-58 — tách phần (R5): T-304 bản nháp AI, T-403 giao dịch chờ duyệt, T-505 giao task | T-010 (đúng người nhận, link nội bộ — run `38696839691`), T-304, T-403, T-505 | `NOT RUN` |
+| `TC-NTF-01` | **T-510** (tổng) | D-58 — tách phần (R5): T-304 bản nháp AI, T-403 giao dịch chờ duyệt, T-505 giao task | T-010 (đúng người nhận, link nội bộ — run `38696839691`), T-304, T-403, T-505 (giao task — run `38752643215`) | `NOT RUN` |
 | `TC-AUD-01` | **T-109** | D-55 | T-008 (cơ chế ghi, transaction riêng cho DENIED/FAILED) | `PASSED` — run `38708289449` (T-109, PR #27; `test_audit_success_denied_failed`) |
 | `TC-AUD-02` | **T-105** (tổng) | D-55 — tách phần (R5): T-102 đăng nhập, T-103 MFA, T-104 đổi mật khẩu, T-105 lời mời | T-008 (che dữ liệu), T-102, T-103, T-104 | `PASSED` — run `38710976904` (T-105, PR #28; `test_audit_and_logs_have_no_secrets_end_to_end`) |
 | `TC-AUD-03` | **T-008** | duy nhất (D-55) | — | `PASSED` — run `38678659141` (T-008, PR #16; `test_app_role_cannot_modify_audit`) |
@@ -357,7 +357,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |
 | `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_effective_permissions_base_union_valid_assignments`) |
 | `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_undeclared_route_denied`, `test_out_of_scope_object_by_id_is_404`) |
-| `TC-ACC-03` | **T-505** (tổng) | D-59 — tách phần (R5): T-505 danh sách task, T-502 danh sách mục tiêu | T-108 (`scope_filter` trên bảng thử, run `38703355287`), T-502 | `NOT RUN` |
+| `TC-ACC-03` | **T-505** (tổng) | D-59 — tách phần (R5): T-505 danh sách task, T-502 danh sách mục tiêu | T-108 (`scope_filter` trên bảng thử, run `38703355287`), T-502 | `NOT RUN` — phần task đạt ở T-505 (run `38752643215`), chờ phần mục tiêu T-502 |
 | `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_admin_plus_cfo_rejected_by_api_and_database`) |
 | `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_self_role_and_assignment_change_rejected`) |
 | `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_two_admins_removing_each_other_keeps_one`) |
@@ -475,11 +475,11 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-GOAL-08` | **T-502** | D-44 (bảng 65 TC) | T-503 | `NOT RUN` |
 | `TC-GOAL-09` | **T-503** | D-44 (bảng 65 TC) | T-502 | `NOT RUN` |
 | `TC-GOAL-10` | **T-504** | duy nhất | — | `NOT RUN` |
-| `TC-WRK-01` | **T-505** | duy nhất | — | `NOT RUN` |
-| `TC-WRK-02` | **T-505** | duy nhất | — | `NOT RUN` |
-| `TC-WRK-03` | **T-505** | duy nhất | — | `NOT RUN` |
-| `TC-WRK-04` | **T-505** | duy nhất | — | `NOT RUN` |
-| `TC-WRK-05` | **T-505** | D-44 (bảng 65 TC) | T-509 | `NOT RUN` |
+| `TC-WRK-01` | **T-505** | duy nhất | — | `PASSED` — run `38752643215` (T-505, PR #33; `test_create_requires_owner_due_and_title`) |
+| `TC-WRK-02` | **T-505** | duy nhất | — | `PASSED` — run `38752643215` (T-505, PR #33; `test_overdue_and_on_time`) |
+| `TC-WRK-03` | **T-505** | duy nhất | — | `PASSED` — run `38752643215` (T-505, PR #33; `test_only_owner_or_assigner_completes_and_assigner_reopens`) |
+| `TC-WRK-04` | **T-505** | duy nhất | — | `PASSED` — run `38752643215` (T-505, PR #33; `test_employee_only_assigns_to_self`) |
+| `TC-WRK-05` | **T-505** | D-44 (bảng 65 TC) | T-509 | `PASSED` — run `38752643215` (T-505, PR #33; `test_listing_follows_role_scope`) |
 | `TC-WRK-06` | **T-506** | duy nhất | — | `NOT RUN` |
 | `TC-WRK-07` | **T-506** | duy nhất | — | `NOT RUN` |
 | `TC-WRK-08` | **T-506** | duy nhất | — | `NOT RUN` |
