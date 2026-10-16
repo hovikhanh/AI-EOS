@@ -31,6 +31,11 @@ _SENSITIVE_KEY = re.compile(
 )
 # Logger thư viện ghi URL đầy đủ (kể cả query string có thể chứa token/khóa) ở mức INFO → chỉ cho WARNING trở lên.
 _QUIET_LIBRARY_LOGGERS = ("httpx", "httpcore")
+# uvicorn tự cấu hình handler văn bản riêng (không propagate) trước khi gọi factory của ứng dụng → log của nó không qua
+# formatter này. Gỡ handler để đi qua root (JSON, che). Access log của uvicorn ghi cả query string → tắt hẳn; log
+# request do `platform.web` ghi (không có query string).
+_ROUTED_SERVER_LOGGERS = ("uvicorn", "uvicorn.error")
+_DISABLED_SERVER_LOGGERS = ("uvicorn.access",)
 _STANDARD_ATTRS = frozenset(vars(logging.LogRecord("", 0, "", 0, "", None, None))) | {"message", "asctime"}
 
 
@@ -58,7 +63,7 @@ def _mask_content(value: Any) -> Any:
     if isinstance(value, str):
         return mask_pii(value)
     if isinstance(value, dict):
-        return {k: _mask_content(v) for k, v in value.items()}
+        return {mask_pii(str(k)): _mask_content(v) for k, v in value.items()}  # khóa cũng có thể là dữ liệu
     if isinstance(value, list):
         return [_mask_content(v) for v in value]
     return value
@@ -95,3 +100,8 @@ def configure_logging(level: int | str = logging.INFO, stream: IO[str] | None = 
     root.setLevel(level)
     for name in _QUIET_LIBRARY_LOGGERS:
         logging.getLogger(name).setLevel(logging.WARNING)
+    for name in (*_ROUTED_SERVER_LOGGERS, *_DISABLED_SERVER_LOGGERS):
+        server_logger = logging.getLogger(name)
+        for existing in list(server_logger.handlers):
+            server_logger.removeHandler(existing)
+        server_logger.propagate = name in _ROUTED_SERVER_LOGGERS

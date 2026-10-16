@@ -8,14 +8,20 @@ nhân; giới hạn còn lại ghi ở Implementation_Plan §41.
 import io
 import json
 import logging
+import socket
+import subprocess
+import sys
+import time
+import urllib.request
 import uuid
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 import pytest
 from sqlalchemy import Engine, text
 
-from aieos.audit.api import ActorType, AuditEvent, Category, Outcome, audit_row_values, record
+from aieos.audit.api import ActorType, AuditEvent, Category, Outcome, audit_row_values, mask_changes, record
 from aieos.platform.api import (
     PII_MASK,
     JsonFormatter,
@@ -25,6 +31,7 @@ from aieos.platform.api import (
     mask_pii,
     transaction,
 )
+from aieos.platform.web import accept_request_id
 from tests.conftest import ProvisionedDatabase, migrate_to_head
 
 # Giá trị giả theo định dạng.
@@ -33,7 +40,8 @@ CCCD_SPACED = "079 203 001 234"
 ACCOUNT = "19034567890123"
 MOBILE = "0912 345 678"
 LANDLINE = "024 3826 1234"
-EMAIL_AT = "nguyen.van.a [at] congty [dot] vn"
+EMAIL_AT = "nguyen.van.a [at] example [dot] com"
+EMAIL = "nguyen.van.a@example.com"  # tên miền dành riêng cho ví dụ (RFC 2606)
 
 
 def digits(value: str) -> str:
@@ -262,3 +270,81 @@ def test_database_error_logged_without_original_values(engine: Engine, log_strea
     record = line(log_stream)
     assert not leaks(CCCD, log_stream.getvalue()) and not leaks(ACCOUNT, log_stream.getvalue())
     assert "INSERT INTO audit.event" in record["exc"]  # câu SQL vẫn còn để chẩn đoán
+
+
+# ---------- Lỗ hổng tìm thấy khi review PR #41 ----------
+
+
+def test_log_dict_keys_are_masked(log_stream: io.StringIO) -> None:  # 8: khóa dict cũng là dữ liệu
+    logging.getLogger("aieos.test.pii").warning("dem", extra={"jobs": {EMAIL: 1, CCCD: 2, "j-1": 3}})
+    raw = log_stream.getvalue()
+    assert not leaks(EMAIL, raw) and not leaks(CCCD, raw)
+    assert line(log_stream)["jobs"]["j-1"] == 3
+
+
+def test_audit_changes_keys_are_masked() -> None:  # 7
+    stored = json.dumps(mask_changes({"theo_email": {EMAIL: "đã mời"}, CCCD: "x"}), ensure_ascii=False)
+    assert not leaks(EMAIL, stored) and not leaks(CCCD, stored)
+    assert "theo_email" in stored and "đã mời" in stored
+
+
+@pytest.mark.parametrize("incoming", ["0912345678", "nv-0912345678-x"])
+def test_request_id_that_looks_like_pii_is_replaced(incoming: str) -> None:  # 8: correlation_id không bị che
+    replaced = accept_request_id(incoming)
+    assert replaced != incoming and len(replaced) == 32
+    assert accept_request_id("req-abcdef12") == "req-abcdef12"  # ID thường vẫn giữ để tương quan
+
+
+def _free_port() -> int:
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
+
+
+def test_uvicorn_logs_go_through_masking_and_no_raw_access_log(tmp_path: Path) -> None:  # 8: kênh log thật của server
+    """Chạy uvicorn thật như `infra/compose.yaml`: uvicorn tự gắn handler văn bản trước khi gọi factory; access log của
+    nó ghi cả query string. Sau `configure_logging`, mọi dòng phải là JSON đã che và không có dòng access log thô."""
+    (tmp_path / "probe_app.py").write_text(
+        "from aieos.platform.api import CsrfConfig, Secret, configure_logging, create_api\n"
+        "def make():\n"
+        "    configure_logging()\n"
+        "    return create_api({}, (), csrf=CsrfConfig(Secret('k'), frozenset({'https://x'}), frozenset()))\n",
+        encoding="utf-8",
+    )
+    port = _free_port()
+    server = subprocess.Popen(
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "--factory",
+            "probe_app:make",
+            "--app-dir",
+            str(tmp_path),
+            "--port",
+            str(port),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    try:
+        url = f"http://127.0.0.1:{port}/api/v1/health/live?sdt={MOBILE.replace(' ', '')}&email={EMAIL}"
+        deadline = time.monotonic() + 20
+        while True:
+            try:
+                with urllib.request.urlopen(url, timeout=2) as response:
+                    assert response.status == 200
+                break
+            except OSError:
+                if time.monotonic() > deadline:
+                    raise
+                time.sleep(0.2)
+    finally:
+        server.terminate()
+        output, _ = server.communicate(timeout=20)
+    lines = [text_line for text_line in output.splitlines() if text_line.strip()]
+    assert lines, output
+    assert not leaks(MOBILE, output) and EMAIL not in output, output
+    assert all(text_line.startswith("{") for text_line in lines), output  # không còn dòng văn bản thô của uvicorn
+    assert any(json.loads(text_line).get("message") == "request" for text_line in lines)  # log request vẫn còn

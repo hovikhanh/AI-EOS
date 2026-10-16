@@ -99,7 +99,8 @@ def mask_changes(changes: Mapping[str, Any] | None, masked_fields: frozenset[str
 
     def walk(value: Any) -> Any:
         if isinstance(value, Mapping):
-            return {str(k): REDACTED if str(k).lower() in fields else walk(v) for k, v in value.items()}
+            # Khóa cũng có thể là dữ liệu (vd. dict theo email) → che theo nội dung sau khi xét `masked_fields`.
+            return {mask_pii(str(k)): REDACTED if str(k).lower() in fields else walk(v) for k, v in value.items()}
         if isinstance(value, list | tuple | set | frozenset):
             return [walk(v) for v in value]
         return mask_pii(value) if isinstance(value, str) else value
