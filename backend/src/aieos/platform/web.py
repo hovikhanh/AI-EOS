@@ -32,6 +32,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from aieos.platform.errors import ERROR_CATALOG, STATUS_CODES, ApiError, problem_response
 from aieos.platform.http import CsrfConfig, CsrfMiddleware
 from aieos.platform.logs import CORRELATION_ID
+from aieos.platform.privacy import find_pii
 
 API_PREFIX = "/api/v1"
 PERMISSION_EXTRA = "x-aieos-permission"
@@ -46,8 +47,13 @@ _log = logging.getLogger("aieos.http")
 
 
 def accept_request_id(value: str | None) -> str:
-    """Giữ `X-Request-ID` hợp lệ (8–128 ký tự chữ, số, `.`, `_`, `-`); ngược lại sinh mới."""
-    if value is not None and _VALID_REQUEST_ID.fullmatch(value):
+    """Giữ `X-Request-ID` hợp lệ (8–128 ký tự chữ, số, `.`, `_`, `-`); ngược lại sinh mới.
+
+    ID do client gửi đi vào log, audit, job mà không bị che (để còn tương quan) → ID trông như dữ liệu cá nhân (vd. số
+    điện thoại) bị thay bằng ID mới do máy chủ sinh (Q-55).
+    """
+    # Tách theo `.`, `_`, `-` trước khi dò: quy tắc PII không nhận số kẹp giữa dấu gạch (tránh nhầm UUID).
+    if value is not None and _VALID_REQUEST_ID.fullmatch(value) and not find_pii(re.sub(r"[._-]", " ", value)):
         return value
     return uuid.uuid4().hex
 

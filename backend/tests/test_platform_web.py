@@ -90,7 +90,8 @@ def test_sensitive_extra_fields_are_redacted(log_stream: io.StringIO) -> None:
         assert value not in text
     [record] = records(log_stream)
     assert record["headers"] == {"Authorization": REDACTED, "Cookie": REDACTED, "Accept": "json"}
-    assert record["body"]["user"]["email"] == "a@example.test"
+    assert record["body"]["user"]["email"] == "•••"  # che theo nội dung (Q-55): email không vào log
+    assert "a@example.test" not in text
     assert record["db"] == REDACTED
 
 
