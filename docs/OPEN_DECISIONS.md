@@ -499,6 +499,9 @@ Tất cả đang dùng "mặc định an toàn" — đó **không** phải câu 
 | —      | Giả định C1 (import `providers`) | P2 | Đã quyết (D-53) |                     |
 | —      | Trạng thái `IMPLEMENTED` cho API | P2 | Đã quyết (D-52) |                     |
 | —      | Branch protection ≥ 1 approval | P2 | Đã quyết (D-54), chưa áp dụng |        |
+| Q-53   | CHECK `ai.call_log` vs ngoại lệ demo D-50 | TB | Mở — D-60 chỉ đạo giữ CHECK nghiêm ngặt; chờ các điểm D-50 |  |
+| Q-54   | Quy tắc trần chi phí AI   | Thấp    | Đã quyết (D-60) |                    |
+| Q-55   | Danh mục dữ liệu cá nhân, vị trí mã che | Thấp | Đã quyết (D-60) |              |
 
 Không liệt kê (đã đóng hoặc `DEFERRED` có điều kiện rõ, không cần quyết bây giờ): Q-43 (đã trả lời qua D-41), Q-44 và Q-48 (D-42), Q-49 (D-43 — chỉ còn phần công cụ ở trên), Q-40 (D-37); D-30 (SSO `DEFERRED`), D-32 (kênh ngoài in-app `DEFERRED`).
 
@@ -520,3 +523,4 @@ Chuyển mục từ trên xuống đây sau khi đã chép vào Decision_Log.
 | Câu hỏi nghiệp vụ | 15/10/2026 | Như đề xuất; Q-28, Q-29, Q-39 một phần | D-51 (+ D-16, D-20, D-23, D-27, D-28, D-29, D-31, D-33) |
 | Trạng thái API, C1, branch protection | 15/10/2026 | `IMPLEMENTED`; C1 chặt; ≥ 1 approval (chưa áp dụng) | D-52, D-53, D-54 |
 | D-34, D-35, D-36, R6 | 15/10/2026 | Như đề xuất; R6 không ai giữ | D-34, D-35, D-36, D-21 |
+| Q-54, Q-55 (+ chỉ đạo tạm cho Q-53) | 16/10/2026 | Trần AI theo tháng (giờ VN), không đặt → không trần, chỉ log vận hành; danh mục PII ban đầu, mã che ở `platform/privacy.py`; Q-53 giữ CHECK, vẫn mở | D-60 |

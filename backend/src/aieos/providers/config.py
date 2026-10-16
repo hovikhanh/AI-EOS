@@ -87,7 +87,7 @@ def parse_specs(variable: str, raw: str | None) -> list[ProviderSpec]:
 
 
 def parse_budget(raw: str | None) -> Decimal | None:
-    """Trần chi phí (cùng đơn vị với đơn giá provider); không đặt → không giới hạn (`[CẦN XÁC NHẬN]` GAP-14)."""
+    """Trần chi phí (cùng đơn vị với đơn giá provider); không đặt → không giới hạn (D-60)."""
     if raw is None:
         return None
     try:

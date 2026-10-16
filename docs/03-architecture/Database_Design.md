@@ -215,7 +215,7 @@ Unique `(initiated_by, idempotency_key)`.
 Job bị chặn do kill switch: `jobs.job.status = 'CANCELLED'`, `last_error_code = 'KILL_SWITCH'` (với `AI_CONTENT`).
 
 ### `ai.call_log`, `ai.feedback`
-- `call_log`: `id`, `provider`, `model`, `purpose`, `data_classification`, `provider_is_local`, `tokens_in`, `tokens_out`, `pages`, `latency_ms`, `cost_estimate numeric`, `outcome`, `job_id`, `correlation_id`, `created_at`. CHECK: `data_classification IN ('SENSITIVE','PERSONAL') → provider_is_local` (ADR-011).
+- `call_log`: `id`, `provider`, `model`, `purpose`, `data_classification`, `provider_is_local`, `tokens_in`, `tokens_out`, `pages`, `latency_ms`, `cost_estimate numeric`, `outcome`, `job_id`, `correlation_id`, `created_at`. CHECK: `data_classification IN ('SENSITIVE','PERSONAL') → provider_is_local` (ADR-011). D-60 (16/10/2026): giữ nguyên CHECK; ngoại lệ demo D-50 chưa áp dụng (Q-53 mở); không bỏ ghi log để vượt CHECK.
 - `feedback`: `id`, `user_id`, `target_type` (`ANSWER`,`EXTRACTION`,`SUGGESTION`), `target_id`, `verdict` (`UP`,`DOWN`), `comment`, `created_at` (FR-AIQ-04).
 
 ### `jobs.job`

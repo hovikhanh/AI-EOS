@@ -1,6 +1,6 @@
 # AI-EOS — Software Requirements Specification (SRS)
 
-> Phiên bản: 1.2 (15/10/2026, D-51) · Ngày: 12/10/2026 · Trạng thái: **Stage 2B — CDA duyệt có điều kiện (D-37…D-40)** · Thay đổi: §18
+> Phiên bản: 1.3 (16/10/2026, D-60) · Ngày: 12/10/2026 · Trạng thái: **Stage 2B — CDA duyệt có điều kiện (D-37…D-40)** · Thay đổi: §18
 > Nguồn: [PRD.md](PRD.md), [Requirements_Traceability](../00-source/Requirements_Traceability.md), [Decision_Log](../00-source/Decision_Log.md) 0.6, ADR-001…013, [Architecture](../03-architecture/Architecture.md), [Database_Design](../03-architecture/Database_Design.md), [API_Specification](../03-architecture/API_Specification.md).
 > AI-EOS chưa có code; mọi yêu cầu ở đây là đặc tả, không có yêu cầu nào `IMPLEMENTED`/`VERIFIED`.
 
@@ -318,7 +318,7 @@ Quy tắc ở ADR-009; SRS cụ thể hóa input, validation, AC.
 | SRS-PRV-01 | LLM/OCR qua adapter; cấu hình provider qua secret/biến môi trường | D-07 | CONFIRMED | ADR-011 |
 | SRS-PRV-02 | Lời gọi mang phân loại dữ liệu; `PERSONAL`/`SENSITIVE` chỉ tới provider local; không có provider local phù hợp → bước AI bị bỏ qua, chuyển xử lý thủ công | SEC-DC-04, CMP-02, ADR-011 | CONFIRMED | DB INV-15 |
 | SRS-PRV-03 | Timeout, retry giới hạn, fallback provider cùng mức phân loại; hết → `AI_UNAVAILABLE`, luồng thủ công vẫn chạy | NFR-07, BR-21 | CONFIRMED | — |
-| SRS-PRV-04 | Ghi chi phí mỗi lời gọi; trần ngân sách cấu hình (giá trị GAP-14); cảnh báo ở 80%; vượt trần chặn lời gọi không thiết yếu | BR-22, FR-AIQ-05 | CONFIRMED (cơ chế) / NEEDS_CONFIRMATION (trần) | DB `ai.call_log` |
+| SRS-PRV-04 | Ghi chi phí mỗi lời gọi; trần ngân sách cấu hình (giá trị GAP-14); cảnh báo ở 80%; vượt trần chặn lời gọi không thiết yếu | BR-22, FR-AIQ-05 | CONFIRMED (cơ chế; quy tắc kỳ, không đặt trần, đơn vị, cảnh báo bằng log vận hành — D-60) / giá trị trần là cấu hình | DB `ai.call_log` |
 
 ## 13. Yêu cầu phi chức năng và phương pháp xác minh
 
@@ -453,3 +453,4 @@ Q-28…Q-42 (Decision_Log §7) và các mục NEEDS_CONFIRMATION trong tài li�
 | 1.0 | Stage 2B | — |
 | 1.1 | SRS-FIN-05, 08, 16 cập nhật; thêm SRS-FIN-17 (`ON_HOLD`) — AMD-01. SRS-BRF-11 **đảo lại** (Briefing bị chặn khi kill switch bật), thêm SRS-BRF-13; SRS-AIC-06 thêm `job_class` — AMD-02. SRS-GOAL-04, SRS-BRF-05, 07, 09 theo mặc định D-39. SRS-SLS-01 theo D-40. SRS-ACC-10 tách quyền nhân sự (R6). §15.2 ghi nhận AMD đã duyệt | D-37…D-40, D-21 |
 | 1.2 | SRS-BRF-05 → CONFIRMED (Q-37), bỏ nhãn "chưa chính thức"; SRS-GOAL-04 ghi phạm vi kích hoạt (Q-28) | D-51 |
+| 1.3 | SRS-PRV-04: trạng thái ghi rõ quy tắc trần chi phí đã chốt (kỳ tháng giờ VN, không đặt → không trần, đơn vị theo đơn giá provider, cảnh báo bằng log vận hành; chưa có thông báo in-app) | D-60 |
