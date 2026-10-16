@@ -1,7 +1,7 @@
 """Ghi `ai.call_log` và tính chi phí đã dùng cho trần ngân sách (T-204, ADR-011, SRS-PRV-04).
 
 Mỗi lời gọi ghi trong transaction riêng: call log còn lại kể cả khi nghiệp vụ gọi provider bị rollback (chi phí đã
-phát sinh). Kỳ ngân sách: tháng dương lịch theo giờ Việt Nam — `[CẦN XÁC NHẬN]` (GAP-14 chỉ quyết giá trị là cấu hình).
+phát sinh). Kỳ ngân sách: tháng dương lịch theo giờ Việt Nam (D-60).
 """
 
 from decimal import Decimal

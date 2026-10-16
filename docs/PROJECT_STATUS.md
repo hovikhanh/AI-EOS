@@ -3,7 +3,7 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 15/10/2026 (T-607 `DONE`)
+**Cập nhật lần cuối:** 16/10/2026 (D-60: Q-54, Q-55 đóng; Q-53 mở)
 **Commit tham chiếu:** `ef26016` (`main`, PR #39 — T-112); T-607: PR #40 (CI run `38770889365` xanh)
 **Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 13/13 task `DONE`; P1: T-101…T-109, T-111, T-112 `DONE`; P2: T-201, T-202, T-204 `DONE`; P3: T-301 `DONE`; P4: T-401 `DONE`; P5: T-501, T-505 `DONE`; P6: T-607 `DONE`. Kế hoạch đã được duyệt (D-46). **8 task đủ điều kiện bắt đầu:** T-203, T-302, T-305, T-306, T-402, T-502, T-507, T-606.
 
@@ -182,6 +182,12 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 4. CDA điền OPEN_DECISIONS mục 0 trước khi tới T-204 (D-50) và T-108 (TC-ACC-10).
 
 ## 6. Ghi chú phiên gần nhất
+
+**Phiên 16/10/2026 (lần 20) — D-60, PR #41:**
+- CDA trả lời Q-54 (quy tắc trần chi phí AI) và Q-55 (danh mục dữ liệu cá nhân, vị trí mã che) → D-60, CONFIRMED. Q-53: giữ CHECK `ai.call_log` nghiêm ngặt, **vẫn mở** tới khi các điểm D-50 được quyết định chính thức; phần demo DeepSeek của T-205 vẫn bị chặn.
+- Cập nhật: Decision_Log 0.30, OPEN_DECISIONS §5–§6 (không sửa mục 0), Implementation_Plan §4 (T-205), §37, §40, §41, Architecture 1.4 (§3 phạm vi `platform`), SRS 1.3 (SRS-PRV-04), Database_Design §5, Requirements_Traceability; docstring `ai/call_log.py`, `providers/config.py` (docstring `platform/privacy.py` lấy theo bản đã merge ở PR #41). Không đổi logic.
+- PR #41 (che PII trong log/audit, test hồi quy) merge → `5867bae`; CI trước merge run `38829236947`, sau merge run `38830488406` xanh (pytest 427, vitest 70, compose-smoke). CDA phê duyệt thêm số điện thoại bàn VN vào `PERSONAL` (Decision_Log 0.30, D-60/Q-55). Đề xuất `log_error_verbosity = terse` cho PostgreSQL chưa phê duyệt, chưa áp dụng.
+- Mục 0.1 OPEN_DECISIONS đã có câu trả lời D-50 do CDA điền (gồm "production vẫn gửi DeepSeek dữ liệu `PERSONAL`/`SENSITIVE`") nhưng chưa ghi vào Decision_Log — chưa áp dụng; cần CDA xác nhận trước khi đóng Q-53.
 
 **Phiên 15/10/2026 (lần 19) — "hoàn thành tất cả task đã sẵn sàng" (T-505, …):**
 - CDA: hoàn thành 8 task đủ điều kiện (T-505, T-401, T-301, T-202, T-501, T-204, T-112, T-607); agent merge từng PR khi CI xanh để tránh xung đột tài liệu. PR #32 (T-201) merge → `42518d2`.
