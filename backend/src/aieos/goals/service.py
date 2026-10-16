@@ -1,7 +1,7 @@
 """Mục tiêu (T-501; SRS-GOAL-01…03, 05…07, 09, 11; API-GOAL-01, 02, 03, 05, 06; D-39, D-51).
 
-- **Trạng thái:** tạo mới luôn `DRAFT`; chỉ sửa được khi `DRAFT`. Kích hoạt `DRAFT → ACTIVE` thuộc T-502
-  (`goals.activate`).
+- **Trạng thái:** tạo mới luôn `DRAFT`; chỉ sửa được khi `DRAFT`. Kích hoạt `DRAFT → ACTIVE` (T-502, API-GOAL-04):
+  xem `activate`.
 - **Không tính % đạt hay cảnh báo** (SRS-GOAL-09): chỉ trả baseline, target, giá trị đo gần nhất (Q-29 chưa duyệt công
   thức).
 - **Phạm vi (SRS-ACC-02/03, T-108):** Objective/KPI thấy được khi owner hoặc đơn vị (và cấp trên) thuộc phạm vi
@@ -25,7 +25,7 @@ from sqlalchemy import and_, exists, func, or_, select, update
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session
 
-from aieos.access.api import Actor, Resource, authorize, scope_filter
+from aieos.access.api import Actor, Grant, Resource, authorize, scope_filter
 from aieos.audit.api import ActorType, AuditEvent, Category, Outcome, record
 from aieos.capture.api import document_exists
 from aieos.goals.models import CheckInRow, KeyResultRow, KpiRow, MeasurementRow, ObjectiveRow
@@ -34,6 +34,7 @@ from aieos.platform.api import ApiError, check_version
 
 READ = "data.read"
 WRITE = "record.submit"
+ACTIVATE = "goals.activate"
 
 
 @dataclass(frozen=True)
@@ -424,3 +425,70 @@ def record_measurement(
     session.flush()
     _audit(session, actor.user_id, "goals.measurement.create", "key_result" if kind == "KR" else "kpi", target_id)
     return Measurement(row.value, row.report_period_label, row.source_document_id, row.recorded_by, row.created_at)
+
+
+# ---------- Kích hoạt (T-502) ----------
+
+
+def _activation_grant_covers(actor: Actor, grant: Grant, units: frozenset[uuid.UUID], company: bool) -> bool:
+    """Q-28 → D-51: cấp công ty — CEO; cấp đơn vị — MANAGER; chỉ qua assignment (không có quyền nền — D-39).
+
+    Lựa chọn chặt hơn của agent (`[CẦN XÁC NHẬN]`): mục tiêu cấp công ty chỉ nhận assignment phạm vi `COMPANY` của
+    tài khoản có role CEO; mục tiêu cấp đơn vị chỉ nhận assignment phạm vi `ORG_UNIT` bao trùm đơn vị (đơn vị và cấp
+    dưới) của tài khoản có role MANAGER — assignment `COMPANY` không thay cho cấp đơn vị và ngược lại. Role được xét
+    lại lúc kích hoạt (assignment còn nhưng role đã gỡ → từ chối).
+    """
+    if company:  # quyền nền (scope_type None) không bao giờ khớp — D-39
+        return "CEO" in actor.roles and grant.scope_type == "COMPANY"
+    return "MANAGER" in actor.roles and grant.scope_type == "ORG_UNIT" and bool(units & grant.units)
+
+
+def activate(session: Session, actor: Actor, kind: str, item_id: uuid.UUID, *, expected_version: int) -> Any:
+    """API-GOAL-04: `DRAFT → ACTIVE` bởi người có `goals.activate` trong phạm vi (SRS-GOAL-03, 04); `If-Match`.
+
+    Thứ tự: không thấy đối tượng → `404`; không có assignment phù hợp → `403`; sai version → `412`; không phải
+    `DRAFT` → `409 INVALID_STATE`. Cấp của mục tiêu: Objective/KPI theo `org_unit_id` (NULL = công ty); KR theo
+    Objective cha. Người tạo bản nháp từ tài liệu không tự kích hoạt mục tiêu cấp công ty (SRS-GOAL-04). Ghi
+    `activated_by`/`activated_at` và audit `BUSINESS` người kích hoạt trong cùng transaction.
+    """
+    loader: Any = {"objective": _objective, "key_result": _key_result, "kpi": _kpi}[kind]
+    row = loader(session, actor, item_id, lock=True)
+    unit = _objective(session, actor, row.objective_id).org_unit_id if kind == "key_result" else row.org_unit_id
+    company = unit is None
+    path = unit_path(session, unit)
+    if not any(_activation_grant_covers(actor, g, path, company) for g in actor.grants.get(ACTIVATE, ())):
+        raise ApiError("FORBIDDEN", "Không có quyền kích hoạt mục tiêu ở cấp này")
+    if company and row.source_document_id is not None and row.created_by == actor.user_id:
+        raise ApiError("FORBIDDEN", "Người tạo bản nháp từ tài liệu không tự kích hoạt mục tiêu cấp công ty")
+    check_version(row.version, expected_version)
+    if row.status != "DRAFT":
+        raise ApiError("INVALID_STATE", "Chỉ kích hoạt được bản nháp")
+    model: Any = type(row)
+    session.execute(
+        update(model)
+        .where(model.id == item_id, model.status == "DRAFT")
+        .values(
+            status="ACTIVE",
+            activated_by=actor.user_id,
+            activated_at=func.now(),
+            version=model.version + 1,
+            updated_at=func.now(),
+        )
+        .execution_options(synchronize_session="fetch")
+    )
+    record(
+        session,
+        AuditEvent(
+            category=Category.BUSINESS,
+            actor_type=ActorType.USER,
+            actor_user_id=actor.user_id,
+            action=f"goals.{kind}.activate",
+            outcome=Outcome.SUCCESS,
+            resource_type=f"goals.{kind}",
+            resource_id=str(item_id),
+            changes={"status": {"from": "DRAFT", "to": "ACTIVE"}, "activated_by": str(actor.user_id)},
+        ),
+    )
+    session.expire_all()
+    getter: Any = {"objective": get_objective, "key_result": get_key_result, "kpi": get_kpi}[kind]
+    return getter(session, actor, item_id)
