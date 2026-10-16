@@ -753,3 +753,12 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Truy cập (SRS-NFR-08, WCAG 2.1 AA): `axe-core` 4.13.0 (devDependency, MPL-2.0, chỉ dùng trong test) chạy trên mọi màn hiện có, cả hai ngôn ngữ — 0 vi phạm (tắt luật `color-contrast` vì jsdom không tính màu); tương phản token màu kiểm riêng (mọi cặp chữ/nền ≥ 4,5:1, token hiện tại đạt, không phải đổi màu). Bàn phím: link "Bỏ qua tới nội dung chính", hộp thoại xác thực lại nhận focus vào ô mật khẩu và đóng bằng Esc.
 - Chưa làm / cần người kiểm: duyệt bàn phím thủ công toàn bộ màn (TC-NFR-05 phần thủ công) và kiểm tra bằng trình đọc màn hình; biểu đồ có bảng thay thế (chưa có biểu đồ nào); AI trả lời theo ngôn ngữ câu hỏi (TC-NFR-02 phần AI — T-306). Màn mới về sau phải thêm khóa vào cả hai từ điển và vào test axe.
 - Test `frontend/src/t607.test.tsx` (8). 8 đột biến → test đỏ (đột biến bỏ `tabIndex` của đích link bỏ qua ban đầu lọt — jsdom trả `-1` cho mọi phần tử; đã kiểm thuộc tính).
+
+## 43. Ghi chú triển khai T-502 (16/10/2026)
+
+- Làm bởi subagent trong worktree riêng (phiên song song 16/10/2026), lead review và kiểm chứng lại trên PostgreSQL 18.6 cục bộ (432 test đạt).
+- `goals/service.py` `activate()`: khóa dòng; `404` ngoài phạm vi đọc → `403` không có assignment đúng cấp → `412`/`428` theo `If-Match` → `409` nếu không phải `DRAFT`; cập nhật có điều kiện `status = 'DRAFT'`; ghi `activated_by`, `activated_at`, tăng `version`; audit `BUSINESS` trong cùng transaction. Không kích hoạt dây chuyền.
+- Quy tắc cấp (D-51/Q-28): công ty — CEO + assignment `COMPANY`; đơn vị — MANAGER + assignment `ORG_UNIT` bao trùm đơn vị. Role được xét lại lúc kích hoạt. Không ai được giao `goals.activate` trong code/seed (D-39); người giữ quyền là việc vận hành của CDA.
+- `[CẦN XÁC NHẬN]` Q-56 (dùng chéo assignment giữa các cấp), Q-57 (KR dưới Objective DRAFT), Q-58 (phạm vi quy tắc người tạo bản nháp từ tài liệu).
+- Test `backend/tests/test_goals_activation.py` (5): TC-GOAL-07, TC-GOAL-08, phần mục tiêu của TC-ACC-03 (D-59). 14 đột biến → test đỏ.
+
