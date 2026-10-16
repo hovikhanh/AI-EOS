@@ -279,6 +279,8 @@ Chi tiết T-501: Objective `{ "id", "title", "owner_user_id", "period_label", "
 
 Chi tiết T-502: API-GOAL-04 = `POST /goals/{objectives|key-results|kpis}/{id}/activate`, không body; `If-Match` bắt buộc (`428`/`412`); chỉ `DRAFT` (`409 INVALID_STATE`); trả đối tượng như API-GOAL-01/02 + `ETag`. Không có `goals.activate` → `403`; đối tượng ngoài phạm vi `data.read` → `404`; assignment không đúng cấp → `403`. Cấp công ty (Objective/KPI có `org_unit_id` NULL; KR theo Objective cha): role CEO + assignment `COMPANY`. Cấp đơn vị: role MANAGER + assignment `ORG_UNIT` bao trùm đơn vị (đơn vị và cấp dưới). Người tạo bản nháp từ tài liệu không tự kích hoạt mục tiêu cấp công ty (`403`). Audit `BUSINESS` `goals.<kind>.activate` ghi người kích hoạt. Các lựa chọn chặt hơn của agent: Q-56…Q-58.
 
+Chi tiết T-305: API-AI-03 → `200 [{ "name", "module", "operation_type", "risk_level" (null = chưa phân loại), "financial", "max_autonomy_level", "approval_required", "params_schema", "enabled" }]` sắp theo `name`. API-AI-04 → `200 [{ "id", "tool_name", "role_code" (null = mọi role), "value_threshold" (chuỗi thập phân | null), "level", "max_autonomy_level" (trần hiệu lực = min(trần tool, L3, L2 nếu tài chính)), "financial", "updated_by", "updated_at", "reason", "version" }]`. API-AI-05 body `{ "level": số nguyên ≥ 0, "reason": 1–1000 ký tự }` (`extra=forbid`) → `200` + `ETag`; lỗi `422 AUTONOMY_CAP_EXCEEDED` (mã và CSDL `AE030`/CHECK), `422 VALIDATION_ERROR`, `401 REAUTH_REQUIRED`, `403`, `404`, `412`, `428`. Không có API tạo/xóa policy. Audit ADMIN `ai.autonomy_policy.update` (mức cũ → mới); lỗi nghiệp vụ audit `FAILED`. Danh sách không phân trang (Q-59).
+
 ## 8. Thông báo và hệ thống
 
 | ID | Method | Path | Quyền | Mô tả | Req |

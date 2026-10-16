@@ -1,6 +1,6 @@
 # AI-EOS — Decision Log
 
-> Phiên bản: 0.31 (quyết định CDA 15–16/10/2026: D-44…D-60; Q-53, Q-56…Q-58 còn mở) · Ngày: 16/10/2026 · Trạng thái: **Còn mục NEEDS_CONFIRMATION / `[CẦN XÁC NHẬN]`** — danh sách đang mở và phiếu quyết định: [OPEN_DECISIONS.md](../OPEN_DECISIONS.md)
+> Phiên bản: 0.32 (quyết định CDA 15–16/10/2026: D-44…D-60; Q-53, Q-56…Q-59 còn mở) · Ngày: 16/10/2026 · Trạng thái: **Còn mục NEEDS_CONFIRMATION / `[CẦN XÁC NHẬN]`** — danh sách đang mở và phiếu quyết định: [OPEN_DECISIONS.md](../OPEN_DECISIONS.md)
 > Liên quan: [Source_Analysis.md](Source_Analysis.md) (CON/GAP/Q/ASM gốc), [Requirements_Traceability.md](Requirements_Traceability.md) (trạng thái từng yêu cầu).
 > ID quyết định `D-xx` ổn định, không tái sử dụng. Lịch sử thay đổi: mục 6.
 
@@ -551,6 +551,7 @@ Director và Manager: UX §2.1 gộp hai persona; nguồn không nói Director c
 | 0.23 | 15/10/2026 | Thêm D-58: T-106 ← T-010 ← T-102; TC-NTF-01 chủ T-510; `AIEOS_PASSWORD_MIN_LENGTH` | Quyết định CDA khi bắt đầu T-106 |
 | 0.24 | 15/10/2026 | Thêm Q-52: task chủ TC-ACC-03 không chạy đủ kịch bản ở T-108 | Phát hiện khi làm T-108 |
 | 0.25 | 15/10/2026 | Thêm D-59: TC-ACC-03 chủ T-505, phần mục tiêu ở T-502 (đóng Q-52) | Quyết định CDA khi bắt đầu T-104 |
+| 0.32 | 16/10/2026 | Thêm Q-59: chi tiết API cấu hình autonomy (lý do bắt buộc, không phân trang, không API tạo policy) | Phát hiện khi làm T-305 |
 | 0.31 | 16/10/2026 | Thêm Q-56…Q-58: phạm vi kích hoạt mục tiêu theo cấp, KR dưới Objective DRAFT, quy tắc người tạo bản nháp từ tài liệu | Phát hiện khi làm T-502 |
 | 0.30 | 16/10/2026 | D-60/Q-55: thêm số điện thoại bàn Việt Nam vào `PERSONAL` (CDA phê duyệt khi review PR #41); cập nhật giới hạn đã biết theo PR #41 | Quyết định CDA phiên 16/10/2026 |
 | 0.29 | 16/10/2026 | Thêm D-60: trả lời Q-54 (quy tắc trần chi phí AI), Q-55 (danh mục dữ liệu cá nhân, vị trí mã che); Q-53 giữ CHECK nghiêm ngặt, vẫn mở cùng các điểm D-50; ghi cơ chế trần đang chạy và giới hạn đã biết của quy tắc PII | Quyết định CDA phiên 16/10/2026 |
@@ -620,3 +621,4 @@ Director và Manager: UX §2.1 gộp hai persona; nguồn không nói Director c
 | Q-56 | T-502: D-51 (Q-28) chỉ nói "cấp công ty — CEO, cấp đơn vị — MANAGER". Chưa rõ: CEO có assignment `COMPANY` có kích hoạt được mục tiêu cấp đơn vị không; MANAGER có assignment `COMPANY` thì sao | SRS-GOAL-04, D-39, D-51, T-502 | `[CẦN XÁC NHẬN]` T-502 chọn cách chặt: cấp công ty chỉ CEO + assignment `COMPANY`; cấp đơn vị chỉ MANAGER + assignment `ORG_UNIT` bao trùm đơn vị; không dùng chéo | Thấp |
 | Q-57 | T-502: KR có được kích hoạt khi Objective cha còn `DRAFT` không; kích hoạt Objective có kéo theo KR không — tài liệu không nói | SRS-GOAL-03, T-502 | `[CẦN XÁC NHẬN]` T-502: KR kích hoạt độc lập, không bắt Objective cha `ACTIVE`; không kích hoạt dây chuyền | Thấp |
 | Q-58 | SRS-GOAL-04: "Người tạo bản nháp từ tài liệu không tự kích hoạt Objective cấp công ty" — chỉ Objective hay cả KR/KPI cấp công ty; "bản nháp từ tài liệu" xác định thế nào | SRS-GOAL-04, T-502 | `[CẦN XÁC NHẬN]` T-502: áp dụng khi `source_document_id` có giá trị; mở rộng (chặt hơn) cho mọi mục tiêu cấp công ty (Objective, KR, KPI); cấp đơn vị không giới hạn | Thấp |
+| Q-59 | T-305: API_Specification không nói (1) `reason` có bắt buộc ở API-AI-05; (2) API-AI-03/04 có phân trang; (3) tool WRITE chưa có policy (ngoài `create_task`) cấu hình bằng cách nào — không có API tạo policy | API-AI-03…05, SRS-AIC-15, T-305, T-302 | `[CẦN XÁC NHẬN]` T-305: `reason` bắt buộc (như API-AI-02/06, API-ADM-05); danh sách đầy đủ không phân trang (như API-ADM-09); chỉ sửa policy đã có — thêm policy cần migration seed hoặc API mới do CDA duyệt; đặt lại cùng mức vẫn tăng `version` và audit | Thấp |

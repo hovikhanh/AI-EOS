@@ -763,3 +763,11 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - `[CẦN XÁC NHẬN]` Q-56 (dùng chéo assignment giữa các cấp), Q-57 (KR dưới Objective DRAFT), Q-58 (phạm vi quy tắc người tạo bản nháp từ tài liệu).
 - Test `backend/tests/test_goals_activation.py` (5): TC-GOAL-07, TC-GOAL-08, phần mục tiêu của TC-ACC-03 (D-59). 14 đột biến → test đỏ.
 
+## 44. Ghi chú triển khai T-305 (16/10/2026)
+
+- Làm bởi subagent trong worktree riêng; lead review và chạy lại trên `main` mới (448 test đạt, PostgreSQL 18.6 cục bộ).
+- `ai/autonomy.py` (service) + `ai/router.py` (`build_ai_admin_router`): API-AI-03/04/05, quyền `config.autonomy` (chỉ ADMIN), PUT cần step-up và `If-Match`.
+- Trần hiệu lực = min(`max_autonomy_level` của tool, L3, L2 nếu tool tài chính) — kiểm ở mã và CSDL (trigger `AE030`, CHECK) cùng trả `422 AUTONOMY_CAP_EXCEEDED`. Chỉ sửa `level`, `reason` của policy đã có; không seed, không đổi `risk_level`, trần tool.
+- Khóa dòng policy (`FOR UPDATE`) và tool (`FOR SHARE`); audit thành công trong cùng transaction, lỗi nghiệp vụ audit `FAILED` riêng.
+- `[CẦN XÁC NHẬN]` Q-59. Test `backend/tests/test_ai_autonomy.py` (16). 14 đột biến → test đỏ.
+
