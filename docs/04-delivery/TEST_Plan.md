@@ -357,7 +357,7 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-IAM-13` | **T-105** | duy nhất | — | `NOT RUN` |
 | `TC-ACC-01` | **T-108** | D-44 (bảng 65 TC) | T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_effective_permissions_base_union_valid_assignments`) |
 | `TC-ACC-02` | **T-108** | D-44 (bảng 65 TC) | T-111, T-601 | `PASSED` — run `38703355287` (T-108, PR #25; `test_undeclared_route_denied`, `test_out_of_scope_object_by_id_is_404`) |
-| `TC-ACC-03` | **T-505** (tổng) | D-59 — tách phần (R5): T-505 danh sách task, T-502 danh sách mục tiêu | T-108 (`scope_filter` trên bảng thử, run `38703355287`), T-502 | `NOT RUN` — phần task đạt ở T-505 (run `38752643215`), chờ phần mục tiêu T-502 |
+| `TC-ACC-03` | **T-505** (tổng) | D-59 — tách phần (R5): T-505 danh sách task, T-502 danh sách mục tiêu | T-108 (`scope_filter` trên bảng thử, run `38703355287`), T-502 | `PASSED` — phần task run `38752643215` (T-505, PR #33; `test_listing_follows_role_scope`), phần mục tiêu run `38851790319` (T-502, PR #43; `test_manager_lists_only_goals_of_own_unit`) |
 | `TC-ACC-04` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_admin_plus_cfo_rejected_by_api_and_database`) |
 | `TC-ACC-05` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_self_role_and_assignment_change_rejected`) |
 | `TC-ACC-06` | **T-109** | D-44 (bảng 65 TC) | T-107 | `PASSED` — run `38708289449` (T-109, PR #27; `test_two_admins_removing_each_other_keeps_one`) |
@@ -471,8 +471,8 @@ Quyết định: D-44 (Q-51, phương án A, CDA 15/10/2026). ID trong dấu `` 
 | `TC-GOAL-04` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_check_in_own_kr_only`) |
 | `TC-GOAL-05` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_kr_shows_numbers_without_percent`) |
 | `TC-GOAL-06` | **T-501** | duy nhất | — | `PASSED` — run `38764880704` (T-501, PR #37; `test_manager_sees_team_check_ins_in_scope`) |
-| `TC-GOAL-07` | **T-502** | duy nhất | — | `NOT RUN` |
-| `TC-GOAL-08` | **T-502** | D-44 (bảng 65 TC) | T-503 | `NOT RUN` |
+| `TC-GOAL-07` | **T-502** | duy nhất | — | `PASSED` — run `38851790319` (T-502, PR #43; `test_activate_without_assignment_is_forbidden`) |
+| `TC-GOAL-08` | **T-502** | D-44 (bảng 65 TC) | T-503 | `PASSED` — run `38851790319` (T-502, PR #43; `test_activate_with_assignment_in_scope`) |
 | `TC-GOAL-09` | **T-503** | D-44 (bảng 65 TC) | T-502 | `NOT RUN` |
 | `TC-GOAL-10` | **T-504** | duy nhất | — | `NOT RUN` |
 | `TC-WRK-01` | **T-505** | duy nhất | — | `PASSED` — run `38752643215` (T-505, PR #33; `test_create_requires_owner_due_and_title`) |

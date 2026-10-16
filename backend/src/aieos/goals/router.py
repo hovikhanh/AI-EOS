@@ -1,6 +1,6 @@
 """Endpoint mục tiêu (T-501): API-GOAL-01 `GET /goals/objectives`, API-GOAL-02 `GET /goals/kpis`, API-GOAL-03
 `POST/PATCH /goals/objectives|key-results|kpis`, API-GOAL-05 `POST /goals/key-results/{id}/check-ins`, API-GOAL-06
-`POST /goals/{type}/{id}/measurements`. Kích hoạt (API-GOAL-04): T-502.
+`POST /goals/{type}/{id}/measurements` (T-501); API-GOAL-04 `POST /goals/{type}/{id}/activate` (T-502).
 
 Router mỏng (ADR-002). Số (baseline, target, giá trị) trả dạng chuỗi thập phân — không float (CLAUDE.md §5). Không có
 trường % đạt hay cảnh báo (SRS-GOAL-09).
@@ -292,5 +292,27 @@ def build_goals_router(guard: PermissionGuard) -> APIRouter:
                 ),
             )  # fmt: skip
             return _dump(item)
+
+    def activate(kind: str, item_id: uuid.UUID, actor: Actor, response: Response, version: str | None) -> Any:
+        """API-GOAL-04: `DRAFT → ACTIVE`; `goals.activate` chỉ qua assignment (D-39, Q-28 → D-51); `If-Match`."""
+        expected = require_if_match(version)
+        with transaction(guard.factory) as session:
+            item = service.activate(session, actor, kind, item_id, expected_version=expected)
+            response.headers["ETag"] = etag(item.version)
+            return _dump(item)
+
+    activation = guard.route("goals.activate")
+
+    @router.post("/goals/objectives/{item_id}/activate", response_model=ObjectiveOut, **activation)
+    def activate_objective(item_id: uuid.UUID, actor: actor_dep, response: Response, version: if_match = None) -> Any:
+        return activate("objective", item_id, actor, response, version)
+
+    @router.post("/goals/key-results/{item_id}/activate", response_model=KeyResultOut, **activation)
+    def activate_key_result(item_id: uuid.UUID, actor: actor_dep, response: Response, version: if_match = None) -> Any:
+        return activate("key_result", item_id, actor, response, version)
+
+    @router.post("/goals/kpis/{item_id}/activate", response_model=KpiOut, **activation)
+    def activate_kpi(item_id: uuid.UUID, actor: actor_dep, response: Response, version: if_match = None) -> Any:
+        return activate("kpi", item_id, actor, response, version)
 
     return router

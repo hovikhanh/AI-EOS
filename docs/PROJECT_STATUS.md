@@ -3,20 +3,20 @@
 > Nguồn sự thật duy nhất về hiện trạng dự án.
 > Mọi nơi khác chỉ được liên kết tới file này, không được ghi lại trạng thái.
 
-**Cập nhật lần cuối:** 16/10/2026 (D-60: Q-54, Q-55 đóng; Q-53 mở)
-**Commit tham chiếu:** `ef26016` (`main`, PR #39 — T-112); T-607: PR #40 (CI run `38770889365` xanh)
-**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 13/13 task `DONE`; P1: T-101…T-109, T-111, T-112 `DONE`; P2: T-201, T-202, T-204 `DONE`; P3: T-301 `DONE`; P4: T-401 `DONE`; P5: T-501, T-505 `DONE`; P6: T-607 `DONE`. Kế hoạch đã được duyệt (D-46). **8 task đủ điều kiện bắt đầu:** T-203, T-302, T-305, T-306, T-402, T-502, T-507, T-606.
+**Cập nhật lần cuối:** 16/10/2026 (T-502 `DONE`; D-60)
+**Commit tham chiếu:** `e415b8d` (`main`, PR #42 — D-60); T-502: PR #43 (CI run `38851790319` xanh)
+**Giai đoạn hiện tại:** Triển khai giai đoạn P0 (Nền tảng): 13/13 task `DONE`; P1: T-101…T-109, T-111, T-112 `DONE`; P2: T-201, T-202, T-204 `DONE`; P3: T-301 `DONE`; P4: T-401 `DONE`; P5: T-501, T-505 `DONE`; P6: T-607 `DONE`. Kế hoạch đã được duyệt (D-46). **8 task đủ điều kiện bắt đầu:** T-203, T-302, T-305, T-306, T-402, T-504, T-507, T-606.
 
 Căn cứ: [Implementation_Plan](04-delivery/Implementation_Plan.md) §4 (cột "Sẵn sàng", "Phụ thuộc"), §10 (bằng chứng CI), §17 (áp dụng quyết định 15/10/2026); [TEST_Plan](04-delivery/TEST_Plan.md) §12 (task chủ và trạng thái từng TC); [Decision_Log](00-source/Decision_Log.md) 0.19. Quy ước: task chỉ được bắt đầu khi mọi task ở cột "Phụ thuộc" đã `DONE` (Implementation_Plan §1).
 
 ## 1. Tóm tắt nhanh
 
 - Tổng task: **83** (thêm T-308, T-513 theo D-49)
-- DONE: **32** — T-001…T-013, T-101…T-109, T-111, T-112, T-201, T-202, T-204, T-301, T-401, T-501, T-505, T-607 (T-607 run `38770889365`; T-112 run `38768790757`; T-204 run `38766763685`; T-501 run `38764880704`; T-202 run `38760592674`; T-301 run `38757933594`; T-401 run `38755214148`; T-505 run `38752643215`; T-201 run `38737949724`; T-013 run `38722522003`; T-111 run `38719094857`; T-003 run `38712655012`; T-105 run `38710976904`; T-109 run `38708289449`; T-104 run `38705903816`; T-108 run `38703355287`, phần có căn cứ — team/mục tiêu cha chưa làm; T-103 run `38700993783`; T-106 run `38697852135`; T-010 run `38696839691`; T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
+- DONE: **33** — T-001…T-013, T-101…T-109, T-111, T-112, T-201, T-202, T-204, T-301, T-401, T-501, T-502, T-505, T-607 (T-502 run `38851790319`; T-607 run `38770889365`; T-112 run `38768790757`; T-204 run `38766763685`; T-501 run `38764880704`; T-202 run `38760592674`; T-301 run `38757933594`; T-401 run `38755214148`; T-505 run `38752643215`; T-201 run `38737949724`; T-013 run `38722522003`; T-111 run `38719094857`; T-003 run `38712655012`; T-105 run `38710976904`; T-109 run `38708289449`; T-104 run `38705903816`; T-108 run `38703355287`, phần có căn cứ — team/mục tiêu cha chưa làm; T-103 run `38700993783`; T-106 run `38697852135`; T-010 run `38696839691`; T-102 run `38686690047`; T-107 run `38684667496`; T-101 run `38683463269`; T-007 run `38681777001`; T-005, T-006, T-011 theo D-44; T-012 theo D-47; T-008 run `38678659141`; T-009 run `38680383606`; ngày 15/10/2026)
 - IN_REVIEW: **0**
 - BLOCKED: **10** — T-407, T-604, T-901…T-908
-- TODO: **41** (`READY` 34, `PARTIAL` 7; chưa bắt đầu)
-- Task đủ điều kiện bắt đầu ngay: **8** — T-203, T-302, T-305, T-306, T-402, T-502, T-507, T-606
+- TODO: **40** (`READY` 34, `PARTIAL` 6; chưa bắt đầu)
+- Task đủ điều kiện bắt đầu ngay: **8** — T-203, T-302, T-305, T-306, T-402, T-504, T-507, T-606
 - Chức năng nghiệp vụ đã có: **Không.** Đã có hạ tầng nền: khung repo + CI; cấu hình/secret; CSDL + Alembic revision `0001`; log JSON, correlation ID, `/api/v1/health/live`, `/api/v1/health/ready` (API-SYS-01/02 `IMPLEMENTED`, D-52); storage cục bộ; nền tảng frontend; đăng nhập/session (T-102); MFA TOTP API-AUTH-02/03/04 (T-103); policy `authorize()` + bắt buộc khai báo quyền cho route (T-108); step-up + đổi mật khẩu API-AUTH-05/09 (T-104); API quản trị tài khoản/role/assignment API-ADM-01, 04…09 (T-109); tạo tài khoản + lời mời API-ADM-02/03, API-AUTH-08 (T-105); Docker Compose chạy được qua HTTPS, demo đầu-cuối tự động trong CI (T-003, T-013); frontend: đăng nhập, MFA, lời mời, quản trị người dùng/quyền (T-111); danh bạ + cây đơn vị API-ORG-01/02, phạm vi MANAGER (T-201); task API-WORK-01/03/04/05 (T-505, chưa có giao diện); bảng tài chính + bất biến CSDL (T-401); bảng AI + Tool Registry (T-301); bảng tài liệu/trích xuất (T-202); thông báo in-app API-NOT-01/02 (T-010); CLI `bootstrap-admin`/`recover-admin` (T-106)
 - Test case: **206** (199 + TC-FE-01…07); **52 `PASSED`** (TC-MIG-01; TC-FE-01…07; TC-AUD-03; TC-JOB-01…04, TC-JOB-06; TC-GEN-01…06; TC-IAM-01…08, TC-IAM-11, TC-IAM-12; TC-IAM-09, TC-IAM-10; TC-ACC-01, TC-ACC-02, TC-ACC-04…09; TC-AUD-01, TC-AUD-02; TC-NFR-01; TC-WRK-01…05; TC-FIN-01…04), 154 `NOT RUN`; 1 TC chưa có task chủ (TC-ACC-10)
 - Requirement `IMPLEMENTED` / `VERIFIED`: **0 / 217**
@@ -124,7 +124,7 @@ Nhóm theo giai đoạn P0–P6 của Implementation_Plan §3 (khác mức ưu t
 | Task | Trạng thái | Ghi chú ngắn |
 |------|------------|--------------|
 | T-501 | DONE | `goals.*` (migration `0015`), API-GOAL-01/02/03/05/06; run `38764880704` |
-| T-502 | TODO | PARTIAL (vòng đời Q-28) · **đủ điều kiện bắt đầu** · Kích hoạt: CEO cấp công ty, MANAGER cấp đơn vị; chờ T-501, T-109 |
+| T-502 | DONE | API-GOAL-04 (phần có căn cứ; Q-56…Q-58 chờ CDA); run `38851790319` |
 | T-503 | TODO | READY · Mục tiêu từ tài liệu; chờ T-206, T-302, T-501 |
 | T-504 | TODO | PARTIAL (quy tắc điền check-in từ task — Q-29) · chờ T-501, T-502 |
 | T-505 | DONE | `work.task` (migration `0011`), tạo/sửa/hoàn thành/mở lại, danh sách theo phạm vi; run `38752643215`; TC-WRK-01…05 `PASSED`; TC-ACC-03 phần task (chờ T-502) |
@@ -182,6 +182,10 @@ Chi tiết và phiếu điền: [OPEN_DECISIONS.md](OPEN_DECISIONS.md) mục 0 (
 4. CDA điền OPEN_DECISIONS mục 0 trước khi tới T-204 (D-50) và T-108 (TC-ACC-10).
 
 ## 6. Ghi chú phiên gần nhất
+
+**Phiên 16/10/2026 (lần 21) — triển khai song song bằng subagent:**
+- 7 subagent (T-302, T-203, T-402, T-305, T-502, T-507, T-606) chạy trong worktree riêng; bị dừng giữa chừng do hết hạn mức rồi được tiếp tục. Thay đổi finance chưa commit trên working tree `main` (nghi do Copilot, không có test) được lưu nguyên vào branch local `copilot/finance-wip`; T-402 dùng bản của subagent (có test).
+- T-502: PR #43, CI run `38851790319` xanh → `DONE` (phần có căn cứ); TC-GOAL-07/08, TC-ACC-03 `PASSED`. Q-56…Q-58 mới. Sửa lỗi cũ ở API_Specification §1.10 (`run {R}` → run thật của T-501).
 
 **Phiên 16/10/2026 (lần 20) — D-60, PR #41:**
 - CDA trả lời Q-54 (quy tắc trần chi phí AI) và Q-55 (danh mục dữ liệu cá nhân, vị trí mã che) → D-60, CONFIRMED. Q-53: giữ CHECK `ai.call_log` nghiêm ngặt, **vẫn mở** tới khi các điểm D-50 được quyết định chính thức; phần demo DeepSeek của T-205 vẫn bị chặn.

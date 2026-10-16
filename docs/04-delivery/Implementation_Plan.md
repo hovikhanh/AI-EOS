@@ -279,6 +279,7 @@ Chỉ ghi task đã bắt đầu (ID trong dấu `` ` `` để không trùng v�
 | `T-204` | `DONE` | 15/10/2026 | Branch `feat/T-204-providers`, PR #38. Module `providers` (interface, adapter giả lập, `ProviderClient`: định tuyến theo phân loại, timeout/retry/fallback, trần chi phí), `ai.DbCallRecorder`, `Settings.provider_key`; kiểm cấu hình khi api/worker khởi động. Test `test_providers.py` (23), `test_platform_config.py` (+1). 14 đột biến → test đỏ | Bằng chứng CI: PR #38, run `38766763685` (`success`). TC-PRV-05, 06 `PASSED`; TC-PRV-04, 07, TC-NFR-04 `NOT RUN` (phần T-204 đạt, chờ T-112/T-205/T-403/T-208). Q-54 mới |
 | `T-112` | `DONE` | 15/10/2026 | Branch `feat/T-112-pii-masking`, PR #39. `platform/privacy.py` (phát hiện/che/nhãn theo quy tắc), `access/privacy.py` (`mask_for`, `mask_fields` theo `pii.unmask`), audit tự che `changes`. Test `test_privacy.py` (21). 11 đột biến → test đỏ | Bằng chứng CI: PR #39, run `38768790757` (`success`). TC-PRV-01, 02 `PASSED`; TC-PRV-03 `NOT RUN` (chờ T-306). Q-55 mới |
 | `T-607` | `DONE` | 15/10/2026 | Branch `feat/T-607-a11y-i18n`, PR #40. i18n vi/en (`frontend/src/i18n/`), axe-core trên mọi màn, tương phản token, link bỏ qua, hộp thoại xác thực lại (focus, Esc). Test `t607.test.tsx` (8). 8 đột biến → test đỏ | Bằng chứng CI: PR #40, run `38770889365` (`success`). TC-NFR-02, TC-NFR-05 `NOT RUN` (phần tự động đạt; chờ T-306 và kiểm thủ công) |
+| `T-502` | `DONE` | 16/10/2026 | Branch `feat/T-502-goal-activation`, PR #43 (subagent, lead review). API-GOAL-04 kích hoạt Objective/KR/KPI, quy tắc cấp D-51; phần có căn cứ — Q-56…Q-58 chờ CDA. Test `test_goals_activation.py` (5); 14 đột biến → test đỏ | Bằng chứng CI: PR #43, run `38851790319` (`success`). TC-GOAL-07, 08 `PASSED`; TC-ACC-03 `PASSED` (đủ hai phần) |
 
 ## 11. Kế hoạch chi tiết T-002 (chưa triển khai)
 
@@ -753,3 +754,12 @@ Cách đăng ký đề xuất sau khi được duyệt (chưa thực hiện; 14/
 - Truy cập (SRS-NFR-08, WCAG 2.1 AA): `axe-core` 4.13.0 (devDependency, MPL-2.0, chỉ dùng trong test) chạy trên mọi màn hiện có, cả hai ngôn ngữ — 0 vi phạm (tắt luật `color-contrast` vì jsdom không tính màu); tương phản token màu kiểm riêng (mọi cặp chữ/nền ≥ 4,5:1, token hiện tại đạt, không phải đổi màu). Bàn phím: link "Bỏ qua tới nội dung chính", hộp thoại xác thực lại nhận focus vào ô mật khẩu và đóng bằng Esc.
 - Chưa làm / cần người kiểm: duyệt bàn phím thủ công toàn bộ màn (TC-NFR-05 phần thủ công) và kiểm tra bằng trình đọc màn hình; biểu đồ có bảng thay thế (chưa có biểu đồ nào); AI trả lời theo ngôn ngữ câu hỏi (TC-NFR-02 phần AI — T-306). Màn mới về sau phải thêm khóa vào cả hai từ điển và vào test axe.
 - Test `frontend/src/t607.test.tsx` (8). 8 đột biến → test đỏ (đột biến bỏ `tabIndex` của đích link bỏ qua ban đầu lọt — jsdom trả `-1` cho mọi phần tử; đã kiểm thuộc tính).
+
+## 43. Ghi chú triển khai T-502 (16/10/2026)
+
+- Làm bởi subagent trong worktree riêng (phiên song song 16/10/2026), lead review và kiểm chứng lại trên PostgreSQL 18.6 cục bộ (432 test đạt).
+- `goals/service.py` `activate()`: khóa dòng; `404` ngoài phạm vi đọc → `403` không có assignment đúng cấp → `412`/`428` theo `If-Match` → `409` nếu không phải `DRAFT`; cập nhật có điều kiện `status = 'DRAFT'`; ghi `activated_by`, `activated_at`, tăng `version`; audit `BUSINESS` trong cùng transaction. Không kích hoạt dây chuyền.
+- Quy tắc cấp (D-51/Q-28): công ty — CEO + assignment `COMPANY`; đơn vị — MANAGER + assignment `ORG_UNIT` bao trùm đơn vị. Role được xét lại lúc kích hoạt. Không ai được giao `goals.activate` trong code/seed (D-39); người giữ quyền là việc vận hành của CDA.
+- `[CẦN XÁC NHẬN]` Q-56 (dùng chéo assignment giữa các cấp), Q-57 (KR dưới Objective DRAFT), Q-58 (phạm vi quy tắc người tạo bản nháp từ tài liệu).
+- Test `backend/tests/test_goals_activation.py` (5): TC-GOAL-07, TC-GOAL-08, phần mục tiêu của TC-ACC-03 (D-59). 14 đột biến → test đỏ.
+
